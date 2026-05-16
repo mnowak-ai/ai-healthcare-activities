@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mission 1 — Lakeside Community Health Clinic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- AI Essentials brand fonts: Fraunces display + DM Sans body -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── AI Essentials Brand Variables ─── */
+    :root {
+      --purple:      #7B2FBE;
+      --purple-dk:   #5B1F94;
+      --purple-lt:   #9D4EDD;
+      --purple-pale: #F3EBFF;
+      --purple-pale2:#EAD9FF;
+      --bg:          #FFFFFF;
+      --bg-section:  #F6F0FF;
+      --card-border: #E9D8FF;
+      --text-main:   #1A0A2E;
+      --text-body:   #3D2060;
+      --text-muted:  #7C5FA8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    .font-display { font-family: 'Fraunces', serif; }
+    .font-mono    { font-family: 'DM Mono', monospace; }
+
+    /* ─── Subtle dot grid ─── */
+    .dot-grid {
+      background-image: radial-gradient(circle, rgba(123,47,190,0.07) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    .topbar-shadow { box-shadow: 0 1px 0 #E9D8FF, 0 4px 20px rgba(123,47,190,0.07); }
+
+    /* ─── Pulse animations ─── */
+    @keyframes pulse-dot {
+      0%, 100% { opacity:1; transform:scale(1); }
+      50%       { opacity:.4; transform:scale(1.5); }
+    }
+    .pulse-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
+
+    @keyframes pulse-ring {
+      0%   { transform:scale(1); opacity:.7; }
+      100% { transform:scale(2.5); opacity:0; }
+    }
+    .pulse-ring {
+      position:absolute; inset:0; border-radius:9999px;
+      background:currentColor;
+      animation: pulse-ring 1.8s ease-out infinite;
+    }
+
+    /* ─── Fade-in ─── */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fade-up { animation: fadeUp .65s ease both; }
+    .d1 { animation-delay:.1s; }
+    .d2 { animation-delay:.2s; }
+    .d3 { animation-delay:.3s; }
+    .d4 { animation-delay:.4s; }
+    .d5 { animation-delay:.55s; }
+    .d6 { animation-delay:.7s; }
+
+    /* ─── Card lift ─── */
+    .card-lift { transition: transform .22s ease, box-shadow .22s ease; }
+    .card-lift:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(123,47,190,0.13); }
+
+    /* ─── Shimmer ─── */
+    @keyframes shimmer {
+      0%   { background-position:-400px 0; }
+      100% { background-position:400px 0; }
+    }
+    .shimmer-card { position:relative; overflow:hidden; }
+    .shimmer-card::before {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(90deg, transparent, rgba(123,47,190,0.05), transparent);
+      background-size:400px 100%;
+      animation: shimmer 4s infinite linear;
+      pointer-events:none; border-radius:inherit;
+    }
+
+    /* ─── Severity badges ─── */
+    .sev-critical { background:#FEE2E2; color:#991B1B; border:1px solid #FECACA; }
+    .sev-high     { background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; }
+    .sev-medium   { background:var(--purple-pale); color:var(--purple-dk); border:1px solid var(--card-border); }
+
+    /* ─── Workflow tabs ─── */
+    .wf-tab {
+      cursor:pointer;
+      border:1.5px solid var(--card-border);
+      border-radius:12px; padding:14px 16px;
+      transition:all .2s; background:#fff; text-align:left;
+    }
+    .wf-tab:hover  { border-color:var(--purple-lt); background:var(--purple-pale); }
+    .wf-tab.active { border-color:var(--purple); background:var(--purple-pale);
+                     box-shadow:0 0 0 3px rgba(123,47,190,0.1); }
+
+    .wf-panel { display:none; }
+    .wf-panel.active { display:block; animation: fadeUp .3s ease both; }
+
+    /* ─── Reflection cards ─── */
+    .reflect-card {
+      border:1.5px solid var(--card-border);
+      border-radius:14px; background:#fff;
+      padding:22px; cursor:pointer; transition:all .22s;
+    }
+    .reflect-card:hover { border-color:var(--purple); background:var(--purple-pale); transform:translateY(-2px); }
+
+    /* ─── Quote card ─── */
+    .quote-card {
+      border-left:3px solid var(--purple);
+      border-top:1px solid var(--card-border);
+      border-right:1px solid var(--card-border);
+      border-bottom:1px solid var(--card-border);
+      background:#fff; border-radius:0 12px 12px 0;
+      padding:20px 22px; transition:all .2s;
+    }
+    .quote-card:hover { background:var(--purple-pale); }
+
+    /* ─── Section label ─── */
+    .section-label {
+      font-family:'DM Mono', monospace;
+      font-size:.62rem; letter-spacing:.2em;
+      color:var(--purple); text-transform:uppercase;
+    }
+
+    /* ─── Ticker ─── */
+    @keyframes ticker {
+      from { transform:translateX(0); }
+      to   { transform:translateX(-50%); }
+    }
+    .ticker-inner { animation: ticker 30s linear infinite; white-space:nowrap; }
+
+    /* ─── Purple gradient bar ─── */
+    .purple-bar {
+      height:3px;
+      background:linear-gradient(90deg, var(--purple), var(--purple-lt), #C084FC);
+      border-radius:2px;
+    }
+
+    /* ─── Scrollbar ─── */
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-track { background:#f5f5f5; }
+    ::-webkit-scrollbar-thumb { background:var(--purple-lt); border-radius:3px; }
+  </style>
+</head>
+
+<body class="dot-grid min-h-screen">
+
+  <!-- ═══════════════════════════════
+       TOP BAR
+  ═══════════════════════════════ -->
+  <div class="topbar-shadow bg-white border-b border-purple-100 px-4 py-2.5 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0" style="background:var(--purple);">
+        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+      </div>
+      <span class="font-mono text-[11px] hidden sm:block" style="color:var(--purple);">LAKESIDE COMMUNITY HEALTH — OPS CENTER</span>
+      <span class="font-mono text-[11px] sm:hidden" style="color:var(--purple);">LAKESIDE OPS</span>
+    </div>
+    <div class="flex items-center gap-5">
+      <div class="flex items-center gap-2">
+        <div class="relative w-2.5 h-2.5">
+          <span class="pulse-ring text-red-500 w-2.5 h-2.5 block"></span>
+          <span class="pulse-dot w-2.5 h-2.5 rounded-full bg-red-500 block absolute inset-0"></span>
+        </div>
+        <span class="font-mono text-[10px] text-red-600 hidden sm:block">3 CRITICAL ALERTS</span>
+      </div>
+      <div class="font-mono text-[10px] text-purple-400" id="clock"></div>
+    </div>
+  </div>
+
+  <!-- ─── Ticker ─── -->
+  <div class="border-b py-1.5 overflow-hidden" style="background:var(--purple-pale); border-color:var(--card-border);">
+    <div class="ticker-inner inline-flex gap-12 font-mono text-[10px]" style="color:var(--purple);">
+      <span>🔴 PATIENT WAIT TIME: 47 MIN AVERAGE</span>
+      <span>⚠️ 12 MISSED APPOINTMENT CALLBACKS PENDING</span>
+      <span>📋 DOCUMENTATION BACKLOG: 3 DAYS</span>
+      <span>📞 PHONE QUEUE: 18 CALLS WAITING</span>
+      <span>🔴 PATIENT WAIT TIME: 47 MIN AVERAGE</span>
+      <span>⚠️ 12 MISSED APPOINTMENT CALLBACKS PENDING</span>
+      <span>📋 DOCUMENTATION BACKLOG: 3 DAYS</span>
+      <span>📞 PHONE QUEUE: 18 CALLS WAITING</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       MISSION HEADER
+  ═══════════════════════════════ -->
+  <section class="max-w-5xl mx-auto px-4 pt-12 pb-8">
+    <div class="fade-up">
+      <p class="section-label mb-3">▸ Active Mission · Healthcare Operations</p>
+      <h1 class="font-display text-3xl sm:text-5xl font-black leading-tight mb-4" style="color:var(--text-main);">
+        Mission 1: Improve<br/>
+        <span style="color:var(--purple);">Clinic Workflow Efficiency</span>
+      </h1>
+      <p class="text-base sm:text-lg max-w-2xl leading-relaxed mb-8" style="color:var(--text-body);">
+        The Lakeside team is struggling with scheduling, communication, and patient flow challenges.
+        <strong style="color:var(--purple);">Your job starts today.</strong> Understand the problems before you propose any solutions.
+      </p>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="fade-up d2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="shimmer-card card-lift rounded-xl p-4" style="background:#fff; border:1.5px solid #FECACA;">
+        <div class="font-mono text-[10px] mb-1" style="color:var(--text-muted);">AVG WAIT TIME</div>
+        <div class="font-display text-3xl font-black text-red-600">47<span class="text-base font-normal text-gray-400"> min</span></div>
+        <div class="text-[11px] text-red-500 mt-1">↑ 22% this week</div>
+      </div>
+      <div class="shimmer-card card-lift rounded-xl p-4" style="background:#fff; border:1.5px solid #FDE68A;">
+        <div class="font-mono text-[10px] mb-1" style="color:var(--text-muted);">NO-SHOW RATE</div>
+        <div class="font-display text-3xl font-black text-amber-600">31<span class="text-base font-normal text-gray-400">%</span></div>
+        <div class="text-[11px] text-amber-600 mt-1">Target: under 12%</div>
+      </div>
+      <div class="shimmer-card card-lift rounded-xl p-4" style="background:#fff; border:1.5px solid #FECACA;">
+        <div class="font-mono text-[10px] mb-1" style="color:var(--text-muted);">CALL QUEUE</div>
+        <div class="font-display text-3xl font-black text-red-600">18<span class="text-base font-normal text-gray-400"> waiting</span></div>
+        <div class="text-[11px] text-red-500 mt-1">3 staff handling</div>
+      </div>
+      <div class="shimmer-card card-lift rounded-xl p-4" style="background:#fff; border:1.5px solid #FDE68A;">
+        <div class="font-mono text-[10px] mb-1" style="color:var(--text-muted);">DOC BACKLOG</div>
+        <div class="font-display text-3xl font-black text-amber-600">3<span class="text-base font-normal text-gray-400"> days</span></div>
+        <div class="text-[11px] text-amber-600 mt-1">Patients waiting on records</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       LIVE CLINIC ALERTS
+  ═══════════════════════════════ -->
+  <section class="max-w-5xl mx-auto px-4 py-8">
+    <div class="fade-up d3">
+      <p class="section-label mb-2">▸ Live Clinic Alerts</p>
+      <h2 class="font-display text-2xl font-bold mb-1" style="color:var(--text-main);">What's Breaking Down Right Now</h2>
+      <div class="purple-bar w-14 mb-6"></div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 fade-up d4">
+
+      <!-- Critical cards -->
+      <div class="shimmer-card card-lift rounded-xl" style="background:#fff; border:1.5px solid #FECACA;">
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-xl">⏱️</div>
+            <span class="sev-critical font-mono text-[10px] px-2.5 py-1 rounded-full">CRITICAL</span>
+          </div>
+          <h3 class="font-display font-bold text-base mb-2" style="color:var(--text-main);">Long Patient Wait Times</h3>
+          <p class="text-sm leading-relaxed mb-3" style="color:var(--text-body);">Patients wait over 45 minutes past their appointment time. Rooms are empty while staff scramble with paperwork.</p>
+          <div class="bg-red-50 rounded-lg p-3 border border-red-100">
+            <p class="text-red-700 text-xs font-medium">Impact: Patients leave without being seen. Satisfaction scores dropping.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shimmer-card card-lift rounded-xl" style="background:#fff; border:1.5px solid #FECACA;">
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-xl">📵</div>
+            <span class="sev-critical font-mono text-[10px] px-2.5 py-1 rounded-full">CRITICAL</span>
+          </div>
+          <h3 class="font-display font-bold text-base mb-2" style="color:var(--text-main);">Missed Appointment Reminders</h3>
+          <p class="text-sm leading-relaxed mb-3" style="color:var(--text-body);">Staff manually call patients the day before. They can't reach everyone. 1 in 3 appointments goes unfilled.</p>
+          <div class="bg-red-50 rounded-lg p-3 border border-red-100">
+            <p class="text-red-700 text-xs font-medium">Impact: Empty slots, lost revenue, patients who needed care — didn't get it.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shimmer-card card-lift rounded-xl" style="background:#fff; border:1.5px solid #FECACA;">
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-xl">📞</div>
+            <span class="sev-critical font-mono text-[10px] px-2.5 py-1 rounded-full">CRITICAL</span>
+          </div>
+          <h3 class="font-display font-bold text-base mb-2" style="color:var(--text-main);">Staff Overwhelmed by Calls</h3>
+          <p class="text-sm leading-relaxed mb-3" style="color:var(--text-body);">18 calls in queue. 3 staff handling all of them. Many calls are just asking for directions, hours, or refill status.</p>
+          <div class="bg-red-50 rounded-lg p-3 border border-red-100">
+            <p class="text-red-700 text-xs font-medium">Impact: Urgent calls get buried. Staff burn out. Patients hang up frustrated.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- High cards -->
+      <div class="shimmer-card card-lift rounded-xl" style="background:#fff; border:1.5px solid #FDE68A;">
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-xl">📬</div>
+            <span class="sev-high font-mono text-[10px] px-2.5 py-1 rounded-full">HIGH</span>
+          </div>
+          <h3 class="font-display font-bold text-base mb-2" style="color:var(--text-main);">Delayed Patient Callbacks</h3>
+          <p class="text-sm leading-relaxed mb-3" style="color:var(--text-body);">Patients who leave messages wait 24–48 hours for a call back. Staff are too busy with walk-ins to respond.</p>
+          <div class="bg-amber-50 rounded-lg p-3 border border-amber-100">
+            <p class="text-amber-800 text-xs font-medium">Impact: Patients seek care elsewhere — or skip it entirely.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shimmer-card card-lift rounded-xl" style="background:#fff; border:1.5px solid #FDE68A;">
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-xl">🔁</div>
+            <span class="sev-high font-mono text-[10px] px-2.5 py-1 rounded-full">HIGH</span>
+          </div>
+          <h3 class="font-display font-bold text-base mb-2" style="color:var(--text-main);">Repetitive Admin Tasks</h3>
+          <p class="text-sm leading-relaxed mb-3" style="color:var(--text-body);">Staff re-enter the same patient information into three different systems. Same data, typed by hand, every single visit.</p>
+          <div class="bg-amber-50 rounded-lg p-3 border border-amber-100">
+            <p class="text-amber-800 text-xs font-medium">Impact: Errors pile up. Clinicians spend less time with patients.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shimmer-card card-lift rounded-xl" style="background:#fff; border:1.5px solid #FDE68A;">
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-xl">📅</div>
+            <span class="sev-high font-mono text-[10px] px-2.5 py-1 rounded-full">HIGH</span>
+          </div>
+          <h3 class="font-display font-bold text-base mb-2" style="color:var(--text-main);">Scheduling Conflicts</h3>
+          <p class="text-sm leading-relaxed mb-3" style="color:var(--text-body);">Double-bookings happen weekly. The scheduler is a shared spreadsheet. Urgent patients wait 2+ weeks for openings.</p>
+          <div class="bg-amber-50 rounded-lg p-3 border border-amber-100">
+            <p class="text-amber-800 text-xs font-medium">Impact: Providers frustrated. Patients can't get the care they need quickly.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medium — full width -->
+      <div class="shimmer-card card-lift rounded-xl sm:col-span-2 lg:col-span-3" style="background:#fff; border:1.5px solid var(--card-border);">
+        <div class="p-5 sm:flex sm:gap-6 sm:items-start">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3 sm:mb-0 flex-shrink-0" style="background:var(--purple-pale);">📝</div>
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-2">
+              <h3 class="font-display font-bold text-base" style="color:var(--text-main);">Documentation Backlog</h3>
+              <span class="sev-medium font-mono text-[10px] px-2.5 py-1 rounded-full">MEDIUM</span>
+            </div>
+            <p class="text-sm leading-relaxed mb-3" style="color:var(--text-body);">Clinicians finish patient visits but can't complete notes until after-hours. Some notes are 3 days late. Without completed notes, billing is delayed and other providers can't see accurate records.</p>
+            <div class="flex flex-wrap gap-2">
+              <span class="font-mono text-xs px-3 py-1 rounded-full" style="background:var(--purple-pale); color:var(--purple-dk); border:1px solid var(--card-border);">Billing delays</span>
+              <span class="font-mono text-xs px-3 py-1 rounded-full" style="background:var(--purple-pale); color:var(--purple-dk); border:1px solid var(--card-border);">Incomplete records</span>
+              <span class="font-mono text-xs px-3 py-1 rounded-full" style="background:var(--purple-pale); color:var(--purple-dk); border:1px solid var(--card-border);">Clinician overtime</span>
+              <span class="font-mono text-xs px-3 py-1 rounded-full" style="background:var(--purple-pale); color:var(--purple-dk); border:1px solid var(--card-border);">Compliance risk</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       STAFF VOICES
+  ═══════════════════════════════ -->
+  <section style="background:var(--bg-section);" class="py-12">
+    <div class="max-w-5xl mx-auto px-4">
+      <div class="fade-up d3">
+        <p class="section-label mb-2">▸ Staff Voices</p>
+        <h2 class="font-display text-2xl font-bold mb-1" style="color:var(--text-main);">What the Team Is Saying</h2>
+        <div class="purple-bar w-14 mb-2"></div>
+        <p class="text-sm mb-6" style="color:var(--text-muted);">These are real words from real people on the Lakeside team. Listen carefully.</p>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4 fade-up d4">
+
+        <div class="quote-card card-lift">
+          <p class="text-base leading-relaxed mb-4" style="color:var(--text-main);">"We spend <strong style="color:var(--purple);">hours every single day</strong> just returning phone calls. By the time we call back, patients have already called somewhere else."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm text-white" style="background:var(--purple);">MR</div>
+            <div>
+              <div class="text-xs font-semibold" style="color:var(--text-main);">Maria R.</div>
+              <div class="font-mono text-[10px]" style="color:var(--text-muted);">Front Desk Coordinator · 6 years</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quote-card card-lift">
+          <p class="text-base leading-relaxed mb-4" style="color:var(--text-main);">"Patients keep missing appointments. We call, they don't pick up. Then they show up <strong style="color:var(--purple);">two weeks later asking why they weren't seen.</strong> It's heartbreaking."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm text-white" style="background:#6366F1;">DT</div>
+            <div>
+              <div class="text-xs font-semibold" style="color:var(--text-main);">Deja T.</div>
+              <div class="font-mono text-[10px]" style="color:var(--text-muted);">Patient Services Rep · 3 years</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quote-card card-lift">
+          <p class="text-base leading-relaxed mb-4" style="color:var(--text-main);">"Our scheduling system is so overwhelmed that <strong style="color:var(--purple);">I've seen double-bookings happen twice in one morning.</strong> Providers are furious. Patients are confused."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm text-white" style="background:var(--purple-lt);">JK</div>
+            <div>
+              <div class="text-xs font-semibold" style="color:var(--text-main);">James K.</div>
+              <div class="font-mono text-[10px]" style="color:var(--text-muted);">Clinic Operations Lead · 9 years</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quote-card card-lift">
+          <p class="text-base leading-relaxed mb-4" style="color:var(--text-main);">"I finish my last appointment at 5PM and then spend <strong style="color:var(--purple);">two more hours writing notes</strong> just to stay compliant. I didn't become a nurse to do data entry."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm text-white" style="background:#DC2626;">AO</div>
+            <div>
+              <div class="text-xs font-semibold" style="color:var(--text-main);">Aisha O., RN</div>
+              <div class="font-mono text-[10px]" style="color:var(--text-muted);">Registered Nurse · 11 years</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quote-card card-lift sm:col-span-2">
+          <p class="text-base leading-relaxed mb-4" style="color:var(--text-main);">"We need <strong style="color:var(--purple);">better communication tools.</strong> Right now it's sticky notes, voicemails, and crossed fingers. Something has to change or we're going to lose good people."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm text-white" style="background:#D97706;">PC</div>
+            <div>
+              <div class="text-xs font-semibold" style="color:var(--text-main);">Dr. Patricia C., MD</div>
+              <div class="font-mono text-[10px]" style="color:var(--text-muted);">Medical Director · Lakeside Clinic</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       WORKFLOW ANALYSIS
+  ═══════════════════════════════ -->
+  <section class="max-w-5xl mx-auto px-4 py-12">
+    <div class="fade-up d3">
+      <p class="section-label mb-2">▸ Workflow Analysis</p>
+      <h2 class="font-display text-2xl font-bold mb-1" style="color:var(--text-main);">Where Are the Bottlenecks?</h2>
+      <div class="purple-bar w-14 mb-2"></div>
+      <p class="text-sm mb-6" style="color:var(--text-muted);">Select a workflow area to explore what's going wrong — and start thinking about <em>why</em>.</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 fade-up d4">
+      <button class="wf-tab active" onclick="showWorkflow('scheduling')" id="tab-scheduling">
+        <div class="text-xl mb-1">📅</div>
+        <div class="font-display font-bold text-sm" style="color:var(--text-main);">Scheduling</div>
+        <div class="font-mono text-[10px] mt-0.5" style="color:var(--text-muted);">3 issues</div>
+      </button>
+      <button class="wf-tab" onclick="showWorkflow('documentation')" id="tab-documentation">
+        <div class="text-xl mb-1">📋</div>
+        <div class="font-display font-bold text-sm" style="color:var(--text-main);">Documentation</div>
+        <div class="font-mono text-[10px] mt-0.5" style="color:var(--text-muted);">2 issues</div>
+      </button>
+      <button class="wf-tab" onclick="showWorkflow('communication')" id="tab-communication">
+        <div class="text-xl mb-1">💬</div>
+        <div class="font-display font-bold text-sm" style="color:var(--text-main);">Communication</div>
+        <div class="font-mono text-[10px] mt-0.5" style="color:var(--text-muted);">4 issues</div>
+      </button>
+      <button class="wf-tab" onclick="showWorkflow('frontdesk')" id="tab-frontdesk">
+        <div class="text-xl mb-1">🏥</div>
+        <div class="font-display font-bold text-sm" style="color:var(--text-main);">Front Desk</div>
+        <div class="font-mono text-[10px] mt-0.5" style="color:var(--text-muted);">3 issues</div>
+      </button>
+    </div>
+
+    <!-- Panel container -->
+    <div class="rounded-2xl p-6 sm:p-8 fade-up d5" style="background:#fff; border:1.5px solid var(--card-border); box-shadow:0 4px 24px rgba(123,47,190,0.07);">
+
+      <!-- Scheduling -->
+      <div id="panel-scheduling" class="wf-panel active">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background:var(--purple-pale);">📅</div>
+          <div>
+            <h3 class="font-display font-bold text-lg" style="color:var(--text-main);">Scheduling Breakdown</h3>
+            <p class="font-mono text-[10px]" style="color:var(--purple);">WORKFLOW AREA 01</p>
+          </div>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="rounded-xl p-4" style="background:#FEF2F2; border:1px solid #FECACA;">
+            <div class="font-mono text-[10px] text-red-600 mb-2">WHY IT'S BROKEN</div>
+            <p class="text-sm leading-relaxed" style="color:#7F1D1D;">Appointments are tracked in a shared spreadsheet. Two people can book the same slot. Urgent patients wait weeks for openings that don't really exist.</p>
+          </div>
+          <div class="rounded-xl p-4" style="background:#FFFBEB; border:1px solid #FDE68A;">
+            <div class="font-mono text-[10px] text-amber-700 mb-2">HOW IT AFFECTS PATIENTS</div>
+            <p class="text-sm leading-relaxed" style="color:#78350F;">Patients show up for appointments that were double-booked. They leave without care. Some stop trying to schedule at all.</p>
+          </div>
+          <div class="rounded-xl p-4" style="background:var(--purple-pale); border:1px solid var(--card-border);">
+            <div class="font-mono text-[10px] mb-2" style="color:var(--purple);">🤔 START THINKING…</div>
+            <p class="text-sm leading-relaxed" style="color:var(--purple-dk);">Could a smarter system detect open slots and fill them automatically? Who should still make the final scheduling decision?</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documentation -->
+      <div id="panel-documentation" class="wf-panel">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background:var(--purple-pale);">📋</div>
+          <div>
+            <h3 class="font-display font-bold text-lg" style="color:var(--text-main);">Documentation Overload</h3>
+            <p class="font-mono text-[10px]" style="color:var(--purple);">WORKFLOW AREA 02</p>
+          </div>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="rounded-xl p-4" style="background:#FEF2F2; border:1px solid #FECACA;">
+            <div class="font-mono text-[10px] text-red-600 mb-2">WHY IT'S BROKEN</div>
+            <p class="text-sm leading-relaxed" style="color:#7F1D1D;">Clinicians type notes from memory after every visit. The same facts — name, DOB, symptoms — are re-entered into three different systems. Notes pile up overnight.</p>
+          </div>
+          <div class="rounded-xl p-4" style="background:#FFFBEB; border:1px solid #FDE68A;">
+            <div class="font-mono text-[10px] text-amber-700 mb-2">HOW IT AFFECTS PATIENTS</div>
+            <p class="text-sm leading-relaxed" style="color:#78350F;">Late notes mean billing is delayed. If a patient returns before the note is done, the provider is flying blind — they can't see what happened last visit.</p>
+          </div>
+          <div class="rounded-xl p-4" style="background:var(--purple-pale); border:1px solid var(--card-border);">
+            <div class="font-mono text-[10px] mb-2" style="color:var(--purple);">🤔 START THINKING…</div>
+            <p class="text-sm leading-relaxed" style="color:var(--purple-dk);">Could AI help draft notes from a visit? What information should only a licensed clinician enter or approve? Where does accuracy matter most?</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Communication -->
+      <div id="panel-communication" class="wf-panel">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background:var(--purple-pale);">💬</div>
+          <div>
+            <h3 class="font-display font-bold text-lg" style="color:var(--text-main);">Communication Gaps</h3>
+            <p class="font-mono text-[10px]" style="color:var(--purple);">WORKFLOW AREA 03</p>
+          </div>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="rounded-xl p-4" style="background:#FEF2F2; border:1px solid #FECACA;">
+            <div class="font-mono text-[10px] text-red-600 mb-2">WHY IT'S BROKEN</div>
+            <p class="text-sm leading-relaxed" style="color:#7F1D1D;">Appointment reminders are made by hand. Callbacks sit in voicemail. Staff use different apps to message each other. Nothing connects to patient records.</p>
+          </div>
+          <div class="rounded-xl p-4" style="background:#FFFBEB; border:1px solid #FDE68A;">
+            <div class="font-mono text-[10px] text-amber-700 mb-2">HOW IT AFFECTS PATIENTS</div>
+            <p class="text-sm leading-relaxed" style="color:#78350F;">Patients forget appointments. They don't get reminders in their language. Test results sit unsent for days. Patients feel ignored and unsafe.</p>
+          </div>
+          <div class="rounded-xl p-4" style="background:var(--purple-pale); border:1px solid var(--card-border);">
+            <div class="font-mono text-[10px] mb-2" style="color:var(--purple);">🤔 START THINKING…</div>
+            <p class="text-sm leading-relaxed" style="color:var(--purple-dk);">What messages could be sent automatically? What messages — like test results or bad news — should only come from a human?</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Front Desk -->
+      <div id="panel-frontdesk" class="wf-panel">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background:var(--purple-pale);">🏥</div>
+          <div>
+            <h3 class="font-display font-bold text-lg" style="color:var(--text-main);">Front Desk Overload</h3>
+            <p class="font-mono text-[10px]" style="color:var(--purple);">WORKFLOW AREA 04</p>
+          </div>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="rounded-xl p-4" style="background:#FEF2F2; border:1px solid #FECACA;">
+            <div class="font-mono text-[10px] text-red-600 mb-2">WHY IT'S BROKEN</div>
+            <p class="text-sm leading-relaxed" style="color:#7F1D1D;">3 staff handle everything: phones, walk-ins, check-ins, and billing questions — all at once. Many calls are simple questions that don't need a human to answer.</p>
+          </div>
+          <div class="rounded-xl p-4" style="background:#FFFBEB; border:1px solid #FDE68A;">
+            <div class="font-mono text-[10px] text-amber-700 mb-2">HOW IT AFFECTS PATIENTS</div>
+            <p class="text-sm leading-relaxed" style="color:#78350F;">Patients wait on hold. Real emergencies get mixed in with routine calls. Staff are too burned out to give everyone the attention they deserve.</p>
+          </div>
+          <div class="rounded-xl p-4" style="background:var(--purple-pale); border:1px solid var(--card-border);">
+            <div class="font-mono text-[10px] mb-2" style="color:var(--purple);">🤔 START THINKING…</div>
+            <p class="text-sm leading-relaxed" style="color:var(--purple-dk);">Which questions could a self-service tool answer? What requires empathy and judgment? How do you keep patients from feeling like just a number?</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       CAN AI HELP — REFLECTION
+  ═══════════════════════════════ -->
+  <section style="background:var(--bg-section);" class="py-12">
+    <div class="max-w-5xl mx-auto px-4">
+      <div class="fade-up d3">
+        <p class="section-label mb-2">▸ Critical Thinking</p>
+        <h2 class="font-display text-2xl font-bold mb-1" style="color:var(--text-main);">Can AI Help? Start Thinking.</h2>
+        <div class="purple-bar w-14 mb-2"></div>
+        <p class="text-sm mb-6" style="color:var(--text-muted);">Tap each card to explore the question. There are no wrong answers yet — just good thinking.</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4 fade-up d5">
+
+        <div class="reflect-card" onclick="toggleReflect(this)">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style="background:var(--purple-pale);">🔁</div>
+            <h3 class="font-display font-bold text-sm leading-snug" style="color:var(--text-main);">Where could AI reduce repetitive work?</h3>
+          </div>
+          <p class="text-sm leading-relaxed" style="color:var(--text-body);">Think about tasks that happen the same way every time — the ones staff do dozens of times a day without much variation.</p>
+          <div class="reflect-answer mt-4 hidden">
+            <div class="rounded-xl p-4" style="background:var(--purple-pale2); border:1px solid var(--card-border);">
+              <p class="text-sm leading-relaxed" style="color:var(--purple-dk);"><strong>Consider:</strong> Sending the same appointment reminder. Entering the same address into three systems. Answering "What are your hours?" for the 40th time today. Repetitive = a strong signal AI might help.</p>
+            </div>
+          </div>
+          <div class="mt-3 font-mono text-[10px]" style="color:var(--purple);">▸ tap to explore</div>
+        </div>
+
+        <div class="reflect-card" onclick="toggleReflect(this)">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style="background:#FEF3C7;">🧠</div>
+            <h3 class="font-display font-bold text-sm leading-snug" style="color:var(--text-main);">What tasks still require human judgment?</h3>
+          </div>
+          <p class="text-sm leading-relaxed" style="color:var(--text-body);">Think about decisions where getting it wrong could hurt someone — where context, emotion, and expertise matter most.</p>
+          <div class="reflect-answer mt-4 hidden">
+            <div class="rounded-xl p-4" style="background:#FFFBEB; border:1px solid #FDE68A;">
+              <p class="text-sm leading-relaxed text-amber-900"><strong>Consider:</strong> Deciding if symptoms are an emergency. Delivering a difficult diagnosis. Interpreting a complex test result. AI can support — but never replace — human training and accountability.</p>
+            </div>
+          </div>
+          <div class="mt-3 font-mono text-[10px]" style="color:var(--purple);">▸ tap to explore</div>
+        </div>
+
+        <div class="reflect-card" onclick="toggleReflect(this)">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style="background:#FEE2E2;">❤️</div>
+            <h3 class="font-display font-bold text-sm leading-snug" style="color:var(--text-main);">Which problems affect patient experience most?</h3>
+          </div>
+          <p class="text-sm leading-relaxed" style="color:var(--text-body);">Think from the patient's point of view. They don't see the back office — they feel the wait, the confusion, and the silence when no one calls back.</p>
+          <div class="reflect-answer mt-4 hidden">
+            <div class="rounded-xl p-4" style="background:#FEF2F2; border:1px solid #FECACA;">
+              <p class="text-sm leading-relaxed text-red-900"><strong>Consider:</strong> Long waits make patients feel unimportant. Missed reminders make them feel forgotten. No callbacks make them feel unsafe. The emotional impact of poor operations affects health outcomes.</p>
+            </div>
+          </div>
+          <div class="mt-3 font-mono text-[10px]" style="color:var(--purple);">▸ tap to explore</div>
+        </div>
+
+        <div class="reflect-card" onclick="toggleReflect(this)">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style="background:#FEE2E2;">🚫</div>
+            <h3 class="font-display font-bold text-sm leading-snug" style="color:var(--text-main);">What should AI NEVER handle alone?</h3>
+          </div>
+          <p class="text-sm leading-relaxed" style="color:var(--text-body);">Some decisions are too important, too personal, or too risky to automate. Think about what happens when AI gets it wrong in a healthcare setting.</p>
+          <div class="reflect-answer mt-4 hidden">
+            <div class="rounded-xl p-4" style="background:#FEF2F2; border:1px solid #FECACA;">
+              <p class="text-sm leading-relaxed text-red-900"><strong>Consider:</strong> Diagnosing a patient. Deciding who gets an urgent appointment. Communicating serious news. Handling a mental health crisis. A trained human must always review and take responsibility for these moments.</p>
+            </div>
+          </div>
+          <div class="mt-3 font-mono text-[10px]" style="color:var(--purple);">▸ tap to explore</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       FINAL MISSION BRIEFING
+  ═══════════════════════════════ -->
+  <section class="max-w-5xl mx-auto px-4 py-12 pb-20">
+    <div class="fade-up d6">
+
+      <div class="rounded-2xl overflow-hidden" style="border:1.5px solid var(--card-border); box-shadow:0 8px 40px rgba(123,47,190,0.11);">
+
+        <!-- Purple top bar -->
+        <div class="purple-bar" style="border-radius:0; height:4px;"></div>
+
+        <!-- Purple header -->
+        <div class="px-8 sm:px-10 py-6 flex items-center justify-between flex-wrap gap-4" style="background:var(--purple);">
+          <div>
+            <p class="font-mono text-[10px] text-purple-200 mb-1 tracking-widest uppercase">▸ Mission Briefing · Priority Level: HIGH</p>
+            <h2 class="font-display text-2xl sm:text-3xl font-black text-white">Your Next Task</h2>
+          </div>
+          <div class="flex items-center gap-2 rounded-full px-4 py-2" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3);">
+            <div class="relative w-2.5 h-2.5">
+              <span class="pulse-ring text-green-300 w-2.5 h-2.5 block"></span>
+              <span class="pulse-dot w-2.5 h-2.5 rounded-full bg-green-300 block absolute inset-0"></span>
+            </div>
+            <span class="font-mono text-[11px] text-green-200">MISSION ACTIVE</span>
+          </div>
+        </div>
+
+        <!-- White body -->
+        <div class="p-8 sm:p-10" style="background:#fff;">
+          <div class="rounded-xl p-6 mb-8" style="background:var(--purple-pale); border:1.5px solid var(--card-border);">
+            <p class="text-lg sm:text-xl leading-relaxed font-medium" style="color:var(--text-main);">
+              Use AI tools to explore ways <strong style="color:var(--purple);">Lakeside Community Health Clinic</strong> can improve workflow efficiency — while protecting patient safety and maintaining human oversight at every step.
+            </p>
+          </div>
+
+          <!-- Checklist -->
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style="background:var(--purple);">
+                <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <p class="text-sm" style="color:var(--text-body);">Identify which clinic problems are best suited for AI support</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style="background:var(--purple);">
+                <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <p class="text-sm" style="color:var(--text-body);">Protect patient privacy and safety in every recommendation</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style="background:var(--purple);">
+                <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <p class="text-sm" style="color:var(--text-body);">Keep humans in control of critical decisions</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style="background:var(--purple);">
+                <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <p class="text-sm" style="color:var(--text-body);">Think about impact on both staff and patients</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-8 text-center">
+        <p class="font-mono text-[10px]" style="color:var(--text-muted);">LAKESIDE COMMUNITY HEALTH CLINIC · OPERATIONS SIMULATION · AI ESSENTIALS CERTIFICATION</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════
+       JAVASCRIPT
+  ═══════════════════════════════ -->
+  <script>
+    // Live clock
+    function updateClock() {
+      const t = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+      const el = document.getElementById('clock');
+      if (el) el.textContent = t;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Workflow tab switcher
+    function showWorkflow(area) {
+      document.querySelectorAll('.wf-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.wf-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + area).classList.add('active');
+      document.getElementById('panel-' + area).classList.add('active');
+    }
+
+    // Reflection card toggle
+    function toggleReflect(card) {
+      const answer  = card.querySelector('.reflect-answer');
+      const hint    = card.querySelector('.font-mono');
+      const opening = answer.classList.contains('hidden');
+      answer.classList.toggle('hidden', !opening);
+      hint.textContent = opening ? '▾ tap to close' : '▸ tap to explore';
+    }
+  </script>
+
+</body>
+</html>
