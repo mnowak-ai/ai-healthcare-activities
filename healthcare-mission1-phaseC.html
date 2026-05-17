@@ -169,6 +169,18 @@ textarea.ref-ta::placeholder{color:var(--text-light);font-style:italic;}
 .cc-title em{font-style:italic;color:var(--accent);}
 .cc-desc{font-size:13px;color:rgba(255,255,255,.75);max-width:460px;margin:0 auto;line-height:1.7;}
 
+/* ─── DOWNLOAD CARD ─── */
+.download-card{background:var(--white);border:1.5px solid var(--purple-line);border-radius:12px;padding:2rem;margin-top:1.5rem;display:flex;flex-direction:column;align-items:center;gap:1rem;text-align:center;box-shadow:var(--shadow);}
+.download-card-icon{width:56px;height:56px;border-radius:50%;background:var(--purple-pale);border:2px solid var(--purple-line);display:flex;align-items:center;justify-content:center;font-size:24px;}
+.download-card-title{font-family:'Fraunces',serif;font-size:1.25rem;font-weight:600;color:var(--text);}
+.download-card-desc{font-size:13px;color:var(--text-mid);line-height:1.65;max-width:420px;}
+.download-card-meta{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.download-meta-chip{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:var(--purple-ghost);color:var(--purple);border:1px solid var(--purple-line);}
+.btn-download{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:13px 32px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:10px;box-shadow:0 4px 18px rgba(123,47,190,0.28);transition:background .2s,transform .15s;}
+.btn-download:hover{background:var(--purple-dark);transform:translateY(-1px);}
+.btn-download svg{flex-shrink:0;}
+.download-note{font-size:11px;color:var(--text-light);font-style:italic;}
+
 /* ─── RESPONSIVE ─── */
 @media(max-width:600px){.topbar-sub{display:none;}.page{padding:1.5rem 1rem 4rem;}.sec-title{font-size:1.4rem;}}
 </style>
@@ -418,6 +430,23 @@ textarea.ref-ta::placeholder{color:var(--text-light);font-style:italic;}
       <div class="cc-label">Mission 1 — Phase C Complete</div>
       <div class="cc-title">You've Finished <em>Phase C</em></div>
       <div class="cc-desc">You observed operational problems, interviewed real staff, used a real AI tool to analyze findings, and evaluated those recommendations with your own judgment. That is exactly how healthcare improvement professionals work.</div>
+    </div>
+
+    <!-- DOWNLOAD REPORT -->
+    <div class="download-card">
+      <div class="download-card-icon">📄</div>
+      <div class="download-card-title">Download Your Report</div>
+      <div class="download-card-desc">Save a copy of your completed AI Operational Analysis Report. This document includes your operational findings, AI analysis, critical evaluation, and final priorities — ready to share or keep in your portfolio.</div>
+      <div class="download-card-meta">
+        <span class="download-meta-chip">Lakeside Community Health Clinic</span>
+        <span class="download-meta-chip">Mission 1 · Phase C</span>
+        <span class="download-meta-chip" id="dl-date"></span>
+      </div>
+      <button class="btn-download" onclick="downloadReport()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v9m0 0L5 7m3 3l3-3M2 12v1a2 2 0 002 2h8a2 2 0 002-2v-1" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download Report (.html)
+      </button>
+      <div class="download-note">Opens as a printable document. Use your browser's Print function to save as PDF.</div>
     </div>
   </div>
 
@@ -715,6 +744,131 @@ function buildReport() {
    RESTORE SAVED STATE
 ═══════════════════════════════════ */
 // pasteTA already restored above
+
+/* ═══════════════════════════════════
+   DOWNLOAD REPORT
+═══════════════════════════════════ */
+// Set date chip
+document.getElementById('dl-date').textContent = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+
+function downloadReport() {
+  const getR = id => (localStorage.getItem('phaseC_' + id) || '').trim() || 'Not answered';
+  const paste = (localStorage.getItem('phaseC_paste') || '').trim();
+  const { cats, scores } = scoreReflections();
+  const dateStr = new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
+
+  const ratingColor = r => r === 'advanced' ? '#059669' : r === 'proficient' ? '#7B2FBE' : '#d97706';
+  const ratingBg   = r => r === 'advanced' ? '#dcfce7' : r === 'proficient' ? '#f3ecfc' : '#fef3c7';
+
+  const scoreRows = cats.map(cat => {
+    const r = scores[cat.key];
+    const label = r.charAt(0).toUpperCase() + r.slice(1);
+    return `<tr>
+      <td style="padding:8px 12px;font-size:13px;color:#4b4569;border-bottom:1px solid #e4d4f7">${cat.label}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e4d4f7;text-align:right">
+        <span style="font-family:Georgia,serif;font-size:12px;font-weight:600;padding:3px 12px;border-radius:20px;background:${ratingBg(r)};color:${ratingColor(r)}">${label}</span>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const pasteSection = paste
+    ? `<div style="background:#faf7fe;border:1px solid #e4d4f7;border-radius:6px;padding:14px;font-size:12px;color:#4b4569;line-height:1.7;white-space:pre-wrap;max-height:none;font-style:italic">${paste.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`
+    : `<p style="font-size:13px;color:#7c6fa0;font-style:italic">No AI analysis was pasted for this report.</p>`;
+
+  const makeSection = (title, content) => `
+    <div style="margin-bottom:1.25rem">
+      <div style="font-family:'Courier New',monospace;font-size:10px;font-weight:600;color:#1e1b2e;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e4d4f7">${title}</div>
+      ${content}
+    </div>`;
+
+  const li = items => `<ul style="padding-left:1.2rem;margin:0">${items.map(i=>`<li style="font-size:13px;color:#4b4569;line-height:1.8">${i}</li>`).join('')}</ul>`;
+  const ans = id => `<p style="font-size:13px;color:#4b4569;line-height:1.7;margin:0">${getR(id)}</p>`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lakeside AI Operational Analysis Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',Arial,sans-serif;background:#fff;color:#1e1b2e;padding:0;}
+  @media print{body{padding:0;}@page{margin:2cm;}}
+</style>
+</head>
+<body>
+<div style="max-width:720px;margin:0 auto;padding:2.5rem 2rem;">
+
+  <!-- COVER HEADER -->
+  <div style="border-bottom:3px solid #7B2FBE;padding-bottom:1.5rem;margin-bottom:2rem;">
+    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#9b59d0;margin-bottom:8px">AI Essentials — Healthcare AI Certification</div>
+    <div style="font-family:Georgia,serif;font-size:2rem;font-weight:300;color:#1e1b2e;margin-bottom:6px">Lakeside Community Health Clinic</div>
+    <div style="font-family:Georgia,serif;font-size:1.25rem;font-style:italic;color:#7B2FBE;margin-bottom:1rem">AI Operational Analysis Report</div>
+    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;">
+      <span style="font-family:'Courier New',monospace;font-size:10px;color:#7c6fa0">Mission 1 · Phase C</span>
+      <span style="font-family:'Courier New',monospace;font-size:10px;color:#7c6fa0">Generated: ${dateStr}</span>
+    </div>
+  </div>
+
+  <!-- PERFORMANCE SCORES -->
+  ${makeSection('Performance Summary',
+    `<table style="width:100%;border-collapse:collapse;border:1px solid #e4d4f7;border-radius:8px;overflow:hidden">
+      <thead><tr style="background:#f3ecfc">
+        <th style="padding:8px 12px;font-size:11px;font-family:'Courier New',monospace;letter-spacing:.08em;text-transform:uppercase;color:#7B2FBE;text-align:left">Category</th>
+        <th style="padding:8px 12px;font-size:11px;font-family:'Courier New',monospace;letter-spacing:.08em;text-transform:uppercase;color:#7B2FBE;text-align:right">Rating</th>
+      </tr></thead>
+      <tbody>${scoreRows}</tbody>
+    </table>`
+  )}
+
+  <!-- OPERATIONAL PROBLEMS -->
+  ${makeSection('Operational Problems Identified', li([
+    'Scheduling double-bookings from two unsynchronized calendar systems',
+    'Nursing documentation backlog — chart notes written from memory hours after patient visits',
+    'Front desk overload — one staff member covering all intake, phones, and insurance with no backup',
+    'No formal process for patient callbacks, lab result notification, or referral tracking',
+    '3 near-miss medication errors this year — all linked to documentation gaps',
+    'No operational visibility — clinic manager tracking everything manually in a spreadsheet',
+    'High staff turnover — 3 experienced staff left last quarter, replaced by temporary workers',
+  ]))}
+
+  <!-- AI ANALYSIS -->
+  ${makeSection('AI Analysis Brought Back from ChatGPT / Copilot', pasteSection)}
+
+  <!-- REFLECTION ANSWERS -->
+  ${makeSection('Most Useful AI Recommendation', ans('r1'))}
+  ${makeSection('Recommendation That Seemed Unrealistic', ans('r2'))}
+  ${makeSection('Recommendations Requiring Human Review', ans('r3'))}
+  ${makeSection('What the AI Missed', ans('r4'))}
+  ${makeSection('Top Operational Priority', ans('r5'))}
+  ${makeSection('Risks If AI Is Trusted Too Quickly', ans('r6'))}
+
+  <!-- KEY PRINCIPLES -->
+  ${makeSection('Key Principles from Phase C', li([
+    'AI is a powerful thinking tool — but it does not replace human judgment in healthcare.',
+    'Every AI recommendation must be reviewed by operational leaders and clinical staff before action.',
+    'The best use of AI is to help humans ask better questions, not to answer them automatically.',
+    'Operational problems often have human and process causes that technology alone cannot fix.',
+  ]))}
+
+  <!-- FOOTER -->
+  <div style="margin-top:2.5rem;padding-top:1rem;border-top:1px solid #e4d4f7;font-family:'Courier New',monospace;font-size:9px;color:#7c6fa0;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+    <span>AI Essentials — Healthcare AI Certification · Mission 1</span>
+    <span>Generated ${dateStr}</span>
+  </div>
+
+</div>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'Lakeside-AI-Operational-Analysis-Report.html';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 </script>
 </body>
 </html>
