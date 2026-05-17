@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission 1 · Phase C — AI Analysis Lab · Lakeside Clinic</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple:#7B2FBE; --purple-dark:#5a1f8a; --purple-light:#9b59d0;
+  --purple-pale:#f3ecfc; --purple-ghost:#faf7fe; --purple-line:#e4d4f7;
+  --accent:#c084fc; --red:#dc2626; --amber:#d97706; --green:#059669;
+  --text:#1e1b2e; --text-mid:#4b4569; --text-light:#7c6fa0;
+  --white:#ffffff; --bg:#fdfcff; --border:#e4d4f7;
+  --shadow:0 2px 16px rgba(123,47,190,0.08);
+  --shadow-lg:0 8px 40px rgba(123,47,190,0.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.65;min-height:100vh;}
+
+/* ─── TOP BAR ─── */
+.topbar{position:sticky;top:0;z-index:200;background:var(--white);border-bottom:2px solid var(--purple-line);padding:0 1.5rem;height:54px;display:flex;align-items:center;gap:1rem;box-shadow:0 2px 12px rgba(123,47,190,0.07);}
+.topbar-brand{font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--purple);white-space:nowrap;}
+.topbar-sep{width:1px;height:22px;background:var(--purple-line);flex-shrink:0;}
+.topbar-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-light);letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar-spacer{flex:1;min-width:8px;}
+.topbar-badge{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:4px 12px;border-radius:20px;background:var(--purple-pale);color:var(--purple);border:1px solid var(--purple-line);white-space:nowrap;}
+.topbar-step{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-light);letter-spacing:.05em;white-space:nowrap;}
+
+/* ─── WRAPPER ─── */
+.page{max-width:820px;margin:0 auto;padding:2.5rem 1.5rem 5rem;}
+
+/* ─── STEP TRACKER ─── */
+.step-track{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--white);box-shadow:var(--shadow);margin-bottom:2rem;}
+.stt{flex:1;padding:10px 4px;text-align:center;cursor:pointer;border-right:1px solid var(--border);transition:background .2s;position:relative;user-select:none;}
+.stt:last-child{border-right:none;}
+.stt-n{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light);display:block;margin-bottom:2px;}
+.stt-l{font-size:10px;font-weight:500;color:var(--text-light);display:block;line-height:1.3;}
+.stt.active{background:var(--purple-pale);}
+.stt.active .stt-n,.stt.active .stt-l{color:var(--purple);}
+.stt.active .stt-l{font-weight:600;}
+.stt.done .stt-n,.stt.done .stt-l{color:var(--green);}
+.stt.done::after{content:'✓';position:absolute;top:4px;right:5px;font-size:8px;color:var(--green);font-weight:700;}
+@media(max-width:560px){.stt-l{font-size:8px;}.stt{padding:8px 2px;}}
+
+/* ─── SECTION PANELS ─── */
+.sec{display:none;}
+.sec.active{display:block;animation:fadeup .35s ease-out;}
+@keyframes fadeup{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* ─── TYPOGRAPHY ─── */
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--purple-light);margin-bottom:8px;}
+.sec-title{font-family:'Fraunces',serif;font-size:1.75rem;font-weight:300;color:var(--text);margin-bottom:10px;line-height:1.2;}
+.sec-title em{color:var(--purple);font-style:italic;}
+.sec-desc{font-size:14px;color:var(--text-mid);line-height:1.75;margin-bottom:1.5rem;max-width:640px;}
+.sec-desc strong{color:var(--text);}
+
+/* ─── CARDS ─── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;box-shadow:var(--shadow);margin-bottom:1rem;transition:box-shadow .2s,border-color .2s;}
+.card-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--purple);margin-bottom:10px;}
+.role-card{background:var(--purple-pale);border:1px solid var(--purple-line);border-left:4px solid var(--purple);border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;}
+.role-card-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--purple);margin-bottom:7px;}
+.role-card-text{font-size:14px;color:var(--text);line-height:1.75;}
+.info-note{background:var(--purple-ghost);border:1px solid var(--purple-line);border-radius:8px;padding:1rem 1.25rem;font-size:13px;color:var(--text-mid);line-height:1.65;margin-bottom:1.25rem;}
+.info-note strong{color:var(--text);}
+.divider{height:1px;background:var(--purple-line);margin:1.5rem 0;}
+
+/* ─── NAV BUTTONS ─── */
+.nav-row{margin-top:1.75rem;display:flex;justify-content:flex-end;align-items:center;gap:14px;}
+.nav-hint{font-size:12px;color:var(--text-light);}
+.btn-primary{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:12px 28px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 18px rgba(123,47,190,0.28);transition:background .2s,transform .15s;}
+.btn-primary:hover{background:var(--purple-dark);transform:translateY(-1px);}
+.btn-secondary{background:transparent;color:var(--purple);border:1.5px solid var(--purple-line);border-radius:8px;padding:11px 22px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-secondary:hover{border-color:var(--purple);background:var(--purple-pale);}
+
+/* ─── STEP 1 — SUMMARY ─── */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem;}
+@media(max-width:540px){.sum-grid{grid-template-columns:1fr;}}
+.sum-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;box-shadow:var(--shadow);}
+.sum-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--purple);margin-bottom:8px;}
+.sum-item{display:flex;gap:7px;align-items:flex-start;font-size:12px;color:var(--text-mid);line-height:1.55;margin-bottom:5px;}
+.sum-item::before{content:'·';color:var(--purple);flex-shrink:0;font-weight:700;margin-top:1px;}
+
+/* ─── STEP 2 — TOOL CARDS ─── */
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.5rem;}
+@media(max-width:480px){.tool-grid{grid-template-columns:1fr;}}
+.tool-card{background:var(--white);border:2px solid var(--border);border-radius:12px;padding:1.75rem 1.5rem;text-align:center;text-decoration:none;display:block;transition:all .2s;box-shadow:var(--shadow);}
+.tool-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);}
+.tool-card.chatgpt:hover{border-color:#10a37f;}
+.tool-card.copilot:hover{border-color:#0078d4;}
+.tool-icon{font-size:36px;margin-bottom:12px;}
+.tool-name{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;color:var(--text);margin-bottom:6px;}
+.tool-desc{font-size:13px;color:var(--text-light);line-height:1.55;margin-bottom:10px;}
+.tool-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:20px;}
+.tool-card.chatgpt .tool-tag{background:#d1fae5;color:#065f46;}
+.tool-card.copilot .tool-tag{background:#dbeafe;color:#1e40af;}
+.tool-opened-badge{display:none;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--green);letter-spacing:.1em;margin-top:10px;}
+.tool-opened-badge.show{display:block;}
+
+/* ─── STEP 3 — PROMPT BLOCK ─── */
+.prompt-block{background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.25rem;}
+.prompt-block-header{background:var(--purple-ghost);border-bottom:1px solid var(--purple-line);padding:10px 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.prompt-block-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--purple);}
+.copy-btn{background:var(--purple);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.copy-btn:hover{background:var(--purple-dark);}
+.copy-btn.copied{background:var(--green);}
+.prompt-text{padding:1.1rem 1.25rem;font-size:12.5px;color:var(--text-mid);line-height:1.8;white-space:pre-wrap;font-family:'DM Sans',sans-serif;max-height:380px;overflow-y:auto;}
+.prompt-text::-webkit-scrollbar{width:4px;}
+.prompt-text::-webkit-scrollbar-thumb{background:var(--purple-line);border-radius:4px;}
+
+/* ─── STEP 4 — EVALUATION ─── */
+.eval-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;}
+@media(max-width:540px){.eval-grid{grid-template-columns:1fr;}}
+.eval-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:1.1rem;box-shadow:var(--shadow);}
+.eval-card.good{border-left:4px solid var(--green);}
+.eval-card.warn{border-left:4px solid var(--amber);}
+.eval-card-title{font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.eval-card.good .eval-card-title{color:var(--green);}
+.eval-card.warn .eval-card-title{color:var(--amber);}
+.eval-item{font-size:12px;color:var(--text-mid);line-height:1.65;margin-bottom:6px;padding-left:1.3rem;position:relative;}
+.eval-card.good .eval-item::before{content:'✅';position:absolute;left:0;font-size:10px;top:1px;}
+.eval-card.warn .eval-item::before{content:'⚠️';position:absolute;left:0;font-size:10px;top:1px;}
+
+/* ─── STEP 5 — PASTE ─── */
+.paste-label{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.paste-hint{font-size:12px;color:var(--text-light);margin-bottom:10px;font-style:italic;line-height:1.5;}
+textarea.paste-ta{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:14px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);line-height:1.65;resize:vertical;min-height:230px;outline:none;transition:border-color .2s;}
+textarea.paste-ta:focus{border-color:var(--purple-light);}
+textarea.paste-ta::placeholder{color:var(--text-light);font-style:italic;}
+.paste-saved{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--green);letter-spacing:.1em;margin-top:6px;opacity:0;transition:opacity .3s;height:14px;}
+
+/* ─── STEP 6 — REFLECTIONS ─── */
+.ref-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;box-shadow:var(--shadow);margin-bottom:12px;transition:border-color .2s;}
+.ref-card:focus-within{border-color:var(--purple-light);box-shadow:var(--shadow-lg);}
+.ref-num{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--purple-light);letter-spacing:.1em;margin-bottom:5px;}
+.ref-q{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.45;}
+.ref-hint{font-size:11px;color:var(--text-light);margin-bottom:9px;font-style:italic;}
+textarea.ref-ta{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);line-height:1.6;resize:vertical;min-height:72px;outline:none;transition:border-color .2s;}
+textarea.ref-ta:focus{border-color:var(--purple-light);}
+textarea.ref-ta::placeholder{color:var(--text-light);font-style:italic;}
+.ref-sv{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--green);letter-spacing:.1em;height:14px;opacity:0;transition:opacity .3s;margin-top:4px;}
+
+/* ─── STEP 7 — REPORT ─── */
+.score-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-bottom:1.5rem;}
+.chip{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:14px;box-shadow:var(--shadow);text-align:center;}
+.chip-label{font-size:11px;color:var(--text-mid);font-weight:500;margin-bottom:8px;line-height:1.4;}
+.chip-rating{font-family:'Fraunces',serif;font-size:.95rem;font-weight:600;padding:4px 12px;border-radius:20px;display:inline-block;}
+.chip-rating.developing{background:#fef3c7;color:var(--amber);}
+.chip-rating.proficient{background:var(--purple-pale);color:var(--purple);}
+.chip-rating.advanced{background:#dcfce7;color:var(--green);}
+
+.report{background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);padding:2rem;margin-bottom:1.5rem;}
+.report-header{border-bottom:1px solid var(--purple-line);padding-bottom:1rem;margin-bottom:1.25rem;}
+.report-eyebrow{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--purple);margin-bottom:6px;}
+.report-title{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:300;color:var(--text);}
+.report-title em{color:var(--purple);font-style:italic;}
+.report-sec{margin-bottom:1.1rem;}
+.report-sec-title{font-size:10px;font-weight:600;color:var(--text);font-family:'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.report-sec-title::after{content:'';flex:1;height:1px;background:var(--purple-line);}
+.report-list{padding-left:1.1rem;}
+.report-list li{font-size:13px;color:var(--text-mid);line-height:1.8;}
+.report-list li::marker{color:var(--purple);}
+.report-paste-box{background:var(--purple-ghost);border:1px solid var(--purple-line);border-radius:6px;padding:1rem;font-size:12px;color:var(--text-mid);line-height:1.65;max-height:160px;overflow-y:auto;font-style:italic;white-space:pre-wrap;}
+.report-paste-empty{font-size:12px;color:var(--text-light);font-style:italic;}
+
+.complete-card{background:var(--purple);border-radius:12px;padding:2rem;text-align:center;color:#fff;margin-top:1.5rem;}
+.cc-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:10px;}
+.cc-title{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:300;margin-bottom:8px;}
+.cc-title em{font-style:italic;color:var(--accent);}
+.cc-desc{font-size:13px;color:rgba(255,255,255,.75);max-width:460px;margin:0 auto;line-height:1.7;}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:600px){.topbar-sub{display:none;}.page{padding:1.5rem 1rem 4rem;}.sec-title{font-size:1.4rem;}}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-brand">AI Essentials — Healthcare</div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-sub">Mission 1 · Phase C · Lakeside Clinic</div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-badge">AI Analysis Lab</div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-step" id="topbar-step">Step 1 of 7</div>
+</header>
+
+<div class="page">
+
+  <!-- PAGE HEADER -->
+  <div style="margin-bottom:1.75rem">
+    <div class="eyebrow">Mission 1 · Phase C · AI Operational Analysis Lab</div>
+    <h1 class="sec-title">Use AI to Analyze <em>Lakeside's Problems</em></h1>
+    <p class="sec-desc">You did the hard discovery work in Phase B. Now you will bring those findings to a real AI tool — ChatGPT or Microsoft Copilot — to help you analyze what is really happening at Lakeside. Then you will evaluate what the AI says and use your own judgment to decide what to trust.</p>
+  </div>
+
+  <!-- STEP TRACKER -->
+  <div class="step-track" id="step-track">
+    <div class="stt active" id="stt1" onclick="goStep(1)"><span class="stt-n">01</span><span class="stt-l">Your Findings</span></div>
+    <div class="stt" id="stt2" onclick="goStep(2)"><span class="stt-n">02</span><span class="stt-l">Open AI Tool</span></div>
+    <div class="stt" id="stt3" onclick="goStep(3)"><span class="stt-n">03</span><span class="stt-l">Copy Prompt</span></div>
+    <div class="stt" id="stt4" onclick="goStep(4)"><span class="stt-n">04</span><span class="stt-l">What to Look For</span></div>
+    <div class="stt" id="stt5" onclick="goStep(5)"><span class="stt-n">05</span><span class="stt-l">Paste Analysis</span></div>
+    <div class="stt" id="stt6" onclick="goStep(6)"><span class="stt-n">06</span><span class="stt-l">Your Reflection</span></div>
+    <div class="stt" id="stt7" onclick="goStep(7)"><span class="stt-n">07</span><span class="stt-l">Final Report</span></div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       STEP 1 — OPERATIONAL FINDINGS
+  ═══════════════════════════════════ -->
+  <div class="sec active" id="s1">
+    <div class="eyebrow">Step 01 — Your Operational Findings</div>
+    <h2 class="sec-title">What You <em>Discovered</em> at Lakeside</h2>
+    <p class="sec-desc">This is a summary of the operational problems you found during Phase A and Phase B. Read through it — you will be using this exact information to create your AI analysis prompt in the next steps.</p>
+
+    <div class="sum-grid">
+      <div class="sum-card">
+        <div class="sum-label">Top Workflow Problems</div>
+        <div class="sum-item">Scheduling double-bookings from two unsynchronized calendar systems</div>
+        <div class="sum-item">Documentation backlog — nurses charting from memory hours after patient visits</div>
+        <div class="sum-item">Front desk overload — one person managing all check-in, phones, and insurance</div>
+        <div class="sum-item">No formal process for patient callbacks or lab result communication</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Departments Most Affected</div>
+        <div class="sum-item">Front Desk — single point of failure, no backup system</div>
+        <div class="sum-item">Nursing — documentation burden reducing patient care time</div>
+        <div class="sum-item">Scheduling — manual workarounds creating repeated errors</div>
+        <div class="sum-item">Patients — experiencing downstream effects of all the above</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Staff Concerns Identified</div>
+        <div class="sum-item">Nurses writing notes from memory 3–6 hours after patient visits</div>
+        <div class="sum-item">Physician seeing patients with incomplete or missing chart records</div>
+        <div class="sum-item">3 near-miss medication errors flagged this year — all documentation-related</div>
+        <div class="sum-item">Staff morale declining — experienced employees considering leaving</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Suspected Root Causes</div>
+        <div class="sum-item">Technology systems that do not talk to each other</div>
+        <div class="sum-item">No ownership of critical tasks like lab results and patient callbacks</div>
+        <div class="sum-item">No staffing backup plan when employees are absent</div>
+        <div class="sum-item">No operational dashboard — manager tracks everything manually</div>
+      </div>
+    </div>
+
+    <div class="info-note">
+      <strong>Why does this matter?</strong> AI tools are only as good as the information you give them. A clear, organized summary like this will produce much better AI analysis. Professionals call this principle: <em>"garbage in, garbage out."</em>
+    </div>
+
+    <div class="nav-row">
+      <span class="nav-hint">Read your findings before continuing</span>
+      <button class="btn-primary" onclick="goStep(2)">Open an AI Tool →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       STEP 2 — OPEN AI TOOL
+  ═══════════════════════════════════ -->
+  <div class="sec" id="s2">
+    <div class="eyebrow">Step 02 — Open a Real AI Tool</div>
+    <h2 class="sec-title">Choose Your <em>AI Analysis Tool</em></h2>
+    <p class="sec-desc">You will now leave this simulation and open a real AI tool. Both options below work well for this task. Pick whichever one you have access to. A new tab will open — come back here when you are ready for Step 3.</p>
+
+    <div class="role-card">
+      <div class="role-card-label">Your Task Right Now</div>
+      <div class="role-card-text">Open one of the AI tools below. <strong>Do not type anything yet.</strong> Just get the tool open in a new tab. Come back here and go to Step 3 — that is where you will get the exact text to paste in.</div>
+    </div>
+
+    <div class="tool-grid">
+      <a href="https://chat.openai.com" target="_blank" class="tool-card chatgpt" onclick="markOpened()">
+        <div class="tool-icon">🤖</div>
+        <div class="tool-name">ChatGPT</div>
+        <div class="tool-desc">Free to use with an account. Great for detailed operational analysis and structured recommendations.</div>
+        <span class="tool-tag">Open ChatGPT ↗</span>
+        <div class="tool-opened-badge" id="chatgpt-badge">✓ Opened</div>
+      </a>
+      <a href="https://copilot.microsoft.com" target="_blank" class="tool-card copilot" onclick="markOpened()">
+        <div class="tool-icon">💼</div>
+        <div class="tool-name">Microsoft Copilot</div>
+        <div class="tool-desc">Free with no sign-in required. Common in healthcare and business settings. Works the same as ChatGPT.</div>
+        <span class="tool-tag">Open Copilot ↗</span>
+        <div class="tool-opened-badge" id="copilot-badge">✓ Opened</div>
+      </a>
+    </div>
+
+    <div class="info-note">
+      <strong>Both tools work the same way for this task.</strong> You type a question (called a "prompt"), and the AI responds with analysis. In Step 3, you will get the exact prompt to copy and paste in — no guessing needed.
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-secondary" onclick="goStep(1)">← Back</button>
+      <button class="btn-primary" onclick="goStep(3)">I Have the Tool Open →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       STEP 3 — COPY PROMPT
+  ═══════════════════════════════════ -->
+  <div class="sec" id="s3">
+    <div class="eyebrow">Step 03 — Copy Your Analysis Prompt</div>
+    <h2 class="sec-title">Copy This <em>Prompt</em> Into Your AI Tool</h2>
+    <p class="sec-desc">A prompt is the question or instruction you give to an AI tool. This one has been written to include all of your Lakeside findings. Click the copy button, switch to your AI tool, paste it in, and hit send.</p>
+
+    <div class="prompt-block">
+      <div class="prompt-block-header">
+        <span class="prompt-block-label">📋 Your Lakeside Analysis Prompt — Click to Copy</span>
+        <button class="copy-btn" id="copy-btn" onclick="copyPrompt()">📋 Copy Prompt</button>
+      </div>
+      <div class="prompt-text" id="prompt-display"></div>
+    </div>
+
+    <div class="info-note">
+      <strong>After you paste and send the prompt</strong>, read the full AI response carefully before coming back here. In Step 4, you will learn what to look for in a good response — and what warning signs to watch for.
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-secondary" onclick="goStep(2)">← Back</button>
+      <button class="btn-primary" onclick="goStep(4)">I Sent the Prompt →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       STEP 4 — WHAT TO LOOK FOR
+  ═══════════════════════════════════ -->
+  <div class="sec" id="s4">
+    <div class="eyebrow">Step 04 — Evaluate the AI Response</div>
+    <h2 class="sec-title">Read the AI Response <em>Critically</em></h2>
+    <p class="sec-desc">Not every AI recommendation is useful or safe to act on. Before you bring the analysis back here, use this guide while you read the AI's response. Look for signs of quality — and look out for red flags.</p>
+
+    <div class="eval-grid">
+      <div class="eval-card good">
+        <div class="eval-card-title">✅ Signs of Good AI Analysis</div>
+        <div class="eval-item">Connects problems across departments</div>
+        <div class="eval-item">Recommends process improvements, not just new software</div>
+        <div class="eval-item">Suggests human review before any major change</div>
+        <div class="eval-item">Identifies root causes, not just symptoms</div>
+        <div class="eval-item">Is realistic about what AI can and cannot do</div>
+        <div class="eval-item">Raises questions leadership should investigate</div>
+        <div class="eval-item">Prioritizes patient safety and staff wellbeing</div>
+      </div>
+      <div class="eval-card warn">
+        <div class="eval-card-title">⚠️ Red Flags to Question</div>
+        <div class="eval-item">Suggests replacing healthcare staff with AI</div>
+        <div class="eval-item">Recommends expensive software before fixing processes</div>
+        <div class="eval-item">Sounds confident but ignores operational reality</div>
+        <div class="eval-item">Gives vague advice like "implement a better system"</div>
+        <div class="eval-item">Ignores the human impact of making changes</div>
+        <div class="eval-item">Assumes AI can make clinical decisions</div>
+        <div class="eval-item">Jumps to action before understanding root cause</div>
+      </div>
+    </div>
+
+    <div class="info-note">
+      <strong>Remember:</strong> AI is a thinking tool, not a decision maker. It can help you organize ideas and spot patterns — but a human must review every recommendation before anything is acted on in a real healthcare setting.
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-secondary" onclick="goStep(3)">← Back</button>
+      <button class="btn-primary" onclick="goStep(5)">I've Read the Response →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       STEP 5 — PASTE AI OUTPUT
+  ═══════════════════════════════════ -->
+  <div class="sec" id="s5">
+    <div class="eyebrow">Step 05 — Bring Your AI Analysis Back</div>
+    <h2 class="sec-title">Paste the <em>AI Response</em> Here</h2>
+    <p class="sec-desc">Switch back to your AI tool, select the full response, copy it, and paste it below. This becomes part of your official operational analysis record.</p>
+
+    <div class="role-card">
+      <div class="role-card-label">Instructions</div>
+      <div class="role-card-text">Go to your ChatGPT or Copilot tab. Select all of the AI's response text. Copy it. Come back here and paste it into the box below. <strong>Do not edit or summarize it</strong> — paste the raw response exactly as the AI wrote it.</div>
+    </div>
+
+    <div class="paste-label">AI Analysis Response</div>
+    <div class="paste-hint">Paste the full text of what your AI tool gave you. Your work is saved automatically as you type.</div>
+    <textarea class="paste-ta" id="paste-ta" placeholder="Paste the full AI response here…"></textarea>
+    <div class="paste-saved" id="paste-saved">✓ SAVED</div>
+
+    <div class="nav-row">
+      <button class="btn-secondary" onclick="goStep(4)">← Back</button>
+      <button class="btn-primary" onclick="goStep(6)">Go to Reflection →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       STEP 6 — REFLECTION
+  ═══════════════════════════════════ -->
+  <div class="sec" id="s6">
+    <div class="eyebrow">Step 06 — Your Critical Review</div>
+    <h2 class="sec-title">Evaluate the AI's <em>Recommendations</em></h2>
+    <p class="sec-desc">Now it is your turn to think critically. Answer each question below based on the AI response you just read. There are no right or wrong answers here — the goal is to develop your own operational judgment.</p>
+
+    <div id="ref-list"></div>
+
+    <div class="nav-row">
+      <button class="btn-secondary" onclick="goStep(5)">← Back</button>
+      <button class="btn-primary" onclick="goStep(7)">Generate Final Report →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       STEP 7 — FINAL REPORT
+  ═══════════════════════════════════ -->
+  <div class="sec" id="s7">
+    <div class="eyebrow">Step 07 — Your Mission Summary</div>
+    <h2 class="sec-title">Lakeside <em>AI Analysis</em> Report</h2>
+    <p class="sec-desc">This is your complete operational analysis for Lakeside Community Health Clinic — combining your Phase B discovery with AI-assisted analysis and your own critical evaluation.</p>
+
+    <div class="score-chips" id="score-chips"></div>
+
+    <div class="report" id="final-report"></div>
+
+    <div class="complete-card">
+      <div class="cc-label">Mission 1 — Phase C Complete</div>
+      <div class="cc-title">You've Finished <em>Phase C</em></div>
+      <div class="cc-desc">You observed operational problems, interviewed real staff, used a real AI tool to analyze findings, and evaluated those recommendations with your own judgment. That is exactly how healthcare improvement professionals work.</div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+/* ═══════════════════════════════════
+   STEP NAVIGATION
+═══════════════════════════════════ */
+let currentStep = 1;
+const TOTAL = 7;
+
+function goStep(n) {
+  // Mark previous done
+  document.getElementById('stt' + currentStep).classList.remove('active');
+  document.getElementById('stt' + currentStep).classList.add('done');
+  document.getElementById('s'  + currentStep).classList.remove('active');
+
+  currentStep = n;
+  document.getElementById('stt' + n).classList.remove('done');
+  document.getElementById('stt' + n).classList.add('active');
+  document.getElementById('s'  + n).classList.add('active');
+  document.getElementById('topbar-step').textContent = 'Step ' + n + ' of ' + TOTAL;
+  window.scrollTo({top: 0, behavior: 'smooth'});
+
+  if (n === 3) buildPrompt();
+  if (n === 7) buildReport();
+}
+
+/* ═══════════════════════════════════
+   TOOL OPENED MARKER
+═══════════════════════════════════ */
+function markOpened() {
+  setTimeout(() => {
+    document.getElementById('chatgpt-badge').classList.add('show');
+    document.getElementById('copilot-badge').classList.add('show');
+  }, 800);
+}
+
+/* ═══════════════════════════════════
+   PROMPT BUILDER
+═══════════════════════════════════ */
+const PROMPT_TEMPLATE = `You are a healthcare operations consultant.
+
+Analyze the following operational problems happening at Lakeside Community Health Clinic and provide a structured operational assessment.
+
+─────────────────────────────────
+OPERATIONAL FINDINGS FROM ASSESSMENT
+─────────────────────────────────
+
+TOP WORKFLOW PROBLEMS:
+• Scheduling double-bookings caused by two unsynchronized calendar systems
+• Documentation backlog — nursing staff completing chart notes from memory, 3–6 hours after patient visits
+• Front desk overload — one staff member managing all check-in, phones, insurance verification, and walk-in patients simultaneously with no backup
+• No formal process for patient callbacks, lab result notification, or referral status tracking
+
+DEPARTMENTS MOST AFFECTED:
+• Front Desk — single point of failure, no triage system, no backup
+• Nursing — documentation burden consuming 90+ minutes per shift outside of patient care
+• Scheduling — manual workarounds causing recurring double-bookings and reminder failures
+• Patients — experiencing increased wait times, missed callbacks, and communication gaps
+
+STAFF CONCERNS IDENTIFIED:
+• Nurses writing clinical notes from memory hours after patient visits — patient safety risk
+• Physician seeing patients with incomplete or missing chart records
+• 3 near-miss medication errors flagged this year — all linked to documentation gaps
+• High staff turnover — 3 experienced staff left last quarter, replaced by temporary workers
+• Staff morale declining — multiple experienced team members considering leaving
+• No formal onboarding process — new staff learn by watching
+
+SUSPECTED ROOT CAUSES:
+• Technology systems that do not communicate with each other (two scheduling tools, EHR not synced)
+• No assigned ownership for critical tasks like lab results, callbacks, or referral tracking
+• No staffing backup plan when team members are absent
+• No operational dashboard — clinic manager tracks everything manually in a spreadsheet
+• Reactive management culture — no time for preventive process design
+
+─────────────────────────────────
+YOUR ANALYSIS TASK
+─────────────────────────────────
+
+Please analyze the above and provide:
+
+1. THE BIGGEST WORKFLOW INEFFICIENCIES
+   — Which problems are creating the most downstream damage?
+
+2. WHICH PROBLEMS AFFECT PATIENTS MOST
+   — Where is patient safety or experience at risk?
+
+3. WHICH ISSUES SEEM CONNECTED
+   — Are there cause-and-effect chains between these problems?
+
+4. WHERE AI MAY HELP IMPROVE EFFICIENCY
+   — Be specific about which tasks. Be realistic about limitations.
+
+5. WHERE AI SHOULD NOT REPLACE HUMAN JUDGMENT
+   — What requires human decision-making, empathy, or clinical expertise?
+
+6. PROCESS IMPROVEMENTS (no expensive software required)
+   — What could be fixed with better workflows, communication, or role clarity?
+
+7. QUESTIONS LEADERSHIP SHOULD INVESTIGATE FURTHER
+   — What information is still missing before any solution is implemented?
+
+Important: Do NOT recommend expensive software as a first solution. Focus on process improvements, workflow organization, communication fixes, and role clarity first. Any technology recommendation should come only after process improvements are considered.`;
+
+function buildPrompt() {
+  document.getElementById('prompt-display').textContent = PROMPT_TEMPLATE;
+}
+
+function copyPrompt() {
+  navigator.clipboard.writeText(PROMPT_TEMPLATE).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copy Prompt'; btn.classList.remove('copied'); }, 2500);
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = PROMPT_TEMPLATE;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copy Prompt'; btn.classList.remove('copied'); }, 2500);
+  });
+}
+
+/* ═══════════════════════════════════
+   PASTE AREA — AUTO SAVE
+═══════════════════════════════════ */
+const pasteTA = document.getElementById('paste-ta');
+const pasteSaved = document.getElementById('paste-saved');
+pasteTA.value = localStorage.getItem('phaseC_paste') || '';
+let pasteTimer;
+pasteTA.addEventListener('input', () => {
+  clearTimeout(pasteTimer);
+  pasteTimer = setTimeout(() => {
+    localStorage.setItem('phaseC_paste', pasteTA.value);
+    pasteSaved.style.opacity = '1';
+    setTimeout(() => { pasteSaved.style.opacity = '0'; }, 2000);
+  }, 600);
+});
+
+/* ═══════════════════════════════════
+   REFLECTION QUESTIONS
+═══════════════════════════════════ */
+const reflections = [
+  { id:'r1', num:'Question 01', q:'Which AI recommendation seemed most useful?', hint:'Think about whether it was specific, realistic, and connected to a real problem you discovered.' },
+  { id:'r2', num:'Question 02', q:'Which recommendation seemed unrealistic or too vague?', hint:'Look for advice that sounds good but would be impossible to act on in a real clinic.' },
+  { id:'r3', num:'Question 03', q:'What would require human review before it could be implemented?', hint:'Consider which suggestions involve clinical decisions, staff changes, or patient safety.' },
+  { id:'r4', num:'Question 04', q:'Did the AI miss anything important that you discovered during your interviews?', hint:'Think back to what staff told you. Did the AI overlook any of those issues?' },
+  { id:'r5', num:'Question 05', q:'Which operational issue should be prioritized first and why?', hint:'Consider urgency, patient safety, and which problems are causing the most downstream damage.' },
+  { id:'r6', num:'Question 06', q:'What risks could happen if leadership trusted AI recommendations too quickly?', hint:'Think about what could go wrong if these suggestions were acted on without human review.' },
+];
+
+const refList = document.getElementById('ref-list');
+reflections.forEach(r => {
+  const saved = localStorage.getItem('phaseC_' + r.id) || '';
+  const card = document.createElement('div');
+  card.className = 'ref-card';
+  card.innerHTML = `
+    <div class="ref-num">${r.num}</div>
+    <div class="ref-q">${r.q}</div>
+    <div class="ref-hint">${r.hint}</div>
+    <textarea class="ref-ta" id="${r.id}" placeholder="Your answer here…">${saved}</textarea>
+    <div class="ref-sv" id="sv-${r.id}">✓ SAVED</div>
+  `;
+  refList.appendChild(card);
+
+  const ta = card.querySelector('textarea');
+  let t;
+  ta.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      localStorage.setItem('phaseC_' + r.id, ta.value);
+      const sv = document.getElementById('sv-' + r.id);
+      sv.style.opacity = '1';
+      setTimeout(() => { sv.style.opacity = '0'; }, 1800);
+    }, 600);
+  });
+});
+
+/* ═══════════════════════════════════
+   SCORING ENGINE
+═══════════════════════════════════ */
+function scoreReflections() {
+  const scores = {};
+  const cats = [
+    { key:'ai_quality',   label:'Quality of AI Analysis Used',    ids:['r1','r2'] },
+    { key:'crit_think',   label:'Critical Thinking',              ids:['r2','r3'] },
+    { key:'op_reason',    label:'Operational Reasoning',          ids:['r5'] },
+    { key:'ai_limits',    label:'Identifying AI Limitations',     ids:['r3','r6'] },
+    { key:'profess',      label:'Depth of Reflection',            ids:['r4','r5','r6'] },
+  ];
+  cats.forEach(cat => {
+    let total = 0;
+    cat.ids.forEach(id => { total += (localStorage.getItem('phaseC_' + id) || '').trim().split(' ').length; });
+    const avg = total / cat.ids.length;
+    scores[cat.key] = avg < 8 ? 'developing' : avg < 30 ? 'proficient' : 'advanced';
+    scores[cat.key + '_label'] = cat.label;
+  });
+  return { cats, scores };
+}
+
+/* ═══════════════════════════════════
+   REPORT BUILDER
+═══════════════════════════════════ */
+function buildReport() {
+  // Scores
+  const { cats, scores } = scoreReflections();
+  const chipWrap = document.getElementById('score-chips');
+  chipWrap.innerHTML = '';
+  cats.forEach(cat => {
+    const rating = scores[cat.key];
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `<div class="chip-label">${cat.label}</div><span class="chip-rating ${rating}">${rating.charAt(0).toUpperCase() + rating.slice(1)}</span>`;
+    chipWrap.appendChild(chip);
+  });
+
+  // Reflection answers
+  const getR = id => (localStorage.getItem('phaseC_' + id) || '').trim() || '<em style="color:var(--text-light)">Not answered</em>';
+  const paste = (localStorage.getItem('phaseC_paste') || '').trim();
+
+  const report = document.getElementById('final-report');
+  report.innerHTML = `
+    <div class="report-header">
+      <div class="report-eyebrow">Lakeside Community Health Clinic · Mission 1 · Phase C</div>
+      <div class="report-title">AI <em>Operational Analysis</em> Report</div>
+    </div>
+
+    <div class="report-sec">
+      <div class="report-sec-title">Operational Problems Identified</div>
+      <ul class="report-list">
+        <li>Scheduling double-bookings from two unsynchronized calendar systems</li>
+        <li>Nursing documentation backlog — chart notes written from memory hours after visits</li>
+        <li>Front desk overload — one staff member covering all intake, phones, and insurance</li>
+        <li>No formal process for patient callbacks, lab results, or referral tracking</li>
+        <li>3 near-miss medication errors this year — all linked to documentation failures</li>
+        <li>No operational visibility — manager tracking everything manually in a spreadsheet</li>
+      </ul>
+    </div>
+
+    <div class="report-sec">
+      <div class="report-sec-title">AI Analysis You Brought Back</div>
+      ${paste
+        ? `<div class="report-paste-box">${paste.substring(0, 800)}${paste.length > 800 ? '…' : ''}</div>`
+        : `<div class="report-paste-empty">No AI analysis was pasted. Return to Step 5 to add your AI response.</div>`}
+    </div>
+
+    <div class="report-sec">
+      <div class="report-sec-title">Most Useful AI Recommendation (Your Evaluation)</div>
+      <ul class="report-list"><li>${getR('r1')}</li></ul>
+    </div>
+
+    <div class="report-sec">
+      <div class="report-sec-title">Recommendations Requiring Human Review</div>
+      <ul class="report-list"><li>${getR('r3')}</li></ul>
+    </div>
+
+    <div class="report-sec">
+      <div class="report-sec-title">What the AI Missed</div>
+      <ul class="report-list"><li>${getR('r4')}</li></ul>
+    </div>
+
+    <div class="report-sec">
+      <div class="report-sec-title">Your Top Operational Priority</div>
+      <ul class="report-list"><li>${getR('r5')}</li></ul>
+    </div>
+
+    <div class="report-sec">
+      <div class="report-sec-title">Risks If AI Is Trusted Too Quickly</div>
+      <ul class="report-list"><li>${getR('r6')}</li></ul>
+    </div>
+
+    <div class="report-sec">
+      <div class="report-sec-title">Key Principle from This Phase</div>
+      <ul class="report-list">
+        <li>AI is a powerful thinking tool — but it does not replace human judgment in healthcare.</li>
+        <li>Every AI recommendation must be reviewed by operational leaders and clinical staff before action.</li>
+        <li>The best use of AI is to help humans ask better questions, not to answer them automatically.</li>
+      </ul>
+    </div>
+  `;
+
+  // Save report
+  localStorage.setItem('phaseC_report_generated', new Date().toISOString());
+}
+
+/* ═══════════════════════════════════
+   RESTORE SAVED STATE
+═══════════════════════════════════ */
+// pasteTA already restored above
+</script>
+</body>
+</html>
