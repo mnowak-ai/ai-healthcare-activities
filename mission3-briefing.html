@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission 3 · Lakeside Operations Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --purple:      #7B2FBE;
+  --purple-dark: #5b1e9a;
+  --purple-deep: #3d1270;
+  --purple-lo:   rgba(123,47,190,0.07);
+  --purple-mid:  rgba(123,47,190,0.18);
+
+  --bg:          #ffffff;
+  --bg-soft:     #f7f6fb;
+  --surface:     #ffffff;
+  --surface-2:   #f2f0f9;
+
+  --border:      rgba(123,47,190,0.12);
+  --border-hi:   rgba(123,47,190,0.28);
+
+  --text:        #1a0f2e;
+  --text-body:   #3a2f52;
+  --text-muted:  #7a6e92;
+  --text-dim:    #b5adc8;
+
+  --red:         #c0392b;
+  --red-lo:      rgba(192,57,43,0.07);
+  --amber:       #b45309;
+  --amber-lo:    rgba(180,83,9,0.07);
+  --green:       #0d7a5f;
+  --green-lo:    rgba(13,122,95,0.08);
+
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+  --serif: 'Fraunces', serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text-body);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+/* Subtle grid */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(123,47,190,0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(123,47,190,0.028) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none; z-index: 0;
+}
+
+/* Soft bloom */
+body::after {
+  content: '';
+  position: fixed; top: -25%; right: -20%;
+  width: 60%; height: 60%;
+  background: radial-gradient(ellipse, rgba(123,47,190,0.055) 0%, transparent 65%);
+  pointer-events: none; z-index: 0;
+}
+
+.page-wrap {
+  position: relative; z-index: 1;
+  max-width: 880px; margin: 0 auto;
+  padding: 48px 28px 90px;
+}
+
+/* ── ANIMATIONS ── */
+.fade-in {
+  opacity: 0; transform: translateY(14px);
+  animation: fadeUp .55s ease forwards;
+}
+@keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+.d1{animation-delay:.05s} .d2{animation-delay:.14s} .d3{animation-delay:.23s}
+.d4{animation-delay:.32s} .d5{animation-delay:.41s} .d6{animation-delay:.50s}
+.d7{animation-delay:.59s} .d8{animation-delay:.68s}
+
+/* ── SYSTEM BAR ── */
+.sys-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 22px; border-bottom: 1px solid var(--border); margin-bottom: 36px;
+}
+.sys-left {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text-muted); letter-spacing: .08em; text-transform: uppercase;
+}
+.sys-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--purple); box-shadow: 0 0 7px rgba(123,47,190,.45);
+  animation: blink 2.2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+.sys-right { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: .06em; }
+
+/* ── MISSION BADGE ── */
+.mission-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  border-radius: 4px; padding: 5px 14px;
+  font-family: var(--mono); font-size: 11px; color: var(--purple);
+  letter-spacing: .10em; text-transform: uppercase; margin-bottom: 16px;
+}
+.mission-badge span { color: var(--text-dim); }
+
+/* ── HEADER ── */
+.mission-title {
+  font-family: var(--serif);
+  font-size: clamp(28px, 4.5vw, 44px);
+  font-weight: 300; color: var(--text);
+  line-height: 1.18; letter-spacing: -.01em; margin-bottom: 10px;
+}
+.mission-title strong { font-weight: 600; color: var(--purple); }
+.mission-subtitle { font-size: 14px; color: var(--text-muted); font-weight: 400; margin-bottom: 40px; }
+
+.divider { height: 1px; background: var(--border); margin: 30px 0; }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--purple); opacity: .7; margin-bottom: 14px;
+}
+.section-label::after { content:''; flex:1; height:1px; background: var(--border); }
+
+/* ── ALERT / CONTEXT CARD ── */
+.alert-card {
+  background: #fffbf8;
+  border: 1px solid rgba(180,83,9,0.18);
+  border-left: 4px solid var(--amber);
+  border-radius: 8px; padding: 22px 26px; margin-bottom: 30px;
+}
+.alert-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.alert-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--amber-lo); border: 1px solid rgba(180,83,9,.22);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.alert-icon svg { width: 17px; height: 17px; color: var(--amber); }
+.alert-kicker { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: var(--amber); margin-bottom: 3px; }
+.alert-title-text { font-size: 15px; font-weight: 600; color: var(--text); }
+.alert-body { font-size: 14.5px; color: var(--text-body); line-height: 1.75; margin-bottom: 16px; }
+.alert-quote {
+  border-left: 3px solid var(--purple); padding: 12px 18px; margin: 14px 0;
+  background: var(--purple-lo); border-radius: 0 6px 6px 0;
+  font-family: var(--serif); font-style: italic; font-size: 16px;
+  color: var(--purple-dark); line-height: 1.6;
+}
+
+/* DATA OVERLOAD GRID */
+.overload-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 9px; margin-top: 14px; }
+.overload-item {
+  background: var(--amber-lo); border: 1px solid rgba(180,83,9,.14);
+  border-radius: 6px; padding: 11px 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 13.5px; color: var(--text-body); line-height: 1.5;
+}
+.overload-item-icon {
+  width: 28px; height: 28px; border-radius: 5px; flex-shrink: 0;
+  background: rgba(180,83,9,.12); border: 1px solid rgba(180,83,9,.18);
+  display: flex; align-items: center; justify-content: center;
+}
+.overload-item-icon svg { width: 13px; height: 13px; color: var(--amber); }
+.overload-item-label { font-size: 12.5px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.overload-item-sub { font-size: 11.5px; color: var(--text-muted); }
+
+/* ── ROLE CARD ── */
+.role-card {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-top: 3px solid var(--purple); border-radius: 8px;
+  padding: 22px 24px; margin-bottom: 30px;
+  display: flex; gap: 20px; align-items: flex-start;
+}
+.role-icon-block {
+  flex-shrink: 0; width: 52px; height: 52px; border-radius: 8px;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  display: flex; align-items: center; justify-content: center;
+}
+.role-icon-block svg { width: 24px; height: 24px; color: var(--purple); }
+.role-kicker { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--purple); margin-bottom: 5px; }
+.role-name { font-family: var(--serif); font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+.role-desc { font-size: 14.5px; color: var(--text-body); line-height: 1.75; margin-bottom: 14px; }
+.role-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+.role-tag {
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  border-radius: 4px; padding: 4px 11px;
+  font-family: var(--mono); font-size: 11px; color: var(--purple); letter-spacing: .03em;
+}
+
+/* ── PHASES ── */
+.phases-wrap { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
+
+.phase-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+}
+.phase-card:hover { border-color: var(--border-hi); box-shadow: 0 2px 14px rgba(123,47,190,.08); }
+
+.phase-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; cursor: pointer; user-select: none;
+}
+.phase-a .phase-header { border-left: 4px solid var(--purple); }
+.phase-b .phase-header { border-left: 4px solid var(--amber); }
+.phase-c .phase-header { border-left: 4px solid var(--green); }
+
+.phase-num {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .10em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 4px; flex-shrink: 0; font-weight: 500;
+}
+.phase-a .phase-num { background: var(--purple-lo); color: var(--purple); border: 1px solid var(--purple-mid); }
+.phase-b .phase-num { background: var(--amber-lo);  color: var(--amber);  border: 1px solid rgba(180,83,9,.22); }
+.phase-c .phase-num { background: var(--green-lo);  color: var(--green);  border: 1px solid rgba(13,122,95,.22); }
+
+.phase-title-block { flex: 1; }
+.phase-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.phase-sub   { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+
+.phase-chevron { width: 18px; height: 18px; color: var(--text-dim); transition: transform .25s; flex-shrink: 0; }
+.phase-card.open .phase-chevron { transform: rotate(180deg); }
+
+.phase-body { max-height: 0; overflow: hidden; transition: max-height .35s ease; padding: 0 20px; }
+.phase-card.open .phase-body { max-height: 400px; padding: 0 20px 20px; }
+
+.phase-body-inner { border-top: 1px solid var(--border); padding-top: 16px; }
+.phase-steps { display: flex; flex-direction: column; gap: 9px; }
+.phase-step {
+  display: flex; align-items: flex-start; gap: 11px;
+  font-size: 14px; color: var(--text-body); line-height: 1.6;
+}
+.step-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 8px; }
+.phase-a .step-dot { background: var(--purple); }
+.phase-b .step-dot { background: var(--amber); }
+.phase-c .step-dot { background: var(--green); }
+
+.phase-tool-note {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 14px;
+  padding: 7px 13px; border-radius: 5px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .04em; color: var(--amber);
+  background: var(--amber-lo); border: 1px solid rgba(180,83,9,.2);
+}
+.phase-tool-note svg { width: 12px; height: 12px; }
+
+/* ── SUCCESS CRITERIA ── */
+.success-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 36px; }
+.success-card {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 18px 20px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.success-card:hover { border-color: var(--border-hi); box-shadow: 0 2px 10px rgba(123,47,190,.07); }
+.success-icon {
+  width: 36px; height: 36px; border-radius: 7px;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 12px;
+}
+.success-icon svg { width: 17px; height: 17px; color: var(--purple); }
+.success-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+.success-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+
+/* ── CTA BAR ── */
+.cta-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding: 22px 26px; background: var(--purple-deep); border-radius: 8px; flex-wrap: wrap;
+}
+.cta-bar-text h3 { font-family: var(--serif); font-size: 16px; font-weight: 400; color: #fff; margin-bottom: 4px; }
+.cta-bar-text p  { font-size: 13px; color: rgba(255,255,255,.5); }
+.cta-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: #fff; color: var(--purple-dark);
+  font-family: var(--sans); font-size: 14px; font-weight: 600;
+  padding: 12px 26px; border-radius: 5px; border: none; cursor: pointer;
+  letter-spacing: .01em; transition: background .15s, transform .12s, box-shadow .15s; white-space: nowrap;
+}
+.cta-btn:hover { background: #f0eaf9; transform: translateY(-1px); box-shadow: 0 4px 18px rgba(0,0,0,.18); }
+.cta-btn svg { width: 15px; height: 15px; }
+
+/* ── OUTCOMES SECTION ── */
+.outcomes-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 30px; }
+.outcome-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 11px 16px; border-radius: 7px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  font-size: 14px; color: var(--text-body); line-height: 1.55;
+}
+.outcome-num {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  color: var(--purple); padding: 3px 8px; border-radius: 3px;
+  flex-shrink: 0; margin-top: 1px; letter-spacing: .06em;
+}
+
+@media (max-width: 600px) {
+  .page-wrap { padding: 28px 16px 60px; }
+  .role-card  { flex-direction: column; }
+  .cta-bar    { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- SYSTEM BAR -->
+  <div class="sys-bar fade-in d1">
+    <div class="sys-left">
+      <div class="sys-dot"></div>
+      Lakeside Health Systems · Operations Intelligence Platform
+    </div>
+    <div class="sys-right">MODULE 3 · BRIEFING</div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="fade-in d1">
+    <div class="mission-badge">
+      <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+      Mission 3 of 4 &nbsp;<span>/ Operations Track</span>
+    </div>
+    <h1 class="mission-title">Lakeside<br><strong>Operations Command Center</strong></h1>
+    <p class="mission-subtitle">Healthcare Operations Analyst · Active Deployment</p>
+  </div>
+
+  <div class="divider fade-in d2"></div>
+
+  <!-- CONTEXT / SITUATION ALERT -->
+  <div class="fade-in d2">
+    <div class="section-label">01 &nbsp; Situation Report</div>
+    <div class="alert-card">
+      <div class="alert-header">
+        <div class="alert-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <div>
+          <div class="alert-kicker">Operations Intelligence Alert</div>
+          <div class="alert-title-text">Data Overload — Decision Bottleneck</div>
+        </div>
+      </div>
+      <div class="alert-body">
+        Lakeside Clinic resolved its communication problems in Mission 2. But leadership is now facing a different kind of challenge — one that affects every decision made in this clinic every day.
+      </div>
+      <div class="alert-quote">
+        "We now have too much data — but not enough clear decisions."
+      </div>
+      <div class="alert-body">
+        The clinic is collecting more operational data than ever before. Staffing reports. Scheduling systems. Patient flow metrics. Wait time dashboards. But no one can quickly turn that data into action. Bottlenecks are growing. Leadership is overwhelmed. That is why you have been called in.
+      </div>
+      <div class="overload-grid">
+        <div class="overload-item">
+          <div class="overload-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/></svg>
+          </div>
+          <div>
+            <div class="overload-item-label">Staffing Reports</div>
+            <div class="overload-item-sub">Shift coverage unclear across departments</div>
+          </div>
+        </div>
+        <div class="overload-item">
+          <div class="overload-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <div>
+            <div class="overload-item-label">Scheduling Data</div>
+            <div class="overload-item-sub">Appointment patterns not being analyzed</div>
+          </div>
+        </div>
+        <div class="overload-item">
+          <div class="overload-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          <div>
+            <div class="overload-item-label">Patient Flow Metrics</div>
+            <div class="overload-item-sub">No clear picture of where delays occur</div>
+          </div>
+        </div>
+        <div class="overload-item">
+          <div class="overload-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div>
+            <div class="overload-item-label">Wait Time Dashboards</div>
+            <div class="overload-item-sub">Data exists — but no action plan follows</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROLE -->
+  <div class="fade-in d3">
+    <div class="section-label">02 &nbsp; Your Assignment</div>
+    <div class="role-card">
+      <div class="role-icon-block">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+      </div>
+      <div style="flex:1;">
+        <div class="role-kicker">Active Role</div>
+        <div class="role-name">Healthcare Operations Analyst</div>
+        <div class="role-desc">
+          You are not a clinician. Your role is to interpret operational data, spot inefficiencies, and support leadership with clear, AI-assisted recommendations. You turn raw clinic data into decisions — and you know when to trust AI and when to override it.
+        </div>
+        <div class="role-tags">
+          <span class="role-tag">Interpret Dashboards</span>
+          <span class="role-tag">Spot Bottlenecks</span>
+          <span class="role-tag">Use AI for Analysis</span>
+          <span class="role-tag">Evaluate AI Output</span>
+          <span class="role-tag">Recommend Actions</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASES -->
+  <div class="fade-in d4">
+    <div class="section-label">03 &nbsp; Mission Structure</div>
+    <div class="phases-wrap">
+
+      <div class="phase-card phase-a" id="phaseA">
+        <div class="phase-header" onclick="toggle('phaseA')">
+          <div class="phase-num">Phase A</div>
+          <div class="phase-title-block">
+            <div class="phase-title">Data Interpretation</div>
+            <div class="phase-sub">Read clinic dashboards and identify operational problems</div>
+          </div>
+          <svg class="phase-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="phase-body">
+          <div class="phase-body-inner">
+            <div class="phase-steps">
+              <div class="phase-step"><div class="step-dot"></div><span>Review real clinic dashboards: wait times, staffing levels, scheduling patterns, and patient flow</span></div>
+              <div class="phase-step"><div class="step-dot"></div><span>Identify where bottlenecks are forming and what data signals an operational problem</span></div>
+              <div class="phase-step"><div class="step-dot"></div><span>Recognize patterns in the data that affect clinic performance and patient experience</span></div>
+              <div class="phase-step"><div class="step-dot"></div><span>Document your observations before moving to AI-assisted analysis</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card phase-b" id="phaseB">
+        <div class="phase-header" onclick="toggle('phaseB')">
+          <div class="phase-num">Phase B</div>
+          <div class="phase-title-block">
+            <div class="phase-title">AI Decision Support</div>
+            <div class="phase-sub">Use ChatGPT to analyze data and generate recommendations</div>
+          </div>
+          <svg class="phase-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="phase-body">
+          <div class="phase-body-inner">
+            <div class="phase-steps">
+              <div class="phase-step"><div class="step-dot"></div><span>Open ChatGPT — provided separately as an external tool</span></div>
+              <div class="phase-step"><div class="step-dot"></div><span>Use structured AI prompts to analyze the operational data you identified in Phase A</span></div>
+              <div class="phase-step"><div class="step-dot"></div><span>Ask AI to generate staffing and scheduling recommendations based on the data</span></div>
+              <div class="phase-step"><div class="step-dot"></div><span>Explore multiple AI-suggested options before forming your own opinion</span></div>
+            </div>
+            <div class="phase-tool-note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Tool Required: ChatGPT — launch separately before starting this phase
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card phase-c" id="phaseC">
+        <div class="phase-header" onclick="toggle('phaseC')">
+          <div class="phase-num">Phase C</div>
+          <div class="phase-title-block">
+            <div class="phase-title">Human Judgment &amp; Final Decision</div>
+            <div class="phase-sub">Evaluate AI recommendations and justify your final operational plan</div>
+          </div>
+          <svg class="phase-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="phase-body">
+          <div class="phase-body-inner">
+            <div class="phase-steps">
+              <div class="phase-step"><div class="step-dot"></div><span>Review what the AI recommended — do not accept it without critical evaluation</span></div>
+              <div class="phase-step"><div class="step-dot"></div><span>Identify any incorrect assumptions, missing context, or risks in the AI output</span></div>
+              <div class="phase-step"><div class="step-dot"></div><span>Apply your own judgment to refine or correct the AI recommendations</span></div>
+              <div class="phase-step"><div class="step-dot"></div><span>Submit a final operational improvement plan with clear reasoning behind each decision</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LEARNING OUTCOMES -->
+  <div class="fade-in d5">
+    <div class="section-label">04 &nbsp; Learning Outcomes</div>
+    <div class="outcomes-list">
+      <div class="outcome-row"><div class="outcome-num">01</div>Interpret healthcare operational dashboards and understand what the data is telling you</div>
+      <div class="outcome-row"><div class="outcome-num">02</div>Identify workflow inefficiencies by reading staffing, scheduling, and patient flow data</div>
+      <div class="outcome-row"><div class="outcome-num">03</div>Use AI tools to support — not replace — operational decision-making in healthcare</div>
+      <div class="outcome-row"><div class="outcome-num">04</div>Evaluate AI-generated recommendations critically and flag incorrect assumptions</div>
+      <div class="outcome-row"><div class="outcome-num">05</div>Apply human judgment to produce a final, justified operational improvement plan</div>
+      <div class="outcome-row"><div class="outcome-num">06</div>Understand how data, AI, and human reasoning work together in real clinic operations</div>
+    </div>
+  </div>
+
+  <!-- SUCCESS CRITERIA -->
+  <div class="fade-in d6">
+    <div class="section-label">05 &nbsp; Success Criteria</div>
+    <div class="success-grid">
+      <div class="success-card">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="success-title">Accurate Data Reading</div>
+        <div class="success-desc">You correctly identify bottlenecks and inefficiencies from the clinic dashboard data.</div>
+      </div>
+      <div class="success-card">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div class="success-title">Effective AI Prompting</div>
+        <div class="success-desc">You use clear, specific prompts that generate useful operational recommendations from AI.</div>
+      </div>
+      <div class="success-card">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="success-title">Critical AI Evaluation</div>
+        <div class="success-desc">You identify weaknesses or incorrect assumptions in AI output before accepting it.</div>
+      </div>
+      <div class="success-card">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="success-title">Justified Final Decision</div>
+        <div class="success-desc">Your final operational plan is clear, realistic, and backed by data-driven reasoning.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="fade-in d7">
+    <div class="cta-bar">
+      <div class="cta-bar-text">
+        <h3>Ready to Enter the Operations Command Center?</h3>
+        <p>Phase A opens first — you will review live clinic dashboard data and identify the bottlenecks.</p>
+      </div>
+      <button class="cta-btn" id="startBtn" onclick="handleStart()">
+        Begin Mission 3
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<script>
+  function toggle(id) {
+    document.getElementById(id).classList.toggle('open');
+  }
+
+  // Auto-open Phase A on load
+  window.addEventListener('load', () => {
+    setTimeout(() => document.getElementById('phaseA').classList.add('open'), 700);
+  });
+
+  function handleStart() {
+    const btn = document.getElementById('startBtn');
+    btn.disabled = true;
+    btn.style.opacity = '.7';
+    btn.textContent = 'Loading Phase A…';
+    setTimeout(() => {
+      btn.style.opacity = '1';
+      btn.style.background = '#f0fdf8';
+      btn.style.color = '#0d7a5f';
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Mission Active`;
+    }, 1100);
+  }
+</script>
+</body>
+</html>
