@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission 1 · Phase A — Lakeside Community Health Clinic</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple:       #7B2FBE;
+  --purple-dark:  #5a1f8a;
+  --purple-light: #9b59d0;
+  --purple-pale:  #f3ecfc;
+  --purple-ghost: #faf7fe;
+  --purple-line:  #e4d4f7;
+  --accent:       #c084fc;
+  --red:          #dc2626;
+  --amber:        #d97706;
+  --green:        #059669;
+  --text:         #1e1b2e;
+  --text-mid:     #4b4569;
+  --text-light:   #7c6fa0;
+  --white:        #ffffff;
+  --bg:           #fdfcff;
+  --border:       #e4d4f7;
+  --shadow:       0 2px 16px rgba(123,47,190,0.08);
+  --shadow-lg:    0 8px 40px rgba(123,47,190,0.12);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 200;
+  background: var(--white);
+  border-bottom: 2px solid var(--purple-line);
+  padding: 0 1.5rem;
+  height: 54px;
+  display: flex; align-items: center; gap: 1rem;
+  box-shadow: 0 2px 12px rgba(123,47,190,0.07);
+}
+.topbar-brand {
+  font-family: 'Fraunces', serif;
+  font-size: 15px; font-weight: 600;
+  color: var(--purple);
+  white-space: nowrap;
+}
+.topbar-sep { width: 1px; height: 22px; background: var(--purple-line); }
+.topbar-phase {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-light);
+  letter-spacing: 0.08em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.topbar-spacer { flex: 1; }
+.step-progress {
+  display: flex; align-items: center; gap: 6px;
+}
+.step-pip {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--purple-line);
+  transition: background 0.3s, transform 0.3s;
+}
+.step-pip.done { background: var(--purple); }
+.step-pip.active { background: var(--purple); transform: scale(1.35); }
+.step-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-light); margin-left: 4px;
+  letter-spacing: 0.05em;
+}
+
+/* ── WRAPPER ── */
+.page-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 5rem;
+}
+
+/* ── STEP PANEL ── */
+.step-panel {
+  display: none;
+  animation: step-in 0.4s ease-out forwards;
+}
+.step-panel.active { display: block; }
+@keyframes step-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── STEP HEADER ── */
+.step-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--purple-light);
+  margin-bottom: 8px;
+}
+.step-title {
+  font-family: 'Fraunces', serif;
+  font-size: 2rem; font-weight: 300; line-height: 1.2;
+  color: var(--text); margin-bottom: 12px;
+}
+.step-title em { color: var(--purple); font-style: italic; }
+.step-desc {
+  font-size: 14px; color: var(--text-mid); line-height: 1.7;
+  margin-bottom: 2rem; max-width: 600px;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--purple-line);
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1rem;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.card:hover { box-shadow: var(--shadow-lg); border-color: var(--purple-light); }
+
+/* ── INTRO CARD ── */
+.intro-role-card {
+  background: var(--purple-pale);
+  border: 1px solid var(--purple-line);
+  border-left: 4px solid var(--purple);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+.intro-role-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--purple); margin-bottom: 8px;
+}
+.intro-role-text { font-size: 14px; color: var(--text); line-height: 1.75; }
+
+/* ── METRIC STRIP ── */
+.metric-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 2rem;
+}
+@media (max-width: 520px) { .metric-strip { grid-template-columns: repeat(2,1fr); } }
+.metric-chip {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+.metric-chip-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-light); margin-bottom: 6px;
+}
+.metric-chip-val {
+  font-family: 'Fraunces', serif;
+  font-size: 1.6rem; font-weight: 600; line-height: 1;
+}
+.metric-chip-val.red   { color: var(--red); }
+.metric-chip-val.amber { color: var(--amber); }
+.metric-chip-sub {
+  font-size: 10px; color: var(--text-light); margin-top: 4px;
+}
+.metric-chip-sub.warn { color: var(--red); font-weight: 600; }
+
+/* ── INCIDENT CARDS ── */
+.incident-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--purple-line);
+  border-radius: 8px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.incident-card:hover { box-shadow: var(--shadow-lg); }
+.incident-card.crit { border-left-color: var(--red); }
+.incident-card.high { border-left-color: var(--amber); }
+.incident-card.med  { border-left-color: var(--purple); }
+
+.incident-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.sev-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.12em;
+  padding: 2px 9px; border-radius: 20px;
+}
+.sev-pill.crit { background: #fee2e2; color: var(--red); }
+.sev-pill.high { background: #fef3c7; color: var(--amber); }
+.sev-pill.med  { background: var(--purple-pale); color: var(--purple); }
+.dept-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--text-light);
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 2px 9px; border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+.incident-title {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  margin-bottom: 5px;
+}
+.incident-impact { font-size: 13px; color: var(--text-mid); margin-bottom: 8px; }
+.incident-staff-box {
+  background: var(--purple-ghost);
+  border-left: 3px solid var(--purple-line);
+  padding: 8px 12px; border-radius: 4px;
+  font-size: 12px; color: var(--text-mid); font-style: italic;
+}
+.incident-staff-box strong { color: var(--purple); font-style: normal; font-size: 10px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 3px; }
+
+/* ── STAFF CARDS ── */
+.staff-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.2s;
+}
+.staff-card:hover { box-shadow: var(--shadow-lg); }
+.staff-role-tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--purple); background: var(--purple-pale);
+  padding: 3px 10px; border-radius: 20px;
+  margin-bottom: 10px;
+}
+.staff-quote {
+  font-family: 'Fraunces', serif;
+  font-size: 1rem; font-style: italic; font-weight: 300;
+  color: var(--text); line-height: 1.7;
+  margin-bottom: 10px;
+}
+.staff-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.staff-tag-chip {
+  font-size: 11px; color: var(--text-light);
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 2px 8px; border-radius: 20px;
+}
+
+/* ── WORKFLOW EXPLORER ── */
+.wf-area-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+  margin-bottom: 1.25rem;
+}
+.wf-area-btn {
+  padding: 12px 10px; border-radius: 8px; cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: var(--white); color: var(--text-mid);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 500;
+  text-align: center;
+  transition: all 0.2s;
+}
+.wf-area-btn:hover { border-color: var(--purple-light); color: var(--purple); background: var(--purple-ghost); }
+.wf-area-btn.active {
+  border-color: var(--purple); background: var(--purple);
+  color: #fff; box-shadow: 0 4px 16px rgba(123,47,190,0.25);
+}
+.wf-panel { display: none; animation: step-in 0.3s ease-out; }
+.wf-panel.active { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 540px) { .wf-panel.active { grid-template-columns: 1fr; } }
+.wf-info {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 1rem 1.1rem;
+  box-shadow: var(--shadow);
+}
+.wf-info-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--purple); margin-bottom: 8px;
+}
+.wf-info-body { font-size: 13px; color: var(--text-mid); line-height: 1.65; }
+.wf-affected { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.wf-aff-chip {
+  font-size: 11px; color: var(--red);
+  background: #fee2e2; border: 1px solid #fecaca;
+  padding: 2px 8px; border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.05em;
+}
+.wf-down-list { margin-top: 6px; padding-left: 1.1rem; }
+.wf-down-list li { font-size: 12px; color: var(--text-mid); line-height: 1.75; }
+.wf-down-list li::marker { color: var(--amber); }
+
+/* ── REFLECTION ── */
+.reflection-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s;
+}
+.reflection-card:focus-within { border-color: var(--purple-light); box-shadow: var(--shadow-lg); }
+.reflection-prompt { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.reflection-hint { font-size: 12px; color: var(--text-light); margin-bottom: 10px; }
+textarea.ref-input {
+  width: 100%; background: var(--bg);
+  border: 1.5px solid var(--border); border-radius: 6px;
+  padding: 10px 12px; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; color: var(--text); line-height: 1.65;
+  resize: vertical; min-height: 80px; outline: none;
+  transition: border-color 0.2s;
+}
+textarea.ref-input:focus { border-color: var(--purple-light); }
+textarea.ref-input::placeholder { color: var(--text-light); font-style: italic; }
+.saved-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--green);
+  letter-spacing: 0.1em; height: 14px;
+  transition: opacity 0.3s; opacity: 0;
+  margin-top: 4px;
+}
+
+/* ── CHECKPOINT ── */
+.checkpoint-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s;
+}
+.checkpoint-card:focus-within { border-color: var(--purple); }
+.cp-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--purple-light); letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.cp-q { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 10px; line-height: 1.5; }
+
+/* ── NEXT BUTTON ── */
+.next-wrap { margin-top: 2rem; display: flex; justify-content: flex-end; align-items: center; gap: 14px; }
+.next-btn {
+  background: var(--purple); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 12px 28px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 18px rgba(123,47,190,0.28);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.next-btn:hover { background: var(--purple-dark); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(123,47,190,0.38); }
+.next-btn:active { transform: translateY(0); }
+.next-hint { font-size: 12px; color: var(--text-light); }
+
+/* ── PHASE COMPLETE ── */
+.phase-complete {
+  text-align: center; padding: 3rem 1.5rem;
+}
+.phase-complete-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--purple-pale); border: 2px solid var(--purple-line);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.5rem; font-size: 28px;
+}
+.phase-complete-title {
+  font-family: 'Fraunces', serif;
+  font-size: 2rem; font-weight: 300; color: var(--text); margin-bottom: 10px;
+}
+.phase-complete-title em { color: var(--purple); font-style: italic; }
+.phase-complete-desc { font-size: 14px; color: var(--text-mid); max-width: 480px; margin: 0 auto 2rem; line-height: 1.75; }
+.phase-next-box {
+  background: var(--purple-pale);
+  border: 1.5px solid var(--purple-line);
+  border-radius: 12px; padding: 1.5rem;
+  max-width: 480px; margin: 0 auto;
+}
+.phase-next-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--purple); margin-bottom: 8px;
+}
+.phase-next-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.25rem; font-weight: 600; color: var(--purple-dark); margin-bottom: 6px;
+}
+.phase-next-desc { font-size: 13px; color: var(--text-mid); line-height: 1.65; }
+
+/* ── DIVIDER ── */
+.divider {
+  height: 1px; background: var(--purple-line);
+  margin: 1.75rem 0;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .topbar-phase { display: none; }
+  .step-title { font-size: 1.5rem; }
+  .page-wrap { padding: 1.5rem 1rem 4rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-brand">AI Essentials — Healthcare</div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-phase">Mission 1 · Phase A · Lakeside Clinic</div>
+  <div class="topbar-spacer"></div>
+  <div class="step-progress" id="step-pips"></div>
+  <span class="step-label" id="step-label">1 of 5</span>
+</header>
+
+<!-- PAGE -->
+<div class="page-wrap">
+
+  <!-- ════════════════════════════════
+       STEP 1 — WELCOME / ORIENTATION
+  ════════════════════════════════ -->
+  <div class="step-panel active" id="step-1">
+    <div class="step-eyebrow">Mission 1 · Phase A · Step 1 of 5</div>
+    <h1 class="step-title">You just walked into a <em>struggling clinic.</em></h1>
+    <p class="step-desc">Before anyone can improve Lakeside Community Health Clinic, someone needs to understand what is actually happening here. That is your job right now. You are not fixing anything yet. You are observing, listening, and making sense of the situation.</p>
+
+    <div class="intro-role-card">
+      <div class="intro-role-label">Your Role</div>
+      <div class="intro-role-text">
+        You are an <strong>operational observer</strong> — an outside person who has come to Lakeside to understand how the clinic runs day to day. You will read about real problems staff are dealing with, explore what is breaking, and start forming your own questions. <br><br>
+        There is no right or wrong answer in this phase. The goal is <strong>awareness, not solutions</strong>.
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--purple);margin-bottom:10px">What Lakeside Looks Like Right Now</div>
+      <div class="metric-strip">
+        <div class="metric-chip">
+          <div class="metric-chip-label">Avg Wait Time</div>
+          <div class="metric-chip-val red" id="m-wait">58 min</div>
+          <div class="metric-chip-sub warn">Target is 36 min</div>
+        </div>
+        <div class="metric-chip">
+          <div class="metric-chip-label">Patients Waiting to Schedule</div>
+          <div class="metric-chip-val amber" id="m-backlog">31</div>
+          <div class="metric-chip-sub">appointment backlog</div>
+        </div>
+        <div class="metric-chip">
+          <div class="metric-chip-label">Patient Satisfaction</div>
+          <div class="metric-chip-val red" id="m-sat">61%</div>
+          <div class="metric-chip-sub warn">Below 75% goal</div>
+        </div>
+        <div class="metric-chip">
+          <div class="metric-chip-label">Staff Missing Today</div>
+          <div class="metric-chip-val amber">2</div>
+          <div class="metric-chip-sub">front desk + MA</div>
+        </div>
+        <div class="metric-chip">
+          <div class="metric-chip-label">Overdue Chart Notes</div>
+          <div class="metric-chip-val red" id="m-docs">47</div>
+          <div class="metric-chip-sub warn">documentation backlog</div>
+        </div>
+        <div class="metric-chip">
+          <div class="metric-chip-label">Unanswered Callbacks</div>
+          <div class="metric-chip-val amber" id="m-calls">19</div>
+          <div class="metric-chip-sub">patient calls not returned</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--text-mid)">These are real numbers from today's clinic operations. In the next steps, you will learn what is causing them.</p>
+    </div>
+
+    <div class="next-wrap">
+      <span class="next-hint">Read each step carefully before continuing</span>
+      <button class="next-btn" onclick="goTo(2)">See What's Happening →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       STEP 2 — INCIDENT FEED
+  ════════════════════════════════ -->
+  <div class="step-panel" id="step-2">
+    <div class="step-eyebrow">Mission 1 · Phase A · Step 2 of 5</div>
+    <h1 class="step-title">Operational <em>Incidents</em> — Today</h1>
+    <p class="step-desc">These are real problems that have been logged by clinic staff this morning. Read each one. Notice which departments are involved, how serious each issue is, and what staff are actually experiencing.</p>
+
+    <div id="incident-list"></div>
+
+    <div class="next-wrap">
+      <button class="next-btn" onclick="goTo(3)">Meet the Staff →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       STEP 3 — STAFF PERSPECTIVE WALL
+  ════════════════════════════════ -->
+  <div class="step-panel" id="step-3">
+    <div class="step-eyebrow">Mission 1 · Phase A · Step 3 of 5</div>
+    <h1 class="step-title">In Their <em>Own Words</em></h1>
+    <p class="step-desc">These are real quotes from Lakeside staff members. Read each one slowly. Try to understand what their day actually feels like — the frustration, the repetition, the pressure.</p>
+
+    <div id="staff-list"></div>
+
+    <div class="next-wrap">
+      <button class="next-btn" onclick="goTo(4)">Explore What's Breaking →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       STEP 4 — WORKFLOW EXPLORER
+  ════════════════════════════════ -->
+  <div class="step-panel" id="step-4">
+    <div class="step-eyebrow">Mission 1 · Phase A · Step 4 of 5</div>
+    <h1 class="step-title">Workflow <em>Breakdown</em> Explorer</h1>
+    <p class="step-desc">Select an area of the clinic to see what is breaking, why it matters, who it affects, and what problems it creates downstream. Explore each one before moving on.</p>
+
+    <div class="wf-area-grid" id="wf-tabs"></div>
+    <div id="wf-panels"></div>
+
+    <div class="divider"></div>
+
+    <div class="card" style="background:var(--purple-ghost);border-color:var(--purple-line)">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">Quick Reflection</div>
+      <div style="font-size:13px;color:var(--text-mid);margin-bottom:12px">Before moving on — write one thing you noticed that surprised you or that you want to understand better.</div>
+      <textarea class="ref-input" id="wf-reflect" placeholder="What surprised you about any of these breakdowns?" rows="3"></textarea>
+      <div class="saved-note" id="wf-reflect-saved">✓ SAVED</div>
+    </div>
+
+    <div class="next-wrap">
+      <button class="next-btn" onclick="goTo(5)">Go to Mission Checkpoint →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       STEP 5 — REFLECTION + CHECKPOINT
+  ════════════════════════════════ -->
+  <div class="step-panel" id="step-5">
+    <div class="step-eyebrow">Mission 1 · Phase A · Step 5 of 5</div>
+    <h1 class="step-title">Mission <em>Readiness</em> Check</h1>
+    <p class="step-desc">This is not a quiz. It is a preparation tool. Answer each question in your own words based on what you just observed. Your answers are saved automatically and will prepare you for Phase B — Discovery Interviews.</p>
+
+    <!-- Reflections -->
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--purple);margin-bottom:1rem">Part 1 — Your Observations</div>
+    <div id="reflection-list"></div>
+
+    <div class="divider"></div>
+
+    <!-- Checkpoint -->
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--purple);margin-bottom:1rem">Part 2 — Your Summary</div>
+    <div id="checkpoint-list"></div>
+
+    <div class="next-wrap" style="justify-content:center">
+      <button class="next-btn" onclick="showComplete()" style="padding:14px 36px;font-size:15px">Complete Phase A ✓</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       COMPLETE
+  ════════════════════════════════ -->
+  <div class="step-panel" id="step-complete">
+    <div class="phase-complete">
+      <div class="phase-complete-icon">✓</div>
+      <div class="phase-complete-title">Phase A <em>Complete</em></div>
+      <p class="phase-complete-desc">You have finished your operational walkthrough of Lakeside Community Health Clinic. You have observed real problems, heard from staff, and began forming your own questions. That is exactly the right place to be.</p>
+      <div class="phase-next-box">
+        <div class="phase-next-label">Coming Next</div>
+        <div class="phase-next-title">Phase B — Discovery Interviews</div>
+        <div class="phase-next-desc">In Phase B, you will speak directly with Lakeside staff — the receptionist, the nurse, the clinic manager — and go deeper into the problems you identified here. Your observations from Phase A will guide those conversations.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<script>
+// ─────────────────────────────
+// STEP NAVIGATION
+// ─────────────────────────────
+const TOTAL = 5;
+let current = 1;
+
+function buildPips() {
+  const el = document.getElementById('step-pips');
+  el.innerHTML = '';
+  for (let i = 1; i <= TOTAL; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'step-pip' + (i < current ? ' done' : i === current ? ' active' : '');
+    el.appendChild(pip);
+  }
+  document.getElementById('step-label').textContent = `${current} of ${TOTAL}`;
+}
+buildPips();
+
+function goTo(n) {
+  document.getElementById('step-' + current).classList.remove('active');
+  current = n;
+  const target = document.getElementById('step-' + current);
+  if (target) { target.classList.add('active'); buildPips(); window.scrollTo({top:0,behavior:'smooth'}); }
+}
+
+function showComplete() {
+  document.getElementById('step-' + current).classList.remove('active');
+  document.getElementById('step-complete').classList.add('active');
+  document.getElementById('step-pips').innerHTML = '';
+  document.getElementById('step-label').textContent = 'Complete ✓';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ─────────────────────────────
+// METRICS FLUCTUATE
+// ─────────────────────────────
+let mWait = 58, mBacklog = 31, mSat = 61, mDocs = 47, mCalls = 19;
+function fluctuate() {
+  mWait    = Math.max(42, Math.min(72, mWait + (Math.random()>.5?1:-1)*Math.ceil(Math.random()*3)));
+  mBacklog = Math.max(18, Math.min(40, mBacklog + (Math.random()>.5?1:-1)*Math.ceil(Math.random()*2)));
+  mSat     = Math.max(54, Math.min(66, mSat + (Math.random()>.5?1:-1)));
+  mDocs    = Math.max(38, Math.min(54, mDocs + (Math.random()>.5?1:-1)*Math.ceil(Math.random()*2)));
+  mCalls   = Math.max(12, Math.min(26, mCalls + (Math.random()>.5?1:-1)*Math.ceil(Math.random()*2)));
+  const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+  set('m-wait',    mWait + ' min');
+  set('m-backlog', mBacklog);
+  set('m-sat',     mSat + '%');
+  set('m-docs',    mDocs);
+  set('m-calls',   mCalls);
+}
+setInterval(fluctuate, 5000);
+
+// ─────────────────────────────
+// INCIDENT DATA
+// ─────────────────────────────
+const incidents = [
+  { sev:'crit', dept:'Front Desk',
+    title:'Check-In System Overwhelmed — Walk-In Surge',
+    impact:'Only one staff member is managing check-in for 11 waiting patients. There is no backup process.',
+    staff:'I can\'t greet patients, answer phones, and verify insurance at the same time. People are getting frustrated at me.' },
+  { sev:'crit', dept:'Documentation',
+    title:'Nurse Documentation Backlog — 47 Overdue Chart Notes',
+    impact:'Nurses are completing chart notes from memory, hours after seeing patients. This creates a compliance risk.',
+    staff:'I\'m still finishing charts from yesterday while I\'m supposed to be doing room prep for today.' },
+  { sev:'high', dept:'Scheduling',
+    title:'Double-Booking Conflict — Two Patients, Same Slot',
+    impact:'Two patients are confirmed for the same appointment time. One will have to be rescheduled without warning.',
+    staff:'This keeps happening. We use two separate calendars that don\'t sync with each other.' },
+  { sev:'high', dept:'Callbacks',
+    title:'19 Patient Calls Not Yet Returned',
+    impact:'The oldest unanswered call is 3 hours old. Some patients are asking about lab results or medications.',
+    staff:'We don\'t have time to return calls during clinic hours. It just piles up all day.' },
+  { sev:'high', dept:'Insurance',
+    title:'Insurance Verification Delays — Patients in Holding',
+    impact:'6 patients are in holding status. Staff are calling insurance companies manually. Patients don\'t know why they are waiting.',
+    staff:'I\'m on hold with insurance right now. The patient has been waiting 40 minutes and still doesn\'t know why.' },
+  { sev:'med', dept:'Patient Intake',
+    title:'Intake Form Confusion for New Patients',
+    impact:'New patients are not sure which forms apply to them. Staff must walk each person through the process individually.',
+    staff:'We have five different intake forms. Patients grab the wrong ones and we have to start the whole process over.' },
+  { sev:'med', dept:'Communication',
+    title:'Lab Results Not Communicated — 72-Hour Window Missed',
+    impact:'4 patient lab results are sitting in the system without any outbound notification. This is a compliance concern.',
+    staff:'Nobody was assigned to check the lab queue today. I only found out when a patient called asking.' },
+  { sev:'crit', dept:'Staffing',
+    title:'Two Staff Members Absent — No Coverage Arranged',
+    impact:'The medical assistant and a front desk staff member both called out. No replacement was found.',
+    staff:'I\'m doing my own job and covering two other roles. I haven\'t had a break since I arrived this morning.' },
+];
+
+const sevLabel = { crit:'CRITICAL', high:'HIGH CONCERN', med:'MEDIUM' };
+const iList = document.getElementById('incident-list');
+incidents.forEach(inc => {
+  const card = document.createElement('div');
+  card.className = `incident-card ${inc.sev}`;
+  card.innerHTML = `
+    <div class="incident-meta">
+      <span class="sev-pill ${inc.sev}">${sevLabel[inc.sev]}</span>
+      <span class="dept-chip">${inc.dept}</span>
+    </div>
+    <div class="incident-title">${inc.title}</div>
+    <div class="incident-impact">${inc.impact}</div>
+    <div class="incident-staff-box">
+      <strong>Staff experiencing this</strong>
+      "${inc.staff}"
+    </div>
+  `;
+  iList.appendChild(card);
+});
+
+// ─────────────────────────────
+// STAFF DATA
+// ─────────────────────────────
+const staff = [
+  { role:'Front Desk Receptionist',
+    quote:'I\'m the first person patients see and the last one they complain to. I\'m handling check-ins, phones, insurance questions, and people walking up to my desk all at the same time. By 9 AM I\'m already behind, and I never catch up.',
+    tags:['Multitasking overload','No backup system','Patient-facing pressure'] },
+  { role:'Registered Nurse',
+    quote:'Charting is supposed to happen right after I see a patient. But I\'m constantly pulled into the next room before I finish. So I end up writing notes on three patients at once, from memory, hours later. That\'s not a safe way to work.',
+    tags:['Documentation backlog','Memory-based charting','Safety concern'] },
+  { role:'Clinic Manager',
+    quote:'I spend my whole day putting out fires — a no-show here, a scheduling conflict there, a patient complaint, a compliance issue. I never get to actually manage anything. I\'m just reacting to problems all day.',
+    tags:['Reactive workflow','No strategic time','Constant interruptions'] },
+  { role:'Scheduling Coordinator',
+    quote:'We use two different calendar systems that don\'t talk to each other. I update one, someone else updates the other, and then we end up with double-bookings. It happens at least twice a week. I\'ve told management about this for six months.',
+    tags:['System disconnect','Repeated errors','Unsolved for 6+ months'] },
+  { role:'Medical Assistant',
+    quote:'I prep exam rooms, take vitals, run lab samples, help with procedures, and assist the physician. When we\'re short-staffed, I\'m doing all of that for twice as many patients with no extra time.',
+    tags:['Role overload','Short-staffing','No prioritization system'] },
+  { role:'Physician',
+    quote:'I have about twelve minutes with each patient. But I spend four of those minutes just trying to figure out why their last visit notes are missing from the chart. I\'m making clinical decisions with incomplete information. It worries me.',
+    tags:['Incomplete records','Time pressure','Clinical risk'] },
+];
+
+const sList = document.getElementById('staff-list');
+staff.forEach(s => {
+  const card = document.createElement('div');
+  card.className = 'staff-card';
+  card.innerHTML = `
+    <span class="staff-role-tag">${s.role}</span>
+    <div class="staff-quote">"${s.quote}"</div>
+    <div class="staff-tags">${s.tags.map(t=>`<span class="staff-tag-chip">${t}</span>`).join('')}</div>
+  `;
+  sList.appendChild(card);
+});
+
+// ─────────────────────────────
+// WORKFLOW DATA
+// ─────────────────────────────
+const workflows = [
+  { id:'sched', label:'Scheduling',
+    breaking:'Two separate calendar tools are in use and they do not sync. Staff make changes independently, which causes double-bookings. Appointment reminders are pulled from an outdated contact list.',
+    why:'Scheduling is the starting point for the entire patient visit. When it breaks, everything that comes after it breaks too — room prep, physician time, and billing.',
+    affected:['Patients','Scheduling Coordinator','Physician','Front Desk'],
+    downstream:['Double-booked patients must wait or be turned away','Physician schedules are unpredictable, making planning difficult','Staff spend time managing conflicts instead of doing other work','Patients receive reminders with wrong dates or phone numbers'] },
+  { id:'docs', label:'Documentation',
+    breaking:'Nurses complete chart notes from memory, hours after seeing patients. There are now 47 overdue notes. No time is built into the schedule for charting.',
+    why:'Accurate and timely documentation is required by law and supports safe care. Delayed notes can lead to missed diagnoses and failed compliance audits.',
+    affected:['Nurses','Physicians','Compliance Team','Patients'],
+    downstream:['Physicians see incomplete charts before appointments','Lab results sit unconnected to patient records','The clinic faces compliance and audit risk','Nurses experience burnout from end-of-shift documentation sprints'] },
+  { id:'frontdesk', label:'Front Desk',
+    breaking:'One receptionist is managing check-in, phones, insurance verification, and walk-in patients at the same time. There is no queue system, no triage, and no backup role.',
+    why:'The front desk is the clinic\'s first impression and its operational switchboard. When it is overwhelmed, wait times rise and mistakes multiply.',
+    affected:['Patients','Receptionist','Billing Team','Clinic Manager'],
+    downstream:['New patients wait without being acknowledged','Incoming calls go to voicemail or are missed','Insurance verification errors cause billing problems later','Patient satisfaction scores continue to drop'] },
+  { id:'comms', label:'Communication',
+    breaking:'Patient callbacks, lab notifications, referral updates, and prescription relays are all handled informally — no tracking system, no assigned owner, no confirmation step.',
+    why:'Patients depend on the clinic to follow through on communication. When it doesn\'t happen, they lose trust, delay care, or arrive for appointments uninformed.',
+    affected:['Patients','Nurses','Physicians','Medical Assistants'],
+    downstream:['Patients call back multiple times for the same information','Lab results sit unreported past the required 72-hour window','Referral delays go unnoticed until patients complain','Staff spend time tracking down information that should be centralized'] },
+  { id:'intake', label:'Patient Intake',
+    breaking:'Multiple overlapping paper intake forms confuse new patients. Staff must walk each person through the process one-on-one. There is no digital option available.',
+    why:'Slow intake creates immediate delays that ripple through the whole visit. Incorrect intake information can also affect clinical decisions.',
+    affected:['New Patients','Front Desk Staff','Physicians','Billing'],
+    downstream:['Each new patient intake takes 10–15 minutes of staff time','The waiting room backs up while staff assist with forms','Incomplete forms lead to billing errors or missing medical history','Patients feel confused and unsupported from the very start'] },
+];
+
+const wfTabs = document.getElementById('wf-tabs');
+const wfPanels = document.getElementById('wf-panels');
+let activeWf = null;
+
+workflows.forEach((wf, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'wf-area-btn';
+  btn.textContent = wf.label;
+  btn.dataset.id = wf.id;
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.wf-area-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.wf-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('wfp-' + wf.id).classList.add('active');
+  });
+  wfTabs.appendChild(btn);
+
+  const panel = document.createElement('div');
+  panel.className = 'wf-panel';
+  panel.id = 'wfp-' + wf.id;
+  panel.innerHTML = `
+    <div class="wf-info">
+      <div class="wf-info-label">What Is Breaking</div>
+      <div class="wf-info-body">${wf.breaking}</div>
+    </div>
+    <div class="wf-info">
+      <div class="wf-info-label">Why It Matters</div>
+      <div class="wf-info-body">${wf.why}</div>
+    </div>
+    <div class="wf-info">
+      <div class="wf-info-label">Who Is Affected</div>
+      <div class="wf-affected">${wf.affected.map(a=>`<span class="wf-aff-chip">${a}</span>`).join('')}</div>
+    </div>
+    <div class="wf-info">
+      <div class="wf-info-label">Problems It Creates Downstream</div>
+      <ul class="wf-down-list">${wf.downstream.map(d=>`<li>${d}</li>`).join('')}</ul>
+    </div>
+  `;
+  wfPanels.appendChild(panel);
+});
+
+// Auto-open first
+wfTabs.querySelector('.wf-area-btn').classList.add('active');
+wfPanels.querySelector('.wf-panel').classList.add('active');
+
+// Workflow reflection save
+const wfRef = document.getElementById('wf-reflect');
+const wfSaved = document.getElementById('wf-reflect-saved');
+wfRef.value = localStorage.getItem('phaseA_wf_reflect') || '';
+let wfTimer;
+wfRef.addEventListener('input', () => {
+  clearTimeout(wfTimer);
+  wfTimer = setTimeout(() => {
+    localStorage.setItem('phaseA_wf_reflect', wfRef.value);
+    wfSaved.style.opacity = '1';
+    setTimeout(() => { wfSaved.style.opacity = '0'; }, 1800);
+  }, 600);
+});
+
+// ─────────────────────────────
+// REFLECTIONS
+// ─────────────────────────────
+const reflections = [
+  { id:'r1', prompt:'Which problem seems most urgent right now?', hint:'Think about patient safety, how many people are affected, and time sensitivity.' },
+  { id:'r2', prompt:'Which issue seems to affect the most people — patients, staff, or both?', hint:'Look at the incident feed and staff quotes. Who keeps coming up?' },
+  { id:'r3', prompt:'Which problems seem connected to each other?', hint:'Does one broken thing cause another? Look for chains of cause and effect.' },
+  { id:'r4', prompt:'Which tasks seem highly repetitive?', hint:'Repetitive tasks are often good candidates for improvement — but not always with technology.' },
+];
+
+const refList = document.getElementById('reflection-list');
+reflections.forEach(r => {
+  const saved = localStorage.getItem('phaseA_' + r.id) || '';
+  const card = document.createElement('div');
+  card.className = 'reflection-card';
+  card.innerHTML = `
+    <div class="reflection-prompt">${r.prompt}</div>
+    <div class="reflection-hint">${r.hint}</div>
+    <textarea class="ref-input" id="${r.id}" placeholder="Your thoughts here...">${saved}</textarea>
+    <div class="saved-note" id="sn-${r.id}">✓ SAVED</div>
+  `;
+  refList.appendChild(card);
+
+  const ta = card.querySelector('textarea');
+  let t;
+  ta.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      localStorage.setItem('phaseA_' + r.id, ta.value);
+      const sn = document.getElementById('sn-' + r.id);
+      sn.style.opacity = '1';
+      setTimeout(() => { sn.style.opacity = '0'; }, 1800);
+    }, 600);
+  });
+});
+
+// ─────────────────────────────
+// CHECKPOINTS
+// ─────────────────────────────
+const checkpoints = [
+  { id:'c1', num:'Summary 01', q:'What are the top 3 operational problems you observed at Lakeside?' },
+  { id:'c2', num:'Summary 02', q:'Who is most affected — patients, staff, or both? Describe how.' },
+  { id:'c3', num:'Summary 03', q:'What information is still missing? What would you need to find out in Phase B?' },
+  { id:'c4', num:'Summary 04', q:'What do you most want to understand better before anyone recommends any changes?' },
+];
+
+const cpList = document.getElementById('checkpoint-list');
+checkpoints.forEach(c => {
+  const saved = localStorage.getItem('phaseA_' + c.id) || '';
+  const card = document.createElement('div');
+  card.className = 'checkpoint-card';
+  card.innerHTML = `
+    <div class="cp-num">${c.num}</div>
+    <div class="cp-q">${c.q}</div>
+    <textarea class="ref-input" id="${c.id}" placeholder="Write your summary here..." rows="4">${saved}</textarea>
+    <div class="saved-note" id="sn-${c.id}">✓ SAVED</div>
+  `;
+  cpList.appendChild(card);
+
+  const ta = card.querySelector('textarea');
+  let t;
+  ta.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      localStorage.setItem('phaseA_' + c.id, ta.value);
+      const sn = document.getElementById('sn-' + c.id);
+      sn.style.opacity = '1';
+      setTimeout(() => { sn.style.opacity = '0'; }, 1800);
+    }, 600);
+  });
+});
+</script>
+</body>
+</html>
