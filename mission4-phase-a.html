@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission 4 · Phase A — AI Risk Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --purple:      #7B2FBE;
+  --purple-dark: #5b1e9a;
+  --purple-deep: #3d1270;
+  --purple-lo:   rgba(123,47,190,0.07);
+  --purple-mid:  rgba(123,47,190,0.18);
+
+  --bg:          #f7f6fb;
+  --white:       #ffffff;
+  --surface-2:   #f2f0f9;
+
+  --border:      rgba(123,47,190,0.12);
+  --border-hi:   rgba(123,47,190,0.28);
+
+  --text:        #1a0f2e;
+  --text-body:   #3a2f52;
+  --text-muted:  #7a6e92;
+  --text-dim:    #b5adc8;
+
+  --red:         #c0392b;
+  --red-lo:      rgba(192,57,43,0.07);
+  --amber:       #b45309;
+  --amber-lo:    rgba(180,83,9,0.07);
+  --green:       #0d7a5f;
+  --green-lo:    rgba(13,122,95,0.08);
+
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+  --serif: 'Fraunces', serif;
+}
+
+html, body { min-height: 100%; background: var(--bg); }
+body {
+  color: var(--text-body); font-family: var(--sans);
+  font-size: 15px; line-height: 1.65;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 0 24px; height: 52px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.tb-left { display: flex; align-items: center; gap: 12px; }
+.tb-badge {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--purple); background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  border-radius: 3px; padding: 3px 9px;
+}
+.tb-title { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--text); }
+.tb-sep   { width: 1px; height: 20px; background: var(--border); }
+.tb-right {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: .06em;
+}
+.sys-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--red); box-shadow: 0 0 6px rgba(192,57,43,.45);
+  animation: blink 2.2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+/* ── PROGRESS ── */
+.progress-bar-wrap {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 14px 24px 0;
+}
+.progress-steps { display: flex; max-width: 680px; margin: 0 auto; }
+.prog-step {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  position: relative; padding-bottom: 12px; cursor: pointer;
+}
+.prog-step::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 3px; background: var(--border); border-radius: 2px; transition: background .3s;
+}
+.prog-step.active::after { background: var(--purple); }
+.prog-step.done::after   { background: var(--green); }
+.prog-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid var(--border); background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  color: var(--text-dim); margin-bottom: 6px; transition: all .25s;
+}
+.prog-step.active .prog-circle { border-color: var(--purple); background: var(--purple-lo); color: var(--purple); }
+.prog-step.done   .prog-circle { border-color: var(--green);  background: var(--green);     color: white; }
+.prog-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-dim); text-align: center; transition: color .25s;
+}
+.prog-step.active .prog-label { color: var(--purple); }
+.prog-step.done   .prog-label { color: var(--green); }
+
+/* ── PAGE ── */
+.page-content { max-width: 680px; margin: 0 auto; padding: 40px 24px 80px; }
+
+.step-screen { display: none; }
+.step-screen.visible { display: block; animation: fadeUp .4s ease forwards; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── STEP HEADER ── */
+.step-hd { margin-bottom: 28px; }
+.step-hd-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--purple); background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  border-radius: 3px; padding: 3px 10px; margin-bottom: 12px;
+}
+.step-hd h2 {
+  font-family: var(--serif); font-size: clamp(22px,3.5vw,30px);
+  font-weight: 600; color: var(--text); line-height: 1.2; margin-bottom: 8px;
+}
+.step-hd p { font-size: 15px; color: var(--text-muted); line-height: 1.7; max-width: 560px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; margin-bottom: 16px;
+}
+.card-hd {
+  padding: 14px 20px; background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.card-icon {
+  width: 28px; height: 28px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ci-red    { background: var(--red-lo);    border: 1px solid rgba(192,57,43,.22); }
+.ci-purple { background: var(--purple-lo); border: 1px solid var(--purple-mid); }
+.ci-amber  { background: var(--amber-lo);  border: 1px solid rgba(180,83,9,.2); }
+.ci-green  { background: var(--green-lo);  border: 1px solid rgba(13,122,95,.2); }
+.card-icon svg { width: 14px; height: 14px; }
+.ci-red    svg { color: var(--red); }
+.ci-purple svg { color: var(--purple); }
+.ci-amber  svg { color: var(--amber); }
+.ci-green  svg { color: var(--green); }
+.card-hd-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.card-hd-sub   { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.card-hd-badge {
+  margin-left: auto; font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 3px; white-space: nowrap;
+}
+.card-body { padding: 20px; }
+
+/* ── SCENARIO BLOCK ── */
+.scenario-text {
+  background: #faf9fd; border: 1px solid var(--border);
+  border-left: 3px solid var(--red); border-radius: 7px;
+  padding: 16px 18px; margin-bottom: 20px;
+  font-size: 14.5px; color: var(--text-body); line-height: 1.8;
+}
+.scenario-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 8px; display: flex; align-items: center; gap: 7px;
+}
+.scenario-label::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--red); display:inline-block; }
+
+/* ── RISK TAGS (selection buttons) ── */
+.risk-type-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.risk-tag {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 6px 13px; border-radius: 4px; cursor: pointer;
+  border: 1px solid var(--border); color: var(--text-muted); background: transparent;
+  transition: all .15s; user-select: none;
+}
+.risk-tag:hover { border-color: var(--border-hi); color: var(--text); }
+.risk-tag.selected-privacy   { background: var(--red-lo);    border-color: rgba(192,57,43,.3); color: var(--red);    }
+.risk-tag.selected-bias      { background: var(--amber-lo);  border-color: rgba(180,83,9,.3);  color: var(--amber);  }
+.risk-tag.selected-unsafe    { background: var(--purple-lo); border-color: var(--purple-mid);  color: var(--purple); }
+.risk-tag.selected-boundary  { background: var(--green-lo);  border-color: rgba(13,122,95,.3); color: var(--green);  }
+
+/* ── SEVERITY ── */
+.severity-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 0; }
+.sev-btn {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 6px 13px; border-radius: 4px; cursor: pointer;
+  border: 1px solid var(--border); color: var(--text-muted); background: transparent;
+  transition: all .15s; user-select: none;
+}
+.sev-btn:hover { border-color: var(--border-hi); color: var(--text); }
+.sev-low      { background: var(--green-lo);  border-color: rgba(13,122,95,.3);  color: var(--green);  }
+.sev-medium   { background: var(--amber-lo);  border-color: rgba(180,83,9,.3);   color: var(--amber);  }
+.sev-high     { background: var(--red-lo);    border-color: rgba(192,57,43,.3);  color: var(--red);    }
+.sev-critical { background: rgba(80,0,0,.08); border-color: rgba(192,57,43,.5);  color: #7a0000;       }
+
+/* ── FIELDS ── */
+.field-group { margin-bottom: 16px; }
+.field-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 7px;
+}
+.field-prompt { font-size: 13px; color: var(--text-muted); font-style: italic; margin-bottom: 8px; }
+.ta {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 11px 14px;
+  font-family: var(--sans); font-size: 13.5px; color: var(--text);
+  line-height: 1.65; resize: vertical; min-height: 80px;
+  outline: none; transition: border-color .15s;
+}
+.ta:focus { border-color: var(--purple-mid); background: #fff; }
+.ta::placeholder { color: var(--text-dim); }
+
+/* ── INFO / WARN NOTES ── */
+.info-note {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 11px 14px; border-radius: 7px;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  font-size: 13.5px; color: var(--text-body); line-height: 1.6; margin-bottom: 16px;
+}
+.info-note svg { width: 15px; height: 15px; color: var(--purple); flex-shrink: 0; margin-top: 2px; }
+
+.warn-note {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 11px 14px; border-radius: 7px;
+  background: var(--red-lo); border: 1px solid rgba(192,57,43,.2);
+  font-size: 13.5px; color: var(--text-body); line-height: 1.6; margin-bottom: 16px;
+}
+.warn-note svg { width: 15px; height: 15px; color: var(--red); flex-shrink: 0; margin-top: 2px; }
+
+/* ── SCENARIO COMPLETE BADGE ── */
+.scenario-done-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px; border-radius: 4px; font-family: var(--mono);
+  font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  background: var(--green-lo); border: 1px solid rgba(13,122,95,.22); color: var(--green);
+}
+
+/* ── SCENARIO COUNTER ── */
+.scenario-counter {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.sc-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--border); border: 2px solid var(--border);
+  transition: all .25s; cursor: pointer;
+}
+.sc-dot.done   { background: var(--green); border-color: var(--green); }
+.sc-dot.active { background: var(--purple); border-color: var(--purple); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px; border-radius: 6px; font-family: var(--sans);
+  font-size: 14px; font-weight: 500; cursor: pointer; border: none;
+  transition: all .15s; white-space: nowrap; text-decoration: none;
+}
+.btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.btn-ghost  { background: transparent; border: 1px solid var(--border-hi); color: var(--text-muted); }
+.btn-ghost:hover  { background: var(--surface-2); color: var(--text); }
+.btn-purple { background: var(--purple); color: white; }
+.btn-purple:hover { background: var(--purple-dark); box-shadow: 0 2px 12px rgba(123,47,190,.28); }
+.btn-red    { background: var(--red); color: white; }
+.btn-red:hover    { background: #a93226; }
+.btn-green  { background: var(--green); color: white; }
+.btn-green:hover  { background: #0a6450; }
+.btn-deep   { background: var(--purple-deep); color: white; }
+.btn-deep:hover   { background: var(--purple-dark); }
+.btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
+.btn-full   { width: 100%; justify-content: center; }
+
+.step-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 28px; gap: 12px;
+}
+
+/* ── LOG SECTIONS ── */
+.log-scenario-block {
+  border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  margin-bottom: 14px;
+}
+.log-scenario-hd {
+  padding: 11px 16px; background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.log-sc-title { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.log-sc-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.log-badge {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 3px;
+}
+.lb-privacy  { background: var(--red-lo);    border: 1px solid rgba(192,57,43,.2); color: var(--red); }
+.lb-bias     { background: var(--amber-lo);  border: 1px solid rgba(180,83,9,.2);  color: var(--amber); }
+.lb-unsafe   { background: var(--purple-lo); border: 1px solid var(--purple-mid);  color: var(--purple); }
+.lb-boundary { background: var(--green-lo);  border: 1px solid rgba(13,122,95,.2); color: var(--green); }
+.lb-low      { background: var(--green-lo);  border: 1px solid rgba(13,122,95,.2); color: var(--green); }
+.lb-medium   { background: var(--amber-lo);  border: 1px solid rgba(180,83,9,.2);  color: var(--amber); }
+.lb-high     { background: var(--red-lo);    border: 1px solid rgba(192,57,43,.2); color: var(--red); }
+.lb-critical { background: rgba(80,0,0,.08); border: 1px solid rgba(192,57,43,.4); color: #7a0000; }
+.log-sc-body { padding: 14px 16px; }
+.log-row { margin-bottom: 10px; }
+.log-row:last-child { margin-bottom: 0; }
+.log-row-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .10em; text-transform: uppercase;
+  color: var(--text-dim); margin-bottom: 4px;
+}
+.log-row-val { font-size: 13.5px; color: var(--text-body); line-height: 1.6; }
+
+/* REFLECTION */
+.reflect-block { margin-bottom: 16px; }
+.reflect-q { font-size: 13.5px; color: var(--text-muted); font-style: italic; margin-bottom: 7px; }
+.reflect-ta {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 11px 14px;
+  font-family: var(--sans); font-size: 13.5px; color: var(--text);
+  line-height: 1.65; resize: vertical; min-height: 68px;
+  outline: none; transition: border-color .15s;
+}
+.reflect-ta:focus { border-color: var(--purple-mid); }
+.reflect-ta::placeholder { color: var(--text-dim); }
+
+/* COMPLETE BANNER */
+.complete-banner {
+  background: var(--purple-deep); border-radius: 9px;
+  padding: 24px 26px; text-align: center; margin-top: 20px;
+}
+.complete-banner h3 { font-family: var(--serif); font-size: 20px; font-weight: 400; color: #fff; margin-bottom: 6px; }
+.complete-banner p  { font-size: 13.5px; color: rgba(255,255,255,.55); }
+
+.export-done {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 6px; font-size: 13.5px; font-weight: 500;
+  background: var(--green-lo); border: 1px solid rgba(13,122,95,.2); color: var(--green);
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-left">
+    <div class="tb-badge">Phase A</div>
+    <div class="tb-sep"></div>
+    <div class="tb-title">AI Risk Detection</div>
+  </div>
+  <div class="tb-right">
+    <div class="sys-dot"></div>
+    Lakeside Safety Center
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar-wrap">
+  <div class="progress-steps">
+    <div class="prog-step active" id="ps1" onclick="jumpTo(1)">
+      <div class="prog-circle" id="pc1">1</div>
+      <div class="prog-label">Briefing</div>
+    </div>
+    <div class="prog-step" id="ps2" onclick="jumpTo(2)">
+      <div class="prog-circle" id="pc2">2</div>
+      <div class="prog-label">Scenarios</div>
+    </div>
+    <div class="prog-step" id="ps3" onclick="jumpTo(3)">
+      <div class="prog-circle" id="pc3">3</div>
+      <div class="prog-label">Risk Log</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE CONTENT -->
+<div class="page-content">
+
+  <!-- ════════ STEP 1 — BRIEFING ════════ -->
+  <div class="step-screen visible" id="step1">
+    <div class="step-hd">
+      <div class="step-hd-badge">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+        Phase A · Briefing
+      </div>
+      <h2>AI Risk Detection</h2>
+      <p>You are acting as an AI Risk &amp; Safety Analyst for Lakeside Community Health Clinic. Read four real scenarios from the clinic, identify what is risky about each one, and record your findings.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-icon ci-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">⚠ Important — Read Before You Begin</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p style="font-size:14.5px;color:var(--text-body);line-height:1.8;margin-bottom:14px;">In healthcare, small mistakes with AI can lead to serious privacy violations, biased decisions, or unsafe patient workflows. <strong style="color:var(--text);">Your job is to identify these risks before harm occurs.</strong></p>
+        <p style="font-size:14.5px;color:var(--text-body);line-height:1.8;">There are no right or wrong answers here — this is about thinking carefully. Read each scenario slowly and consider: <em>what could go wrong, and who could be hurt?</em></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-icon ci-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">How This Phase Works</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--text-body);line-height:1.6;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>You will review <strong>4 realistic healthcare AI scenarios</strong></span>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--text-body);line-height:1.6;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>For each one, you will <strong>select the type of risk</strong> present</span>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--text-body);line-height:1.6;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>You will explain <strong>what makes it risky</strong> in your own words</span>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--text-body);line-height:1.6;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>You will identify <strong>who could be harmed</strong> and how</span>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--text-body);line-height:1.6;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>You will rate the <strong>severity</strong> of each risk</span>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--text-body);line-height:1.6;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>At the end, your findings become an <strong>AI Risk Identification Log</strong></span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <div></div>
+      <button class="btn btn-red" onclick="goTo(2)">
+        Begin Risk Analysis
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════ STEP 2 — SCENARIOS ════════ -->
+  <div class="step-screen" id="step2">
+    <div class="step-hd">
+      <div class="step-hd-badge">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+        Step 2 of 3 · <span id="scenarioCounter">Scenario 1 of 4</span>
+      </div>
+      <h2 id="scenarioTitle">Scenario 1</h2>
+      <p id="scenarioSubtitle" style="font-size:14px;"></p>
+    </div>
+
+    <!-- Progress dots -->
+    <div class="scenario-counter" id="scenarioDots"></div>
+
+    <!-- Scenario card (filled dynamically) -->
+    <div id="scenarioCard"></div>
+
+    <div class="step-nav">
+      <button class="btn btn-ghost" id="scBtnBack" onclick="prevScenario()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </button>
+      <button class="btn btn-purple" id="scBtnNext" onclick="nextScenario()">
+        Next Scenario
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════ STEP 3 — RISK LOG ════════ -->
+  <div class="step-screen" id="step3">
+    <div class="step-hd">
+      <div class="step-hd-badge">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+        Step 3 of 3 · Risk Log
+      </div>
+      <h2>AI Risk Identification Log</h2>
+      <p>Here is a summary of your risk findings across all four scenarios. Review them, complete your reflection, then export your log.</p>
+    </div>
+
+    <!-- LOG ENTRIES (built dynamically) -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-icon ci-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">Risk Findings — All Scenarios</div>
+          <div class="card-hd-sub">Compiled from your analysis of 4 clinic scenarios</div>
+        </div>
+      </div>
+      <div class="card-body" id="logEntries"></div>
+    </div>
+
+    <!-- REFLECTION -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-icon ci-amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">Your Reflection</div>
+          <div class="card-hd-sub">Complete before exporting your log</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="reflect-block">
+          <div class="reflect-q">Which risks were hardest to identify, and why?</div>
+          <textarea class="reflect-ta" id="ref1" placeholder="e.g. The scheduling bias scenario was subtle — it did not look like discrimination on the surface, but the outcome disadvantages certain patients…"></textarea>
+        </div>
+        <div class="reflect-block">
+          <div class="reflect-q">Which scenario felt most serious to you, and what made it that way?</div>
+          <textarea class="reflect-ta" id="ref2" placeholder="e.g. The patient data / ChatGPT scenario felt most serious because it involves real patient identifiers leaving a secure system…"></textarea>
+        </div>
+        <div class="reflect-block" style="margin-bottom:0;">
+          <div class="reflect-q">What surprised you most about AI use in healthcare after reviewing these scenarios?</div>
+          <textarea class="reflect-ta" id="ref3" placeholder="e.g. I did not realize that even helpful-seeming AI tools can create serious risks if staff are not trained on how to use them…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-ghost" onclick="goTo(2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Scenarios
+      </button>
+      <div id="exportArea">
+        <button class="btn btn-deep" onclick="exportLog()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Risk Log
+        </button>
+      </div>
+    </div>
+
+    <div class="complete-banner" id="completeBanner" style="display:none;">
+      <h3>Phase A Complete</h3>
+      <p>Your risk log has been exported. In Phase B you will use an AI tool to analyze these scenarios in depth and evaluate its ethical reasoning.</p>
+    </div>
+  </div>
+
+</div><!-- /page-content -->
+
+<script>
+// ═══════════════════════════════════════════════
+// SCENARIO DATA
+// ═══════════════════════════════════════════════
+const SCENARIOS = [
+  {
+    id: 0,
+    title: 'Scenario 1 — Patient Data &amp; ChatGPT',
+    subtitle: 'A clinic staff member uses a public AI tool with identifiable patient information.',
+    situation: `A clinic administrator at Lakeside is overwhelmed with documentation. To save time, she copies patient visit notes — including names, dates of birth, and diagnosis details — directly into ChatGPT and asks it to "summarize the week's workload trends."
+
+She does not realize that pasting patient data into a public AI tool may transmit that information outside the clinic's secure system. She considers it the same as searching something online.`,
+    tags: ['Privacy Risk', 'Unsafe AI Use'],
+    hints: 'Think about what happens to patient data when it is sent to an external AI service. Who owns that data? Where does it go? What laws govern it?',
+  },
+  {
+    id: 1,
+    title: 'Scenario 2 — AI Scheduling Bias',
+    subtitle: 'An AI scheduling tool creates unfair outcomes based on historical data.',
+    situation: `Lakeside Clinic deploys an AI scheduling tool to optimize appointment bookings. The tool analyzes historical data and automatically prioritizes patients with strong "appointment adherence" records — meaning patients who rarely miss or cancel.
+
+Over time, staff notice that patients who work multiple jobs, have unreliable transportation, or are lower-income are consistently placed at less convenient times or pushed to longer wait lists. The tool was never designed to discriminate — it just learned from patterns in the data.`,
+    tags: ['Bias / Fairness Risk', 'Unsafe AI Use'],
+    hints: 'Consider who the historical data reflects. What groups of people might already have lower attendance rates for reasons outside their control? What happens when AI learns from that history?',
+  },
+  {
+    id: 2,
+    title: 'Scenario 3 — Copilot Clinical Notes',
+    subtitle: 'A nurse uses a work AI tool to draft clinical notes containing patient identifiers.',
+    situation: `A nurse at Lakeside begins using Microsoft Copilot — available through the clinic's Microsoft 365 subscription — to help draft internal clinical notes more quickly. She finds it saves significant time.
+
+However, the notes she pastes into Copilot include patient names, diagnoses, and medication details. She assumes that because Copilot is a "work tool," it is automatically HIPAA-compliant. The clinic has not reviewed whether the Microsoft 365 tenant is configured to meet healthcare data requirements, and no HIPAA Business Associate Agreement has been verified.`,
+    tags: ['Privacy Risk', 'Professional Boundary Issue'],
+    hints: 'Consider whether "it is a work tool" automatically means it is safe for healthcare data. What verification steps are missing? Who is responsible for ensuring compliance?',
+  },
+  {
+    id: 3,
+    title: 'Scenario 4 — Automated Patient Priority Flagging',
+    subtitle: 'AI is used to automatically label patients as low priority without clear criteria.',
+    situation: `Lakeside's operations team is exploring using AI to automatically flag patients in the system as "low priority," "standard," or "high priority" based on a combination of visit history, missed appointments, and diagnostic codes. The goal is to help staff allocate time more efficiently during peak hours.
+
+The criteria for flagging are vague and have not been reviewed by a clinician. No one has checked whether certain patient demographics are being disproportionately flagged as low priority. There is no human review step before the flag affects a patient's care scheduling. Staff are not told the labels are AI-generated.`,
+    tags: ['Bias / Fairness Risk', 'Privacy Risk', 'Unsafe AI Use'],
+    hints: 'Think about who decides what "low priority" means. What happens to a patient who is incorrectly flagged? Does the staff know the label is AI-generated? Should they?',
+  },
+];
+
+const RISK_TYPES = [
+  { key:'privacy',   label:'Privacy Risk',              class:'selected-privacy' },
+  { key:'bias',      label:'Bias / Fairness Risk',      class:'selected-bias' },
+  { key:'unsafe',    label:'Unsafe AI Use',             class:'selected-unsafe' },
+  { key:'boundary',  label:'Professional Boundary Issue',class:'selected-boundary' },
+];
+
+const SEVERITIES = ['Low','Medium','High','Critical'];
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let currentStep     = 1;
+let currentScenario = 0;
+
+const answers = SCENARIOS.map(() => ({
+  riskTypes: [],
+  problem:   '',
+  affected:  '',
+  severity:  '',
+}));
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function goTo(n) {
+  document.getElementById('step' + currentStep).classList.remove('visible');
+  currentStep = n;
+  document.getElementById('step' + n).classList.add('visible');
+  updateProgress();
+  if(n === 2) renderScenario(currentScenario);
+  if(n === 3) buildLog();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function jumpTo(n) { if(n <= currentStep) goTo(n); }
+
+function updateProgress() {
+  for(let i = 1; i <= 3; i++) {
+    const ps = document.getElementById('ps' + i);
+    const pc = document.getElementById('pc' + i);
+    ps.className = 'prog-step' + (i === currentStep ? ' active' : i < currentStep ? ' done' : '');
+    pc.innerHTML = i < currentStep
+      ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+      : i;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// SCENARIO RENDERING
+// ═══════════════════════════════════════════════
+function renderScenario(idx) {
+  const s   = SCENARIOS[idx];
+  const ans = answers[idx];
+
+  // Header
+  document.getElementById('scenarioTitle').innerHTML    = s.title;
+  document.getElementById('scenarioSubtitle').textContent = s.subtitle;
+  document.getElementById('scenarioCounter').textContent = `Scenario ${idx+1} of ${SCENARIOS.length}`;
+
+  // Dots
+  const dots = document.getElementById('scenarioDots');
+  dots.innerHTML = SCENARIOS.map((_,i) => {
+    const done   = answers[i].severity !== '';
+    const active = i === idx;
+    return `<div class="sc-dot ${done?'done':active?'active':''}" onclick="jumpScenario(${i})" title="Scenario ${i+1}"></div>`;
+  }).join('');
+
+  // Nav buttons
+  document.getElementById('scBtnBack').style.visibility = idx === 0 ? 'hidden' : 'visible';
+  const isLast = idx === SCENARIOS.length - 1;
+  const btn = document.getElementById('scBtnNext');
+  if(isLast) {
+    btn.innerHTML = `Generate Risk Log <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+    btn.onclick = () => goTo(3);
+  } else {
+    btn.innerHTML = `Next Scenario <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+    btn.onclick = nextScenario;
+  }
+
+  // Card
+  document.getElementById('scenarioCard').innerHTML = `
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-icon ci-red">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div class="card-hd-title">Clinic Scenario</div>
+        <div class="card-hd-sub">Read carefully before responding</div>
+      </div>
+      ${ans.severity ? '<div class="scenario-done-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Reviewed</div>' : ''}
+    </div>
+    <div class="card-body">
+      <div class="scenario-label">Situation</div>
+      <div class="scenario-text">${s.situation.replace(/\n\n/g,'<br><br>')}</div>
+
+      <div class="warn-note" style="margin-bottom:20px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><strong>Think about:</strong> ${s.hints}</span>
+      </div>
+
+      <!-- Q1: Risk Type -->
+      <div class="field-group">
+        <div class="field-label">1. Type of Risk</div>
+        <div class="field-prompt">Select all that apply to this scenario.</div>
+        <div class="risk-type-group" id="riskTypesGroup">
+          ${RISK_TYPES.map(rt => `
+          <div class="risk-tag ${ans.riskTypes.includes(rt.key) ? rt.class : ''}"
+               id="rt-${idx}-${rt.key}"
+               onclick="toggleRiskType(${idx},'${rt.key}','${rt.class}')">${rt.label}</div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Q2: What is the problem -->
+      <div class="field-group">
+        <div class="field-label">2. What is the problem?</div>
+        <div class="field-prompt">Explain what makes this situation risky in simple terms.</div>
+        <textarea class="ta" id="problem-${idx}"
+          placeholder="e.g. Patient data containing names and diagnoses is being sent to an external AI service that is not approved for healthcare use…"
+          oninput="saveAnswer(${idx},'problem',this.value)">${ans.problem}</textarea>
+      </div>
+
+      <!-- Q3: Who is affected -->
+      <div class="field-group">
+        <div class="field-label">3. Who could be affected?</div>
+        <div class="field-prompt">Patients, staff, or clinic operations — who is impacted and how?</div>
+        <textarea class="ta" id="affected-${idx}"
+          placeholder="e.g. The patients whose data was shared could have their private health information exposed. The clinic could face legal consequences under HIPAA…"
+          oninput="saveAnswer(${idx},'affected',this.value)">${ans.affected}</textarea>
+      </div>
+
+      <!-- Q4: Severity -->
+      <div class="field-group" style="margin-bottom:0;">
+        <div class="field-label">4. Severity Rating</div>
+        <div class="field-prompt">How serious is this risk if left unaddressed?</div>
+        <div class="severity-group">
+          ${SEVERITIES.map(sev => `
+          <div class="sev-btn ${ans.severity===sev ? 'sev-'+sev.toLowerCase() : ''}"
+               id="sev-${idx}-${sev}"
+               onclick="selectSeverity(${idx},'${sev}')">${sev}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function jumpScenario(i) {
+  currentScenario = i;
+  renderScenario(i);
+}
+
+function nextScenario() {
+  if(currentScenario < SCENARIOS.length - 1) {
+    currentScenario++;
+    renderScenario(currentScenario);
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+}
+
+function prevScenario() {
+  if(currentScenario > 0) {
+    currentScenario--;
+    renderScenario(currentScenario);
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+}
+
+// ═══════════════════════════════════════════════
+// INPUTS
+// ═══════════════════════════════════════════════
+function toggleRiskType(scenIdx, key, cls) {
+  const arr = answers[scenIdx].riskTypes;
+  const pos = arr.indexOf(key);
+  if(pos !== -1) arr.splice(pos, 1); else arr.push(key);
+  // update tag visuals
+  const el = document.getElementById(`rt-${scenIdx}-${key}`);
+  if(el) el.className = 'risk-tag ' + (arr.includes(key) ? cls : '');
+}
+
+function saveAnswer(scenIdx, field, val) {
+  answers[scenIdx][field] = val;
+}
+
+function selectSeverity(scenIdx, sev) {
+  answers[scenIdx].severity = sev;
+  SEVERITIES.forEach(s => {
+    const el = document.getElementById(`sev-${scenIdx}-${s}`);
+    if(el) el.className = 'sev-btn ' + (s === sev ? 'sev-'+s.toLowerCase() : '');
+  });
+  // Update "Reviewed" badge
+  renderScenario(scenIdx); // light re-render
+}
+
+// ═══════════════════════════════════════════════
+// LOG BUILD
+// ═══════════════════════════════════════════════
+function riskBadgeClass(key) {
+  return key==='privacy'?'lb-privacy':key==='bias'?'lb-bias':key==='unsafe'?'lb-unsafe':'lb-boundary';
+}
+function riskLabel(key) {
+  return RISK_TYPES.find(r=>r.key===key)?.label || key;
+}
+function sevClass(sev) { return sev ? 'lb-'+sev.toLowerCase() : ''; }
+
+function buildLog() {
+  const el = document.getElementById('logEntries');
+  el.innerHTML = SCENARIOS.map((s, i) => {
+    const ans = answers[i];
+    return `
+    <div class="log-scenario-block" style="${i<SCENARIOS.length-1?'margin-bottom:14px;':''}">
+      <div class="log-scenario-hd">
+        <div class="log-sc-title">${s.title}</div>
+        <div class="log-sc-badges">
+          ${ans.riskTypes.map(k=>`<span class="log-badge ${riskBadgeClass(k)}">${riskLabel(k)}</span>`).join('')}
+          ${ans.severity ? `<span class="log-badge ${sevClass(ans.severity)}">${ans.severity}</span>` : ''}
+        </div>
+      </div>
+      <div class="log-sc-body">
+        <div class="log-row">
+          <div class="log-row-label">Risk Types Identified</div>
+          <div class="log-row-val">${ans.riskTypes.length ? ans.riskTypes.map(k=>riskLabel(k)).join(', ') : '<em style="color:var(--text-dim)">Not selected</em>'}</div>
+        </div>
+        <div class="log-row">
+          <div class="log-row-label">What Is the Problem?</div>
+          <div class="log-row-val">${esc(ans.problem) || '<em style="color:var(--text-dim)">Not completed</em>'}</div>
+        </div>
+        <div class="log-row">
+          <div class="log-row-label">Who Is Affected?</div>
+          <div class="log-row-val">${esc(ans.affected) || '<em style="color:var(--text-dim)">Not completed</em>'}</div>
+        </div>
+        <div class="log-row" style="margin-bottom:0;">
+          <div class="log-row-label">Severity Rating</div>
+          <div class="log-row-val">${ans.severity ? `<span class="log-badge ${sevClass(ans.severity)}">${ans.severity}</span>` : '<em style="color:var(--text-dim)">Not selected</em>'}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════
+function exportLog() {
+  const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const r1 = document.getElementById('ref1').value || '[Not answered]';
+  const r2 = document.getElementById('ref2').value || '[Not answered]';
+  const r3 = document.getElementById('ref3').value || '[Not answered]';
+
+  const lines = [
+    '═══════════════════════════════════════════════',
+    '  AI RISK IDENTIFICATION LOG',
+    '  AI Essentials · Mission 4, Phase A',
+    `  ${today}`,
+    '═══════════════════════════════════════════════',
+    '',
+  ];
+
+  SCENARIOS.forEach((s, i) => {
+    const ans = answers[i];
+    lines.push(`SCENARIO ${i+1}: ${s.title.replace(/&amp;/g,'&')}`);
+    lines.push('─'.repeat(52));
+    lines.push(`Risk Types:  ${ans.riskTypes.map(k=>riskLabel(k)).join(', ') || '[Not selected]'}`);
+    lines.push(`Severity:    ${ans.severity || '[Not selected]'}`);
+    lines.push('');
+    lines.push('What is the problem?');
+    lines.push(`  ${ans.problem || '[Not completed]'}`);
+    lines.push('');
+    lines.push('Who is affected?');
+    lines.push(`  ${ans.affected || '[Not completed]'}`);
+    lines.push('');
+  });
+
+  lines.push('REFLECTION');
+  lines.push('──────────');
+  lines.push('');
+  lines.push('Q1: Which risks were hardest to identify?');
+  lines.push(`    ${r1}`);
+  lines.push('');
+  lines.push('Q2: Which scenario felt most serious?');
+  lines.push(`    ${r2}`);
+  lines.push('');
+  lines.push('Q3: What surprised you about AI in healthcare?');
+  lines.push(`    ${r3}`);
+  lines.push('');
+  lines.push('═══════════════════════════════════════════════');
+  lines.push('  AI Essentials · essentials-ai.com');
+  lines.push('  This log will be used as input for Phase B.');
+  lines.push('═══════════════════════════════════════════════');
+
+  const blob = new Blob([lines.join('\n')], { type:'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'lakeside-risk-log.txt'; a.click();
+  URL.revokeObjectURL(url);
+
+  document.getElementById('exportArea').innerHTML = `<div class="export-done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Risk log exported</div>`;
+  document.getElementById('completeBanner').style.display = 'block';
+  setTimeout(()=>document.getElementById('completeBanner').scrollIntoView({behavior:'smooth',block:'center'}),200);
+}
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
