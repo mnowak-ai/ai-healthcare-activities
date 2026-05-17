@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission 2 · Phase A — Communication Breakdown Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --purple:      #7B2FBE;
+  --purple-dark: #5b1e9a;
+  --purple-deep: #3d1270;
+  --purple-lo:   rgba(123,47,190,0.07);
+  --purple-mid:  rgba(123,47,190,0.18);
+
+  --bg:          #f7f6fb;
+  --white:       #ffffff;
+  --surface:     #ffffff;
+  --surface-2:   #f2f0f9;
+
+  --border:      rgba(123,47,190,0.12);
+  --border-hi:   rgba(123,47,190,0.28);
+
+  --text:        #1a0f2e;
+  --text-body:   #3a2f52;
+  --text-muted:  #7a6e92;
+  --text-dim:    #b5adc8;
+
+  --red:         #c0392b;
+  --red-lo:      rgba(192,57,43,0.07);
+  --amber:       #b45309;
+  --amber-lo:    rgba(180,83,9,0.07);
+  --green:       #0d7a5f;
+  --green-lo:    rgba(13,122,95,0.08);
+  --green-solid: #0d7a5f;
+
+  --step1: #7B2FBE;
+  --step2: #b45309;
+  --step3: #0d7a5f;
+
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+  --serif: 'Fraunces', serif;
+
+  --left-w: 240px;
+  --right-w: 230px;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text-body);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow: hidden;
+}
+
+/* ── LAYOUT ── */
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* LEFT PANEL */
+.left-panel {
+  width: var(--left-w);
+  flex-shrink: 0;
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.left-header {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.left-header .phase-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--purple);
+  background: var(--purple-lo);
+  border: 1px solid var(--purple-mid);
+  border-radius: 3px;
+  padding: 3px 8px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+.left-header h2 {
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+.left-header p {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.msg-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 10px 10px;
+}
+.msg-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+  margin-bottom: 6px;
+}
+.msg-item:hover { background: var(--surface-2); }
+.msg-item.active {
+  background: var(--purple-lo);
+  border-color: var(--purple-mid);
+}
+.msg-item-icon {
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+.msg-item-text { flex: 1; min-width: 0; }
+.msg-item-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+.msg-item-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.msg-item-status {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--text-dim);
+}
+.status-dot.done { background: var(--green-solid); }
+.status-dot.active { background: var(--purple); box-shadow: 0 0 5px rgba(123,47,190,0.4); }
+
+/* CENTER PANEL */
+.center-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+.center-topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.topbar-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.topbar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.step-pills {
+  display: flex;
+  gap: 6px;
+}
+.step-pill {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  background: transparent;
+  transition: all 0.2s;
+}
+.step-pill.s1.active { background: rgba(123,47,190,0.1); border-color: rgba(123,47,190,0.3); color: var(--step1); }
+.step-pill.s2.active { background: rgba(180,83,9,0.08); border-color: rgba(180,83,9,0.25); color: var(--step2); }
+.step-pill.s3.active { background: rgba(13,122,95,0.08); border-color: rgba(13,122,95,0.25); color: var(--step3); }
+.step-pill.done { background: var(--green-lo); border-color: rgba(13,122,95,0.25); color: var(--green); }
+
+.center-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* MESSAGE DISPLAY */
+.msg-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.msg-card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-2);
+}
+.msg-card-icon { font-size: 18px; }
+.msg-card-meta { flex: 1; }
+.msg-card-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.msg-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.msg-badge-type {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 3px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.badge-memo { background: var(--red-lo); color: var(--red); border: 1px solid rgba(192,57,43,0.18); }
+.badge-update { background: var(--amber-lo); color: var(--amber); border: 1px solid rgba(180,83,9,0.18); }
+.badge-ai { background: var(--purple-lo); color: var(--purple); border: 1px solid var(--purple-mid); }
+.badge-desk { background: rgba(37,99,235,0.07); color: #1d4ed8; border: 1px solid rgba(37,99,235,0.18); }
+
+.msg-raw-box {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.raw-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.raw-label::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+}
+.msg-raw-text {
+  background: #fffaf9;
+  border: 1px solid rgba(192,57,43,0.15);
+  border-left: 3px solid var(--red);
+  border-radius: 6px;
+  padding: 14px 16px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--text-body);
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+/* ANALYSIS STEPS */
+.analysis-wrap {
+  padding: 20px;
+}
+.step-block {
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.step-block.step-1 { border-top: 2px solid var(--step1); }
+.step-block.step-2 { border-top: 2px solid var(--step2); }
+.step-block.step-3 { border-top: 2px solid var(--step3); }
+
+.step-header {
+  padding: 13px 16px;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.step-num {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.step-1 .step-num { background: rgba(123,47,190,0.12); color: var(--step1); }
+.step-2 .step-num { background: rgba(180,83,9,0.10); color: var(--step2); }
+.step-3 .step-num { background: rgba(13,122,95,0.10); color: var(--step3); }
+
+.step-title { font-size: 13.5px; font-weight: 600; color: var(--text); flex: 1; }
+.step-desc { font-size: 12px; color: var(--text-muted); }
+.step-body { padding: 16px 16px; }
+
+/* CHECKBOXES */
+.check-group { display: flex; flex-direction: column; gap: 9px; margin-bottom: 12px; }
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  padding: 9px 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+.check-item:hover { background: var(--surface-2); }
+.check-item.checked { background: var(--green-lo); border-color: rgba(13,122,95,0.18); }
+.check-item input[type=checkbox] { display: none; }
+.check-box {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  border: 2px solid var(--border-hi);
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  background: white;
+}
+.check-item.checked .check-box {
+  background: var(--green-solid);
+  border-color: var(--green-solid);
+}
+.check-icon { color: white; display: none; }
+.check-item.checked .check-icon { display: block; }
+.check-label {
+  font-size: 13.5px;
+  color: var(--text-body);
+  line-height: 1.5;
+}
+.check-item.checked .check-label { color: var(--text-muted); }
+
+/* TEXTAREA / SHORT ANSWER */
+.step-prompt {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+  font-style: italic;
+}
+.step-textarea {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: var(--text);
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 72px;
+  transition: border-color 0.15s;
+  outline: none;
+}
+.step-textarea:focus { border-color: var(--purple-mid); background: #fff; }
+.step-textarea::placeholder { color: var(--text-dim); }
+
+/* NAV BUTTONS */
+.center-footer {
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 12px;
+}
+.footer-progress {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  letter-spacing: 0.05em;
+}
+.footer-actions { display: flex; gap: 10px; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 5px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-hi);
+  color: var(--text-muted);
+}
+.btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+.btn-primary {
+  background: var(--purple);
+  color: white;
+}
+.btn-primary:hover { background: var(--purple-dark); box-shadow: 0 2px 10px rgba(123,47,190,0.25); }
+.btn-primary:disabled { opacity: 0.4; cursor: default; }
+.btn-success { background: var(--green-solid); color: white; }
+.btn-success:hover { background: #0a6450; }
+.btn svg { width: 14px; height: 14px; }
+
+/* RIGHT PANEL */
+.right-panel {
+  width: var(--right-w);
+  flex-shrink: 0;
+  background: var(--white);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.right-header {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.right-header h3 {
+  font-family: var(--serif);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.right-header p { font-size: 11.5px; color: var(--text-muted); }
+.right-scroll { overflow-y: auto; flex: 1; padding: 14px 14px; }
+
+/* PROGRESS CHECKLIST */
+.progress-section { margin-bottom: 18px; }
+.progress-section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  padding-left: 2px;
+}
+.progress-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+  transition: background 0.15s;
+}
+.progress-item.pending { opacity: 0.5; }
+.progress-item.done-item { background: var(--green-lo); border-color: rgba(13,122,95,0.15); }
+.progress-item.current-item { background: var(--purple-lo); border-color: var(--purple-mid); }
+
+.pi-icon {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-dim);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.progress-item.done-item .pi-icon { background: var(--green-solid); border-color: var(--green-solid); }
+.progress-item.current-item .pi-icon { border-color: var(--purple); background: var(--purple-lo); }
+.pi-icon svg { width: 10px; height: 10px; }
+.pi-label { font-size: 12px; color: var(--text-body); line-height: 1.4; }
+.progress-item.done-item .pi-label { color: var(--text-muted); }
+.progress-item.current-item .pi-label { color: var(--purple); font-weight: 500; }
+
+/* SUMMARY PANEL (right) */
+.summary-box {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 12px 12px;
+  margin-bottom: 10px;
+}
+.summary-box-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 7px;
+}
+.summary-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.summary-tag {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: var(--purple-lo);
+  border: 1px solid var(--purple-mid);
+  color: var(--purple);
+  font-family: var(--mono);
+}
+.summary-tag.red-tag { background: var(--red-lo); border-color: rgba(192,57,43,0.18); color: var(--red); }
+.summary-tag.empty { background: transparent; border-color: var(--border); color: var(--text-dim); font-style: italic; }
+
+/* SUMMARY SCREEN */
+.summary-screen {
+  display: none;
+  padding: 28px;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+.summary-screen.visible { display: flex; }
+.summary-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.summary-sub { font-size: 13.5px; color: var(--text-muted); }
+.summary-section {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  overflow: hidden;
+}
+.summary-section-head {
+  padding: 13px 18px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.summary-section-icon {
+  width: 28px; height: 28px;
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+}
+.ss-purple { background: var(--purple-lo); border: 1px solid var(--purple-mid); }
+.ss-red    { background: var(--red-lo);    border: 1px solid rgba(192,57,43,0.18); }
+.ss-amber  { background: var(--amber-lo);  border: 1px solid rgba(180,83,9,0.18); }
+.ss-green  { background: var(--green-lo);  border: 1px solid rgba(13,122,95,0.18); }
+.summary-section-icon svg { width: 14px; height: 14px; }
+.ss-purple svg { color: var(--purple); }
+.ss-red    svg { color: var(--red); }
+.ss-amber  svg { color: var(--amber); }
+.ss-green  svg { color: var(--green); }
+.summary-section-title { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.summary-section-body { padding: 16px 18px; }
+.summary-bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13.5px;
+  color: var(--text-body);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+.summary-bullet::before {
+  content: '•';
+  color: var(--purple);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.summary-empty { font-size: 13px; color: var(--text-dim); font-style: italic; }
+
+.phase-complete-banner {
+  background: linear-gradient(135deg, var(--purple-deep) 0%, var(--purple-dark) 100%);
+  border-radius: 9px;
+  padding: 22px 24px;
+  color: white;
+  text-align: center;
+}
+.phase-complete-banner h3 {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+.phase-complete-banner p { font-size: 13px; opacity: 0.7; margin-bottom: 16px; }
+
+/* FADE IN */
+.fade-enter {
+  animation: fadeIn 0.3s ease forwards;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 3px; }
+
+@media (max-width: 900px) {
+  .right-panel { display: none; }
+  :root { --left-w: 200px; }
+}
+@media (max-width: 640px) {
+  .left-panel { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- ════════════════ LEFT PANEL ════════════════ -->
+<div class="left-panel">
+  <div class="left-header">
+    <div class="phase-badge">Phase A</div>
+    <h2>Communication<br>Feed</h2>
+    <p>Select a message to analyze</p>
+  </div>
+  <div class="msg-list" id="msgList"></div>
+</div>
+
+<!-- ════════════════ CENTER PANEL ════════════════ -->
+<div class="center-panel">
+  <div class="center-topbar">
+    <div>
+      <div class="topbar-label">Mission 2 · Phase A</div>
+      <div class="topbar-title" id="topbarTitle">Communication Breakdown Analysis</div>
+    </div>
+    <div class="step-pills" id="stepPills">
+      <div class="step-pill s1" id="pill1">Step 1</div>
+      <div class="step-pill s2" id="pill2">Step 2</div>
+      <div class="step-pill s3" id="pill3">Step 3</div>
+    </div>
+  </div>
+
+  <!-- ANALYSIS VIEW -->
+  <div class="center-scroll" id="analysisView">
+    <div id="msgContent"></div>
+  </div>
+
+  <!-- SUMMARY VIEW -->
+  <div class="summary-screen" id="summaryView">
+    <div>
+      <div class="summary-title">Communication Breakdown Summary</div>
+      <div class="summary-sub">Phase A complete — here is what you identified across all 4 messages.</div>
+    </div>
+    <div class="summary-section">
+      <div class="summary-section-head">
+        <div class="summary-section-icon ss-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div class="summary-section-title">Key Communication Issues Identified</div>
+      </div>
+      <div class="summary-section-body" id="summIssues"></div>
+    </div>
+    <div class="summary-section">
+      <div class="summary-section-head">
+        <div class="summary-section-icon ss-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="summary-section-title">Clarity Problems</div>
+      </div>
+      <div class="summary-section-body" id="summClarity"></div>
+    </div>
+    <div class="summary-section">
+      <div class="summary-section-head">
+        <div class="summary-section-icon ss-amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+        </div>
+        <div class="summary-section-title">Missing Information</div>
+      </div>
+      <div class="summary-section-body" id="summMissing"></div>
+    </div>
+    <div class="summary-section">
+      <div class="summary-section-head">
+        <div class="summary-section-icon ss-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="summary-section-title">Risk of Miscommunication</div>
+      </div>
+      <div class="summary-section-body" id="summRisk"></div>
+    </div>
+    <div class="summary-section">
+      <div class="summary-section-head">
+        <div class="summary-section-icon ss-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="summary-section-title">Improvement Suggestions</div>
+      </div>
+      <div class="summary-section-body" id="summImprove"></div>
+    </div>
+    <div class="phase-complete-banner">
+      <h3>Phase A Complete</h3>
+      <p>You have identified all key communication breakdowns. In Phase B, you will use Microsoft Copilot to rewrite these messages into clear, professional healthcare memos.</p>
+    </div>
+  </div>
+
+  <div class="center-footer" id="centerFooter">
+    <div class="footer-progress" id="footerProgress">Message 1 of 4</div>
+    <div class="footer-actions">
+      <button class="btn btn-ghost" id="btnPrev" onclick="navMsg(-1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Previous
+      </button>
+      <button class="btn btn-primary" id="btnNext" onclick="navMsg(1)">
+        Next Message
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="btn btn-success" id="btnSummary" onclick="showSummary()" style="display:none;">
+        View Summary
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ RIGHT PANEL ════════════════ -->
+<div class="right-panel">
+  <div class="right-header">
+    <h3>Progress Tracker</h3>
+    <p>Your work on this phase</p>
+  </div>
+  <div class="right-scroll">
+    <div id="progressChecklist"></div>
+    <div id="tagSummaryBox"></div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const messages = [
+  {
+    id: 0,
+    icon: '📋',
+    type: 'memo',
+    badgeClass: 'badge-memo',
+    badgeLabel: 'Internal Memo',
+    sender: 'Nurse Manager · Floor 2',
+    title: 'Staff Scheduling Update – Urgent',
+    raw: `hey everyone,
+
+so just wanted to say there are some changes happening with the schedule next week because of the thing with the holiday and also because two people called out. I talked to HR already but they said we just need to figure it out ourselves for now. shifts might be different. some people might need to cover extra. check with your supervisor I guess.
+
+also the new procedure for patient handoffs is starting monday or maybe tuesday, not totally sure yet. someone will let you know.
+
+- mgmt`,
+    steps: [
+      {
+        label: 'Identify Problems',
+        color: 'step-1',
+        num: '1',
+        title: 'What is wrong here?',
+        desc: 'Look at the message and check everything that is unclear or missing.',
+        checks: [
+          'The message is vague — no specific dates or times are given',
+          'Who needs to cover extra shifts is not identified',
+          'The new patient handoff procedure is not explained',
+          '"The thing with the holiday" is not clearly named',
+          'No clear action is required of the reader',
+          'The tone is too informal for a healthcare workplace',
+        ],
+        prompt: 'What else do you notice? (Optional)',
+        placeholder: 'e.g. There is no contact name if staff have questions…',
+        key: 'issues',
+      },
+      {
+        label: 'Understand Impact',
+        color: 'step-2',
+        num: '2',
+        title: 'Why is this a problem in healthcare?',
+        desc: 'Think about how this message could cause real problems at the clinic.',
+        checks: [
+          'Staff may show up at the wrong time or not at all',
+          'Patient handoffs could be done incorrectly if the new procedure is unclear',
+          'Confusion about coverage could leave a unit short-staffed',
+          'Staff cannot plan ahead without specific dates',
+          'Important policy changes are being communicated informally',
+        ],
+        prompt: 'What risk concerns you most?',
+        placeholder: 'e.g. If shifts are unclear, a floor could be understaffed during peak hours…',
+        key: 'risk',
+      },
+      {
+        label: 'Improve It',
+        color: 'step-3',
+        num: '3',
+        title: 'How would you improve this?',
+        desc: 'What should be changed or added to make this message clearer and safer?',
+        checks: [
+          'Add specific shift dates and times',
+          'Name which staff members are affected',
+          'Explain the new patient handoff procedure clearly',
+          'Provide a contact name for questions',
+          'Use a professional tone and clear structure',
+          'Include a deadline for staff to confirm their updated schedule',
+        ],
+        prompt: 'How would you rewrite the opening sentence?',
+        placeholder: 'e.g. "Effective Monday, November 11, the following schedule changes are in effect…"',
+        key: 'improve',
+      },
+    ],
+  },
+  {
+    id: 1,
+    icon: '📢',
+    type: 'update',
+    badgeClass: 'badge-update',
+    badgeLabel: 'Staff Update',
+    sender: 'Operations Team · Clinic-Wide',
+    title: 'Important Update for All Clinic Staff',
+    raw: `To All Staff,
+
+This message is to inform you that there have been several developments across multiple departments over the past few weeks that require your attention and awareness going forward. As you may already be aware, there have been ongoing conversations at the leadership level regarding operational adjustments, improvements to certain workflows, the introduction of some new documentation tools, updates to the patient intake procedures as well as discussions around team restructuring in a few specific areas of the clinic that we believe will help improve our overall performance and the quality of care that we are able to deliver to our patients in the coming months and potentially beyond that as well.
+
+Please continue to check your email for further updates. If you have questions, reach out to your supervisor or department lead.
+
+Thank you for your continued dedication and commitment to excellence.`,
+    steps: [
+      {
+        label: 'Identify Problems',
+        color: 'step-1',
+        num: '1',
+        title: 'What is wrong here?',
+        desc: 'This message is very long. Check the problems you can see.',
+        checks: [
+          'The entire message is one enormous run-on sentence in the middle',
+          'No specific changes are actually named or explained',
+          'There are no bullet points or structure to guide the reader',
+          'Staff have no idea what action to take after reading this',
+          'Key topics (intake, tools, restructuring) are buried with no detail',
+          '"Potentially beyond that as well" adds nothing useful',
+        ],
+        prompt: 'What would confuse you most if you received this? (Optional)',
+        placeholder: 'e.g. I would not know if this affected my department or my role…',
+        key: 'issues',
+      },
+      {
+        label: 'Understand Impact',
+        color: 'step-2',
+        num: '2',
+        title: 'Why is this a problem in healthcare?',
+        desc: 'Think about how an unclear all-staff update affects real clinic operations.',
+        checks: [
+          'Staff who need to act will not know what to do',
+          'Important changes like patient intake updates may be missed',
+          'Team restructuring rumors may spread because nothing is confirmed',
+          'Staff will likely ignore or skim this message',
+          'Time-sensitive changes buried in vague language create delays',
+        ],
+        prompt: 'Which department is most likely affected? Why?',
+        placeholder: 'e.g. Patient intake staff — they are mentioned but given no instructions…',
+        key: 'risk',
+      },
+      {
+        label: 'Improve It',
+        color: 'step-3',
+        num: '3',
+        title: 'How would you improve this?',
+        desc: 'What structural or content changes would make this message work better?',
+        checks: [
+          'Break it into bullet points by department or topic',
+          'State the specific changes clearly for each topic',
+          'Remove filler language like "potentially beyond that"',
+          'Add an effective date for each change',
+          'Identify who to contact for each topic area',
+          'Keep it to 150 words or fewer',
+        ],
+        prompt: 'Write a better subject line for this message.',
+        placeholder: 'e.g. "Action Required: 3 Clinic Updates Effective This Week"',
+        key: 'improve',
+      },
+    ],
+  },
+  {
+    id: 2,
+    icon: '🤖',
+    type: 'ai',
+    badgeClass: 'badge-ai',
+    badgeLabel: 'AI-Generated · Unreviewed',
+    sender: 'Auto-Generated Clinical Summary',
+    title: 'Patient Discharge Summary – Room 14B',
+    raw: `Patient Discharge Summary
+
+Patient: [Name]
+Date: [Date]
+Provider: [Provider Name]
+
+The patient presented with symptoms consistent with a respiratory condition and was treated accordingly. Medication was administered as needed. The patient responded to treatment in a generally positive manner. Follow-up care may be required depending on ongoing symptom presentation.
+
+The patient has been discharged. They should contact a healthcare provider if symptoms return or worsen. It is recommended that the patient follow up as appropriate.
+
+Notes: None at this time.
+
+— Auto-generated by Clinical Summary Tool`,
+    steps: [
+      {
+        label: 'Identify Problems',
+        color: 'step-1',
+        num: '1',
+        title: 'What is wrong here?',
+        desc: 'This was written by AI and never reviewed. Check everything that is missing or unsafe.',
+        checks: [
+          'Patient name, date, and provider are all blank placeholders',
+          '"Respiratory condition" is not specific — no diagnosis is named',
+          '"Medication was administered" does not say which medication or dosage',
+          '"Follow up as appropriate" gives no actual instructions',
+          'No symptoms, vitals, or test results are included',
+          'This summary would be useless to any provider reading it',
+        ],
+        prompt: 'What is the most dangerous problem with this document?',
+        placeholder: 'e.g. A provider reading this would have no idea what condition was treated or what medication was given…',
+        key: 'issues',
+      },
+      {
+        label: 'Understand Impact',
+        color: 'step-2',
+        num: '2',
+        title: 'Why is this a problem in healthcare?',
+        desc: 'Think about what could go wrong if this document was used by clinical staff.',
+        checks: [
+          'A receiving provider could make incorrect care decisions',
+          'Blank fields mean the document is legally incomplete',
+          'No medication details could lead to dangerous drug interactions',
+          'Vague follow-up instructions may result in the patient not getting needed care',
+          'AI-generated summaries without review can violate documentation standards',
+        ],
+        prompt: 'Why is it dangerous to send AI-generated documents without reviewing them?',
+        placeholder: 'e.g. AI does not know the actual patient details — it only generates a template…',
+        key: 'risk',
+      },
+      {
+        label: 'Improve It',
+        color: 'step-3',
+        num: '3',
+        title: 'How would you improve this?',
+        desc: 'What must always be done before an AI-generated clinical document is used?',
+        checks: [
+          'A human must review and complete all blank fields before sending',
+          'Specific diagnosis, medications, and dosages must be added',
+          'Follow-up instructions should include dates, locations, and contact info',
+          'Symptoms at admission and at discharge should be documented',
+          'AI-generated documents should always be labeled as "Draft — Review Required"',
+          'The reviewing clinician should sign or initial the document',
+        ],
+        prompt: 'Write one clear follow-up instruction the patient should receive.',
+        placeholder: 'e.g. "Schedule a follow-up appointment with your primary care physician within 7 days."',
+        key: 'improve',
+      },
+    ],
+  },
+  {
+    id: 3,
+    icon: '📞',
+    type: 'desk',
+    badgeClass: 'badge-desk',
+    badgeLabel: 'Front Desk Message',
+    sender: 'Reception · Main Entrance',
+    title: 'Message for Dr. Reyes – Patient Called',
+    raw: `Dr. Reyes –
+
+someone called for u, said it was about a patient, sounded kind of urgent maybe? I didn't catch the name bc it was loud up front. they said they'd call back or maybe they want u to call them. not sure of the number either sorry. it was like around 2ish.
+
+also mrs johnson called again about her appointment, said she never got the reminder and is this the right day? I told her I'd check but then got busy.
+
+thx`,
+    steps: [
+      {
+        label: 'Identify Problems',
+        color: 'step-1',
+        num: '1',
+        title: 'What is wrong here?',
+        desc: 'This is a message left for a doctor. Check everything that makes it unclear or incomplete.',
+        checks: [
+          'The caller\'s name was not recorded',
+          'The callback number is missing',
+          'The patient\'s name connected to the urgent call is unknown',
+          '"Kind of urgent maybe" is not a clear enough description',
+          '"Around 2ish" is not a precise time',
+          'Mrs. Johnson\'s issue is left unresolved with no follow-up documented',
+        ],
+        prompt: 'What would Dr. Reyes be unable to do because of this message?',
+        placeholder: 'e.g. Dr. Reyes cannot return the urgent call because there is no number or caller name…',
+        key: 'issues',
+      },
+      {
+        label: 'Understand Impact',
+        color: 'step-2',
+        num: '2',
+        title: 'Why is this a problem in healthcare?',
+        desc: 'Think about what could happen to a patient because of this incomplete message.',
+        checks: [
+          'An urgent patient call could go unreturned',
+          'Dr. Reyes cannot triage the urgency without any details',
+          'Mrs. Johnson may miss her appointment due to the unresolved reminder issue',
+          'No documentation means there is no record this communication happened',
+          'Informal language ("u", "2ish", "thx") is inappropriate for medical messaging',
+        ],
+        prompt: 'What is the patient safety risk here?',
+        placeholder: 'e.g. If the urgent caller was a patient in distress, the delay could have serious consequences…',
+        key: 'risk',
+      },
+      {
+        label: 'Improve It',
+        color: 'step-3',
+        num: '3',
+        title: 'How would you improve this?',
+        desc: 'What should front desk staff always include when taking a message for a provider?',
+        checks: [
+          'Full name of the caller (or "caller declined to give name")',
+          'Callback phone number',
+          'Exact time of the call',
+          'Brief reason for the call',
+          'Level of urgency (urgent / non-urgent)',
+          'Separate Mrs. Johnson\'s issue into its own documented note',
+        ],
+        prompt: 'Rewrite the first two sentences of this message professionally.',
+        placeholder: 'e.g. "Dr. Reyes — An unidentified caller contacted the front desk at 2:10 PM regarding a patient matter described as urgent. No callback number was obtained. Recommend follow-up."',
+        key: 'improve',
+      },
+    ],
+  },
+];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let currentMsg = 0;
+let completedMsgs = new Set();
+
+// Per-message state: { checks: {stepIdx: Set<n>}, notes: {stepIdx: str} }
+const state = messages.map(() => ({
+  checks: { 0: new Set(), 1: new Set(), 2: new Set() },
+  notes:  { 0: '', 1: '', 2: '' },
+}));
+
+// ═══════════════════════════════════════════
+// RENDER LEFT PANEL
+// ═══════════════════════════════════════════
+function renderLeft() {
+  const list = document.getElementById('msgList');
+  list.innerHTML = messages.map((m, i) => {
+    const done = completedMsgs.has(i);
+    const active = i === currentMsg;
+    return `
+    <div class="msg-item ${active ? 'active' : ''}" onclick="selectMsg(${i})">
+      <div class="msg-item-icon" style="background:${iconBg(m.type)}">${m.icon}</div>
+      <div class="msg-item-text">
+        <div class="msg-item-title">${m.title}</div>
+        <div class="msg-item-sub">${m.sender.split('·')[0].trim()}</div>
+      </div>
+      <div class="msg-item-status">
+        <div class="status-dot ${done ? 'done' : active ? 'active' : ''}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function iconBg(type) {
+  return type === 'memo' ? 'rgba(192,57,43,0.08)' :
+         type === 'update' ? 'rgba(180,83,9,0.08)' :
+         type === 'ai' ? 'rgba(123,47,190,0.08)' :
+         'rgba(37,99,235,0.08)';
+}
+
+// ═══════════════════════════════════════════
+// RENDER CENTER
+// ═══════════════════════════════════════════
+function renderCenter() {
+  const m = messages[currentMsg];
+  const s = state[currentMsg];
+  document.getElementById('topbarTitle').textContent = m.title;
+  document.getElementById('footerProgress').textContent = `Message ${currentMsg + 1} of ${messages.length}`;
+
+  // Step pills
+  ['pill1','pill2','pill3'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.className = `step-pill s${i+1}`;
+    const done = completedMsgs.has(currentMsg);
+    if (done) { el.classList.add('done'); }
+    else { el.classList.add('active'); }
+  });
+
+  // Prev/Next
+  document.getElementById('btnPrev').disabled = currentMsg === 0;
+  const allDone = messages.every((_, i) => completedMsgs.has(i));
+  const btnNext = document.getElementById('btnNext');
+  const btnSummary = document.getElementById('btnSummary');
+  if (currentMsg === messages.length - 1 && allDone) {
+    btnNext.style.display = 'none';
+    btnSummary.style.display = '';
+  } else {
+    btnNext.style.display = '';
+    btnSummary.style.display = allDone ? '' : 'none';
+    btnNext.textContent = currentMsg === messages.length - 1 ? 'View Summary' : 'Next Message';
+    if (currentMsg === messages.length - 1) {
+      btnNext.onclick = showSummary;
+    } else {
+      btnNext.onclick = () => navMsg(1);
+    }
+  }
+
+  // Message content
+  const content = document.getElementById('msgContent');
+  content.className = 'fade-enter';
+
+  content.innerHTML = `
+    <div class="msg-card">
+      <div class="msg-card-header">
+        <div class="msg-card-icon">${m.icon}</div>
+        <div class="msg-card-meta">
+          <div class="msg-card-label">${m.sender}</div>
+          <div class="msg-card-title">${m.title}</div>
+        </div>
+        <span class="msg-badge-type ${m.badgeClass}">${m.badgeLabel}</span>
+      </div>
+      <div class="msg-raw-box">
+        <div class="raw-label">Original Message — As Received</div>
+        <div class="msg-raw-text">${escHtml(m.raw)}</div>
+      </div>
+      <div class="analysis-wrap">
+        <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:16px;">
+          Work through all three steps below. Check the problems you can see, then add a short note in the text box.
+        </div>
+        ${m.steps.map((step, si) => renderStepBlock(step, si, s)).join('')}
+        ${completedMsgs.has(currentMsg) ? `
+        <div style="display:flex;align-items:center;gap:9px;padding:12px 16px;background:var(--green-lo);border:1px solid rgba(13,122,95,0.2);border-radius:7px;margin-top:4px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green-solid)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span style="font-size:13px;color:var(--green-solid);font-weight:500;">Analysis complete for this message.</span>
+        </div>` : `
+        <button class="btn btn-primary" onclick="markDone(${currentMsg})" id="btnMarkDone" style="margin-top:4px;">
+          Mark Analysis Complete
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </button>`}
+      </div>
+    </div>
+  `;
+  void content.offsetWidth; // trigger reflow for animation
+}
+
+function renderStepBlock(step, si, s) {
+  const checks = step.checks.map((c, ci) => {
+    const checked = s.checks[si].has(ci);
+    return `
+    <label class="check-item ${checked ? 'checked' : ''}" onclick="toggleCheck(${currentMsg},${si},${ci})">
+      <div class="check-box">
+        <svg class="check-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="check-label">${escHtml(c)}</span>
+    </label>`;
+  }).join('');
+
+  return `
+  <div class="step-block ${step.color}">
+    <div class="step-header">
+      <div class="step-num">${step.num}</div>
+      <div>
+        <div style="font-size:10px;font-family:var(--mono);letter-spacing:0.10em;text-transform:uppercase;color:var(--text-muted);margin-bottom:2px;">${step.label}</div>
+        <div class="step-title">${step.title}</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="step-prompt" style="margin-bottom:10px;">${step.desc}</div>
+      <div class="check-group">${checks}</div>
+      <div class="step-prompt" style="margin-top:12px;">${escHtml(step.prompt)}</div>
+      <textarea class="step-textarea" placeholder="${escAttr(step.placeholder)}"
+        onchange="saveNote(${currentMsg},${si},this.value)"
+        oninput="saveNote(${currentMsg},${si},this.value)">${escHtml(s.notes[si])}</textarea>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+// RENDER RIGHT PANEL
+// ═══════════════════════════════════════════
+function renderRight() {
+  // Progress checklist
+  const items = [];
+  messages.forEach((m, i) => {
+    const done = completedMsgs.has(i);
+    const cur = i === currentMsg;
+    items.push({ label: `Reviewed: ${m.title.length > 28 ? m.title.slice(0,28)+'…' : m.title}`, done, cur });
+    if (done || cur) {
+      items.push({ label: 'Identified communication issues', done, cur: false });
+      items.push({ label: 'Analyzed clinic impact', done, cur: false });
+      items.push({ label: 'Suggested improvements', done, cur: false });
+    }
+  });
+
+  const progressHtml = `
+  <div class="progress-section">
+    <div class="progress-section-label">Message Checklist</div>
+    ${messages.map((m, i) => {
+      const done = completedMsgs.has(i);
+      const cur = i === currentMsg && !done;
+      return `
+      <div class="progress-item ${done ? 'done-item' : cur ? 'current-item' : 'pending'}">
+        <div class="pi-icon">
+          ${done
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+            : cur
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>`
+            : ''}
+        </div>
+        <div class="pi-label">${m.icon} ${m.title.length > 24 ? m.title.slice(0,24)+'…' : m.title}</div>
+      </div>`;
+    }).join('')}
+  </div>
+  <div class="progress-section">
+    <div class="progress-section-label">Steps per Message</div>
+    ${['Identify Problems','Understand Impact','Improve It'].map((lbl, si) => `
+      <div class="progress-item ${completedMsgs.size > 0 ? 'done-item' : si === 0 ? 'current-item' : 'pending'}">
+        <div class="pi-icon">
+          ${completedMsgs.size > 0
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+            : si === 0
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>`
+            : ''}
+        </div>
+        <div class="pi-label">Step ${si+1}: ${lbl}</div>
+      </div>`).join('')}
+  </div>`;
+
+  document.getElementById('progressChecklist').innerHTML = progressHtml;
+
+  // Tag summary
+  const allIssues = [];
+  messages.forEach((m, i) => {
+    if (completedMsgs.has(i)) {
+      const s = state[i];
+      m.steps[0].checks.forEach((c, ci) => {
+        if (s.checks[0].has(ci)) allIssues.push(c.split(' — ')[0].slice(0,40));
+      });
+    }
+  });
+
+  document.getElementById('tagSummaryBox').innerHTML = `
+  <div class="summary-box">
+    <div class="summary-box-label">Issues Flagged So Far</div>
+    <div class="summary-tags">
+      ${allIssues.length === 0
+        ? '<span class="summary-tag empty">None yet — complete a message</span>'
+        : allIssues.slice(0,8).map(t => `<span class="summary-tag red-tag">${escHtml(t)}…</span>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+// SUMMARY SCREEN
+// ═══════════════════════════════════════════
+function showSummary() {
+  document.getElementById('analysisView').style.display = 'none';
+  document.getElementById('summaryView').classList.add('visible');
+  document.getElementById('centerFooter').style.display = 'none';
+  document.getElementById('topbarTitle').textContent = 'Communication Breakdown Summary';
+  document.getElementById('stepPills').style.display = 'none';
+
+  // Build summary data
+  const issues = [], clarity = [], missing = [], risk = [], improve = [];
+
+  messages.forEach((m, i) => {
+    const s = state[i];
+    // Issues (step 0 checks)
+    m.steps[0].checks.forEach((c, ci) => {
+      if (s.checks[0].has(ci)) issues.push(`[${m.title.split('–')[0].trim()}] ${c}`);
+    });
+    if (s.notes[0]) issues.push(`Note: ${s.notes[0]}`);
+
+    // Clarity — derive from step 0 checks about length/structure
+    m.steps[0].checks.forEach((c, ci) => {
+      if (s.checks[0].has(ci) && (c.toLowerCase().includes('vague') || c.toLowerCase().includes('long') || c.toLowerCase().includes('structure') || c.toLowerCase().includes('tone') || c.toLowerCase().includes('informal') || c.toLowerCase().includes('run-on') || c.toLowerCase().includes('filler') || c.toLowerCase().includes('buried')))
+        clarity.push(`[${m.title.split('–')[0].trim()}] ${c}`);
+    });
+
+    // Missing — from step 0 checks about missing info
+    m.steps[0].checks.forEach((c, ci) => {
+      if (s.checks[0].has(ci) && (c.toLowerCase().includes('missing') || c.toLowerCase().includes('blank') || c.toLowerCase().includes('no ') || c.toLowerCase().includes('not ') || c.toLowerCase().includes('unknown') || c.toLowerCase().includes('not recorded') || c.toLowerCase().includes('not named') || c.toLowerCase().includes('not specific')))
+        missing.push(`[${m.title.split('–')[0].trim()}] ${c}`);
+    });
+
+    // Risk — step 1 checks + note
+    m.steps[1].checks.forEach((c, ci) => {
+      if (s.checks[1].has(ci)) risk.push(`[${m.title.split('–')[0].trim()}] ${c}`);
+    });
+    if (s.notes[1]) risk.push(`Note: ${s.notes[1]}`);
+
+    // Improve — step 2 checks + note
+    m.steps[2].checks.forEach((c, ci) => {
+      if (s.checks[2].has(ci)) improve.push(`[${m.title.split('–')[0].trim()}] ${c}`);
+    });
+    if (s.notes[2]) improve.push(`Note: ${s.notes[2]}`);
+  });
+
+  function renderBullets(arr, containerId) {
+    const el = document.getElementById(containerId);
+    if (arr.length === 0) {
+      el.innerHTML = '<div class="summary-empty">No items recorded — go back and complete the analysis steps.</div>';
+    } else {
+      el.innerHTML = arr.map(t => `<div class="summary-bullet">${escHtml(t)}</div>`).join('');
+    }
+  }
+
+  renderBullets(issues, 'summIssues');
+  renderBullets(clarity.length ? clarity : issues.filter(i => i.includes('vague') || i.includes('long') || i.includes('unclear')), 'summClarity');
+  renderBullets(missing.length ? missing : ['Review your checked items — focus on what was absent from each message'], 'summMissing');
+  renderBullets(risk, 'summRisk');
+  renderBullets(improve, 'summImprove');
+}
+
+// ═══════════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════════
+function selectMsg(i) {
+  currentMsg = i;
+  renderAll();
+  document.getElementById('analysisView').scrollTop = 0;
+}
+
+function navMsg(dir) {
+  const next = currentMsg + dir;
+  if (next >= 0 && next < messages.length) {
+    currentMsg = next;
+    renderAll();
+    document.getElementById('analysisView').scrollTop = 0;
+  }
+}
+
+function toggleCheck(msgIdx, stepIdx, checkIdx) {
+  const s = state[msgIdx].checks[stepIdx];
+  if (s.has(checkIdx)) s.delete(checkIdx); else s.add(checkIdx);
+  renderCenter();
+  renderRight();
+}
+
+function saveNote(msgIdx, stepIdx, val) {
+  state[msgIdx].notes[stepIdx] = val;
+  renderRight();
+}
+
+function markDone(msgIdx) {
+  completedMsgs.add(msgIdx);
+  renderAll();
+  // Auto-advance to next uncompleted
+  const next = messages.findIndex((_, i) => !completedMsgs.has(i));
+  if (next !== -1 && next !== currentMsg) {
+    setTimeout(() => { currentMsg = next; renderAll(); document.getElementById('analysisView').scrollTop = 0; }, 300);
+  }
+}
+
+function renderAll() {
+  renderLeft();
+  renderCenter();
+  renderRight();
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(str) {
+  return String(str).replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+renderAll();
+</script>
+</body>
+</html>
