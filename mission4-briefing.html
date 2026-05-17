@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission 4 · Lakeside Responsible AI Safety Center</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --purple:      #7B2FBE;
+  --purple-dark: #5b1e9a;
+  --purple-deep: #3d1270;
+  --purple-lo:   rgba(123,47,190,0.07);
+  --purple-mid:  rgba(123,47,190,0.18);
+
+  --bg:          #ffffff;
+  --bg-soft:     #f7f6fb;
+  --surface-2:   #f2f0f9;
+
+  --border:      rgba(123,47,190,0.12);
+  --border-hi:   rgba(123,47,190,0.28);
+
+  --text:        #1a0f2e;
+  --text-body:   #3a2f52;
+  --text-muted:  #7a6e92;
+  --text-dim:    #b5adc8;
+
+  --red:         #c0392b;
+  --red-lo:      rgba(192,57,43,0.07);
+  --amber:       #b45309;
+  --amber-lo:    rgba(180,83,9,0.07);
+  --green:       #0d7a5f;
+  --green-lo:    rgba(13,122,95,0.08);
+
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+  --serif: 'Fraunces', serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text-body);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+/* subtle grid */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(123,47,190,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(123,47,190,0.025) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none; z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed; top: -25%; right: -20%;
+  width: 60%; height: 60%;
+  background: radial-gradient(ellipse, rgba(123,47,190,0.05) 0%, transparent 65%);
+  pointer-events: none; z-index: 0;
+}
+
+.page-wrap {
+  position: relative; z-index: 1;
+  max-width: 860px; margin: 0 auto;
+  padding: 48px 28px 90px;
+}
+
+/* ── ANIMATIONS ── */
+.fade-in { opacity: 0; transform: translateY(14px); animation: fadeUp .55s ease forwards; }
+@keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+.d1{animation-delay:.05s} .d2{animation-delay:.14s} .d3{animation-delay:.23s}
+.d4{animation-delay:.32s} .d5{animation-delay:.41s} .d6{animation-delay:.50s}
+.d7{animation-delay:.59s} .d8{animation-delay:.68s}
+
+/* ── SYSTEM BAR ── */
+.sys-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 22px; border-bottom: 1px solid var(--border); margin-bottom: 36px;
+}
+.sys-left {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text-muted); letter-spacing: .08em; text-transform: uppercase;
+}
+.sys-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--purple); box-shadow: 0 0 7px rgba(123,47,190,.45);
+  animation: blink 2.2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+.sys-right { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: .06em; }
+
+/* ── MISSION BADGE ── */
+.mission-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  border-radius: 4px; padding: 5px 14px;
+  font-family: var(--mono); font-size: 11px; color: var(--purple);
+  letter-spacing: .10em; text-transform: uppercase; margin-bottom: 16px;
+}
+.mission-badge span { color: var(--text-dim); }
+
+/* ── HEADER ── */
+.mission-title {
+  font-family: var(--serif);
+  font-size: clamp(26px,4.5vw,42px);
+  font-weight: 300; color: var(--text);
+  line-height: 1.18; letter-spacing: -.01em; margin-bottom: 10px;
+}
+.mission-title strong { font-weight: 600; color: var(--purple); }
+.mission-subtitle { font-size: 15px; color: var(--text-muted); font-weight: 400; margin-bottom: 28px; max-width: 560px; line-height: 1.7; }
+
+/* ── WARNING CALLOUT ── */
+.warning-box {
+  background: #fff8f6;
+  border: 1px solid rgba(192,57,43,.2);
+  border-left: 4px solid var(--red);
+  border-radius: 8px; padding: 18px 22px; margin-bottom: 36px;
+}
+.warning-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.warning-icon {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--red-lo); border: 1px solid rgba(192,57,43,.22);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.warning-icon svg { width: 14px; height: 14px; color: var(--red); }
+.warning-kicker { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: var(--red); }
+.warning-body { font-size: 14.5px; color: var(--text-body); line-height: 1.75; }
+.warning-body strong { color: var(--text); }
+
+.divider { height: 1px; background: var(--border); margin: 32px 0; }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--purple); opacity: .7; margin-bottom: 14px;
+}
+.section-label::after { content:''; flex:1; height:1px; background: var(--border); }
+
+/* ── WHAT YOU WILL DO ── */
+.do-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(188px, 1fr)); gap: 10px; margin-bottom: 30px; }
+.do-item {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 14px 16px;
+  display: flex; align-items: flex-start; gap: 11px;
+  font-size: 14px; color: var(--text-body); line-height: 1.5;
+}
+.do-num {
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  color: var(--purple); padding: 3px 8px; border-radius: 3px;
+  flex-shrink: 0; margin-top: 1px; letter-spacing: .04em;
+}
+
+/* ── PHASE CARDS ── */
+.phase-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
+
+.phase-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 9px; overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+}
+.phase-card:hover { border-color: var(--border-hi); box-shadow: 0 2px 14px rgba(123,47,190,.08); }
+
+.phase-card-hd {
+  padding: 16px 20px; background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 13px;
+  cursor: pointer; user-select: none;
+}
+.phase-a .phase-card-hd { border-left: 4px solid var(--purple); }
+.phase-b .phase-card-hd { border-left: 4px solid var(--amber); }
+.phase-c .phase-card-hd { border-left: 4px solid var(--green); }
+
+.phase-badge {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .10em;
+  text-transform: uppercase; padding: 4px 11px; border-radius: 4px;
+  flex-shrink: 0; font-weight: 500;
+}
+.phase-a .phase-badge { background: var(--purple-lo); color: var(--purple); border: 1px solid var(--purple-mid); }
+.phase-b .phase-badge { background: var(--amber-lo);  color: var(--amber);  border: 1px solid rgba(180,83,9,.22); }
+.phase-c .phase-badge { background: var(--green-lo);  color: var(--green);  border: 1px solid rgba(13,122,95,.22); }
+
+.phase-title-block { flex: 1; }
+.phase-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.phase-sub   { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+
+.phase-chevron { width: 18px; height: 18px; color: var(--text-dim); transition: transform .25s; flex-shrink: 0; }
+.phase-card.open .phase-chevron { transform: rotate(180deg); }
+
+.phase-body { max-height: 0; overflow: hidden; transition: max-height .35s ease; padding: 0 20px; }
+.phase-card.open .phase-body { max-height: 500px; padding: 0 20px 20px; }
+.phase-body-inner { border-top: 1px solid var(--border); padding-top: 16px; }
+
+.phase-desc { font-size: 14.5px; color: var(--text-body); line-height: 1.75; margin-bottom: 14px; }
+.phase-tasks { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.phase-task {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 14px; color: var(--text-body); line-height: 1.6;
+}
+.task-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 8px; }
+.phase-a .task-dot { background: var(--purple); }
+.phase-b .task-dot { background: var(--amber); }
+.phase-c .task-dot { background: var(--green); }
+
+.output-row {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 12px; border-radius: 5px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.output-a { background: var(--purple-lo); border: 1px solid var(--purple-mid); color: var(--purple); }
+.output-b { background: var(--amber-lo);  border: 1px solid rgba(180,83,9,.2);  color: var(--amber); }
+.output-c { background: var(--green-lo);  border: 1px solid rgba(13,122,95,.2); color: var(--green); }
+.output-row svg { width: 12px; height: 12px; }
+
+.phase-note {
+  display: flex; gap: 9px; align-items: flex-start;
+  padding: 10px 13px; border-radius: 6px; margin-top: 12px;
+  background: var(--amber-lo); border: 1px solid rgba(180,83,9,.18);
+  font-size: 13.5px; color: var(--text-body); line-height: 1.6;
+}
+.phase-note svg { width: 14px; height: 14px; color: var(--amber); flex-shrink: 0; margin-top: 2px; }
+
+/* ── KEY IDEA BOX ── */
+.key-idea-box {
+  background: var(--purple-deep);
+  border-radius: 9px; padding: 24px 26px;
+  margin-bottom: 32px;
+}
+.ki-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  color: rgba(255,255,255,.5); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.ki-label::after { content:''; flex:1; height:1px; background: rgba(255,255,255,.15); }
+.ki-text {
+  font-family: var(--serif); font-size: clamp(15px,2.5vw,18px);
+  font-weight: 300; color: #fff; line-height: 1.65;
+  font-style: italic;
+}
+.ki-text strong { font-weight: 600; font-style: normal; }
+
+/* ── LEARNING OUTCOMES ── */
+.outcomes-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 36px; }
+.outcome-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 15px; border-radius: 7px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  font-size: 14px; color: var(--text-body); line-height: 1.55;
+}
+.outcome-num {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  color: var(--purple); padding: 3px 8px; border-radius: 3px;
+  flex-shrink: 0; margin-top: 1px; letter-spacing: .06em;
+}
+
+/* ── CTA ── */
+.cta-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px; padding: 22px 26px;
+  background: var(--purple-deep); border-radius: 8px; flex-wrap: wrap;
+}
+.cta-bar-text h3 { font-family: var(--serif); font-size: 16px; font-weight: 400; color: #fff; margin-bottom: 4px; }
+.cta-bar-text p  { font-size: 13px; color: rgba(255,255,255,.5); }
+.cta-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: #fff; color: var(--purple-dark);
+  font-family: var(--sans); font-size: 14px; font-weight: 600;
+  padding: 13px 28px; border-radius: 5px; border: none; cursor: pointer;
+  letter-spacing: .01em; transition: background .15s, transform .12s, box-shadow .15s; white-space: nowrap;
+}
+.cta-btn:hover { background: #f0eaf9; transform: translateY(-1px); box-shadow: 0 4px 18px rgba(0,0,0,.18); }
+.cta-btn svg { width: 15px; height: 15px; }
+
+@media (max-width: 600px) {
+  .page-wrap { padding: 28px 16px 60px; }
+  .cta-bar { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- SYSTEM BAR -->
+  <div class="sys-bar fade-in d1">
+    <div class="sys-left">
+      <div class="sys-dot"></div>
+      Lakeside Health Systems · AI Safety &amp; Ethics Platform
+    </div>
+    <div class="sys-right">MODULE 4 · BRIEFING</div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="fade-in d1">
+    <div class="mission-badge">
+      <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+      Mission 4 of 4 &nbsp;<span>/ Ethics &amp; Responsible AI</span>
+    </div>
+    <h1 class="mission-title">Lakeside<br><strong>Responsible AI Safety Center</strong></h1>
+    <p class="mission-subtitle">Ethical decision-making is critical when using AI in healthcare environments.</p>
+  </div>
+
+  <!-- WARNING CALLOUT -->
+  <div class="fade-in d2">
+    <div class="warning-box">
+      <div class="warning-header">
+        <div class="warning-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="warning-kicker">⚠ &nbsp;Important — Read Before You Begin</div>
+      </div>
+      <div class="warning-body">
+        In healthcare, using AI incorrectly can lead to <strong>privacy violations</strong>, <strong>biased decisions</strong>, or <strong>unsafe workflows</strong> that affect real patients. Your job in this mission is to evaluate risk carefully and make responsible AI decisions — not just use AI because it is available.
+      </div>
+    </div>
+  </div>
+
+  <div class="divider fade-in d2"></div>
+
+  <!-- WHAT YOU WILL DO -->
+  <div class="fade-in d3">
+    <div class="section-label">01 &nbsp; What You Will Do</div>
+    <div class="do-grid">
+      <div class="do-item"><div class="do-num">01</div>Identify real risks in healthcare AI scenarios</div>
+      <div class="do-item"><div class="do-num">02</div>Evaluate bias, privacy, and patient safety issues</div>
+      <div class="do-item"><div class="do-num">03</div>Decide when AI should — and should NOT — be used</div>
+      <div class="do-item"><div class="do-num">04</div>Design safe, responsible AI workflows for the clinic</div>
+    </div>
+  </div>
+
+  <!-- PHASE CARDS -->
+  <div class="fade-in d4">
+    <div class="section-label">02 &nbsp; Mission Phases</div>
+    <div class="phase-cards">
+
+      <!-- Phase A -->
+      <div class="phase-card phase-a" id="phaseA">
+        <div class="phase-card-hd" onclick="toggle('phaseA')">
+          <div class="phase-badge">Phase A</div>
+          <div class="phase-title-block">
+            <div class="phase-title">Risk Detection</div>
+            <div class="phase-sub">Identify AI risks in healthcare scenarios</div>
+          </div>
+          <svg class="phase-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="phase-body">
+          <div class="phase-body-inner">
+            <div class="phase-desc">You will review realistic situations from Lakeside Clinic where AI is being used — some correctly, some incorrectly. Your job is to evaluate each scenario like a healthcare AI safety reviewer.</div>
+            <div class="phase-tasks">
+              <div class="phase-task"><div class="task-dot"></div><span>Identify privacy risks in how patient data is being used</span></div>
+              <div class="phase-task"><div class="task-dot"></div><span>Detect bias or unfair outcomes that could affect certain patient groups</span></div>
+              <div class="phase-task"><div class="task-dot"></div><span>Recognize unsafe or inappropriate AI use in clinical settings</span></div>
+              <div class="phase-task"><div class="task-dot"></div><span>Explain who could be harmed and how, in plain language</span></div>
+            </div>
+            <div class="output-row output-a">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Output: AI Risk Identification Log
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase B -->
+      <div class="phase-card phase-b" id="phaseB">
+        <div class="phase-card-hd" onclick="toggle('phaseB')">
+          <div class="phase-badge">Phase B</div>
+          <div class="phase-title-block">
+            <div class="phase-title">Ethical AI Analysis</div>
+            <div class="phase-sub">Use AI to analyze ethical impact — then evaluate it critically</div>
+          </div>
+          <svg class="phase-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="phase-body">
+          <div class="phase-body-inner">
+            <div class="phase-desc">You will use an AI tool — ChatGPT or similar — to analyze healthcare AI scenarios for ethical risks. This is not about what AI says is right. It is about learning to evaluate AI's suggestions critically.</div>
+            <div class="phase-tasks">
+              <div class="phase-task"><div class="task-dot"></div><span>Ask AI to identify ethical risks in a given healthcare scenario</span></div>
+              <div class="phase-task"><div class="task-dot"></div><span>Evaluate whether AI's suggestions are complete and correct</span></div>
+              <div class="phase-task"><div class="task-dot"></div><span>Identify bias, privacy, and safety impacts the AI may have missed</span></div>
+              <div class="phase-task"><div class="task-dot"></div><span>Decide where human judgment must override AI analysis</span></div>
+            </div>
+            <div class="phase-note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>AI is a support tool in this phase — not the final authority. Your critical evaluation of AI output is the core skill being trained here.</span>
+            </div>
+            <div class="output-row output-b" style="margin-top:12px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Output: Ethical Impact Analysis Report
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase C -->
+      <div class="phase-card phase-c" id="phaseC">
+        <div class="phase-card-hd" onclick="toggle('phaseC')">
+          <div class="phase-badge">Phase C</div>
+          <div class="phase-title-block">
+            <div class="phase-title">Responsible Decision Making</div>
+            <div class="phase-sub">Make safe AI decisions and design compliant workflows</div>
+          </div>
+          <svg class="phase-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="phase-body">
+          <div class="phase-body-inner">
+            <div class="phase-desc">You will act as a healthcare AI safety decision-maker for Lakeside Clinic. For each scenario, you will decide whether AI should be used, what protections are required, and how to design a workflow that keeps patients safe.</div>
+            <div class="phase-tasks">
+              <div class="phase-task"><div class="task-dot"></div><span>Decide whether AI should or should not be used in each scenario</span></div>
+              <div class="phase-task"><div class="task-dot"></div><span>Determine what safeguards and oversight are required</span></div>
+              <div class="phase-task"><div class="task-dot"></div><span>Design a responsible, compliant AI workflow for the clinic</span></div>
+              <div class="phase-task"><div class="task-dot"></div><span>Ensure patient safety, privacy, and fairness are protected</span></div>
+            </div>
+            <div class="output-row output-c" style="margin-top:2px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Output: Lakeside Responsible AI Safety Plan
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- KEY IDEA -->
+  <div class="fade-in d5">
+    <div class="key-idea-box">
+      <div class="ki-label">💡 Key Idea for This Mission</div>
+      <div class="ki-text">
+        In healthcare, the most important AI skill is not knowing what AI can do —<br>
+        <strong>it is knowing when NOT to use it.</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEARNING OUTCOMES -->
+  <div class="fade-in d6">
+    <div class="section-label">03 &nbsp; What You Will Learn</div>
+    <div class="outcomes-list">
+      <div class="outcome-row"><div class="outcome-num">01</div>Recognize privacy risks when patient data is used with AI systems</div>
+      <div class="outcome-row"><div class="outcome-num">02</div>Identify bias and unfair outcomes that can occur in AI-assisted healthcare</div>
+      <div class="outcome-row"><div class="outcome-num">03</div>Evaluate whether AI is being used appropriately in a given clinical situation</div>
+      <div class="outcome-row"><div class="outcome-num">04</div>Use AI tools to support ethical analysis — and critically evaluate what AI produces</div>
+      <div class="outcome-row"><div class="outcome-num">05</div>Make structured, responsible decisions about when and how to deploy AI in healthcare</div>
+      <div class="outcome-row"><div class="outcome-num">06</div>Design safe workflows that protect patients, staff, and the organization</div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="fade-in d7">
+    <div class="cta-bar">
+      <div class="cta-bar-text">
+        <h3>Ready to Enter the Safety Center?</h3>
+        <p>Phase A opens first — you will review real clinic scenarios and identify AI risks.</p>
+      </div>
+      <button class="cta-btn" id="startBtn" onclick="handleStart()">
+        Begin Phase A: Risk Detection
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<script>
+  function toggle(id) {
+    document.getElementById(id).classList.toggle('open');
+  }
+
+  // Auto-open Phase A on load
+  window.addEventListener('load', () => {
+    setTimeout(() => document.getElementById('phaseA').classList.add('open'), 700);
+  });
+
+  function handleStart() {
+    const btn = document.getElementById('startBtn');
+    btn.disabled = true;
+    btn.style.opacity = '.7';
+    btn.textContent = 'Loading Phase A…';
+    setTimeout(() => {
+      btn.style.opacity = '1';
+      btn.style.background = '#f0fdf8';
+      btn.style.color = '#0d7a5f';
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Mission Active`;
+    }, 1100);
+  }
+</script>
+</body>
+</html>
