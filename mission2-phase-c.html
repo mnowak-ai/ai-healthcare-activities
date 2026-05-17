@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission 2 · Phase C — Final Communication Workflow</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --purple:      #7B2FBE;
+  --purple-dark: #5b1e9a;
+  --purple-deep: #3d1270;
+  --purple-lo:   rgba(123,47,190,0.07);
+  --purple-mid:  rgba(123,47,190,0.18);
+  --purple-hi:   rgba(123,47,190,0.32);
+
+  --bg:          #f7f6fb;
+  --white:       #ffffff;
+  --surface-2:   #f2f0f9;
+
+  --border:      rgba(123,47,190,0.12);
+  --border-hi:   rgba(123,47,190,0.28);
+
+  --text:        #1a0f2e;
+  --text-body:   #3a2f52;
+  --text-muted:  #7a6e92;
+  --text-dim:    #b5adc8;
+
+  --red:         #c0392b;
+  --red-lo:      rgba(192,57,43,0.07);
+  --amber:       #b45309;
+  --amber-lo:    rgba(180,83,9,0.07);
+  --green:       #0d7a5f;
+  --green-lo:    rgba(13,122,95,0.08);
+
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+  --serif: 'Fraunces', serif;
+
+  --left-w:  260px;
+  --right-w: 270px;
+}
+
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text-body);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ─── LAYOUT ─── */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ─── SHARED PANEL PIECES ─── */
+.panel-hd {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.phase-badge {
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--purple);
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  border-radius: 3px; padding: 3px 8px;
+  display: inline-block; margin-bottom: 8px;
+}
+.panel-hd h2 { font-family: var(--serif); font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.panel-hd p  { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+
+.section-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--purple); opacity: .7; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-label::after { content:''; flex:1; height:1px; background: var(--border); }
+
+/* ─── LEFT PANEL ─── */
+.left-panel {
+  width: var(--left-w); flex-shrink: 0;
+  background: var(--white); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.left-scroll { flex: 1; overflow-y: auto; padding: 14px; }
+
+.msg-select-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; border-radius: 7px; cursor: pointer;
+  border: 1px solid transparent; margin-bottom: 7px;
+  transition: background .15s, border-color .15s;
+}
+.msg-select-item:hover   { background: var(--surface-2); }
+.msg-select-item.active  { background: var(--purple-lo); border-color: var(--purple-mid); }
+.msg-select-item.done    { background: var(--green-lo);  border-color: rgba(13,122,95,.18); }
+.msi-icon { width: 28px; height: 28px; border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.msi-body { flex: 1; min-width: 0; }
+.msi-title { font-size: 12.5px; font-weight: 600; color: var(--text); line-height: 1.3; margin-bottom: 2px; }
+.msi-sub   { font-size: 11px; color: var(--text-muted); }
+.msi-dot   { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); margin-top: 5px; flex-shrink: 0; }
+.msg-select-item.active .msi-dot { background: var(--purple); box-shadow: 0 0 5px rgba(123,47,190,.4); }
+.msg-select-item.done   .msi-dot { background: var(--green); }
+
+.draft-preview-box {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 12px 13px; margin-top: 10px;
+}
+.dp-label { font-family: var(--mono); font-size: 10px; letter-spacing: .10em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 7px; }
+.dp-text  { font-family: var(--mono); font-size: 11px; color: var(--text-body); line-height: 1.7; white-space: pre-wrap; max-height: 180px; overflow-y: auto; }
+
+.issues-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.issue-chip {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 7px 10px; border-radius: 5px;
+  background: var(--red-lo); border: 1px solid rgba(192,57,43,.12);
+  font-size: 12px; color: var(--text-body); line-height: 1.45;
+}
+.issue-chip::before { content:'—'; color: var(--red); font-family: var(--mono); font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+
+/* ─── CENTER PANEL ─── */
+.center-panel {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.center-topbar {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 12px 22px; display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+}
+.topbar-meta { flex: 1; }
+.topbar-label { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
+.topbar-title { font-size: 14px; font-weight: 600; color: var(--text); }
+
+.step-indicators { display: flex; gap: 6px; }
+.step-ind {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); color: var(--text-dim);
+  transition: all .2s;
+}
+.step-ind.active { background: var(--purple-lo); border-color: var(--purple-mid); color: var(--purple); }
+.step-ind.done   { background: var(--green-lo);  border-color: rgba(13,122,95,.22); color: var(--green); }
+
+.center-scroll { flex: 1; overflow-y: auto; padding: 22px; }
+
+/* STEP CARDS */
+.step-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; margin-bottom: 18px;
+}
+.step-card-hd {
+  padding: 13px 20px; background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.step-num-badge {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 12px; font-weight: 500; flex-shrink: 0;
+}
+.sn-1 { background: var(--purple-lo); color: var(--purple); border: 1px solid var(--purple-mid); }
+.sn-2 { background: rgba(180,83,9,.08); color: var(--amber); border: 1px solid rgba(180,83,9,.2); }
+.sn-3 { background: var(--green-lo); color: var(--green); border: 1px solid rgba(13,122,95,.2); }
+.step-card-hd-text { flex: 1; }
+.step-card-label { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
+.step-card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.step-card-body  { padding: 20px; }
+
+/* PROMPT BUILDER */
+.prompt-box {
+  background: #faf9fd; border: 1px solid var(--border);
+  border-left: 3px solid var(--purple);
+  border-radius: 6px; padding: 16px 18px;
+  font-family: var(--mono); font-size: 12.5px; color: var(--text-body);
+  line-height: 1.8; white-space: pre-wrap; position: relative;
+  margin-bottom: 12px;
+}
+.copy-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 4px;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  color: var(--purple); font-family: var(--mono); font-size: 11px;
+  letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+  transition: all .15s;
+}
+.copy-btn:hover { background: var(--purple-mid); }
+.copy-btn.copied { background: var(--green-lo); border-color: rgba(13,122,95,.2); color: var(--green); }
+.copy-btn svg { width: 13px; height: 13px; }
+
+.instruction-note {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 11px 14px; border-radius: 6px;
+  background: var(--amber-lo); border: 1px solid rgba(180,83,9,.16);
+  font-size: 13px; color: var(--text-body); line-height: 1.6; margin-bottom: 16px;
+}
+.instruction-note svg { width: 15px; height: 15px; color: var(--amber); flex-shrink: 0; margin-top: 2px; }
+
+/* TEXTAREA */
+.memo-textarea {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 14px 16px;
+  font-family: var(--mono); font-size: 12.5px; color: var(--text);
+  line-height: 1.75; resize: vertical; min-height: 220px;
+  outline: none; transition: border-color .15s;
+}
+.memo-textarea:focus { border-color: var(--purple-mid); background: #fff; }
+.memo-textarea::placeholder { color: var(--text-dim); }
+
+.char-count { font-family: var(--mono); font-size: 11px; color: var(--text-dim); text-align: right; margin-top: 5px; }
+.char-count.good { color: var(--green); }
+
+/* CHECKLIST before submit */
+.pre-submit-check { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.psc-item {
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  padding: 9px 12px; border-radius: 6px; border: 1px solid transparent;
+  transition: background .15s, border-color .15s;
+}
+.psc-item:hover { background: var(--surface-2); }
+.psc-item.checked { background: var(--green-lo); border-color: rgba(13,122,95,.18); }
+.psc-box {
+  width: 18px; height: 18px; border-radius: 4px;
+  border: 2px solid var(--border-hi); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: white; transition: all .15s;
+}
+.psc-item.checked .psc-box { background: var(--green); border-color: var(--green); }
+.psc-check-icon { display: none; color: white; }
+.psc-item.checked .psc-check-icon { display: block; }
+.psc-check-icon svg { width: 10px; height: 10px; }
+.psc-label { font-size: 13.5px; color: var(--text-body); line-height: 1.45; }
+.psc-item.checked .psc-label { color: var(--text-muted); }
+
+/* SUBMIT BAR */
+.submit-bar {
+  padding: 14px 20px; background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+}
+.submit-bar p { font-size: 12.5px; color: var(--text-muted); flex: 1; line-height: 1.5; }
+
+/* SUBMITTED BANNER */
+.submitted-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; border-radius: 7px;
+  background: var(--green-lo); border: 1px solid rgba(13,122,95,.2);
+  font-size: 13px; color: var(--green); font-weight: 500;
+}
+.submitted-banner svg { width: 15px; height: 15px; }
+
+/* ─── RIGHT PANEL ─── */
+.right-panel {
+  width: var(--right-w); flex-shrink: 0;
+  background: var(--white); border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.right-scroll { flex: 1; overflow-y: auto; padding: 14px; }
+
+/* SCORECARD */
+.score-overall {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-top: 3px solid var(--purple); border-radius: 8px;
+  padding: 14px 16px; margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.so-label { font-size: 12px; color: var(--text-muted); }
+.so-rating { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.so-score { font-family: var(--serif); font-size: 28px; font-weight: 600; color: var(--purple); line-height: 1; }
+.so-denom { font-family: var(--mono); font-size: 13px; color: var(--text-dim); }
+
+.rubric-row { margin-bottom: 12px; }
+.rr-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.rr-name { font-size: 12.5px; font-weight: 500; color: var(--text); }
+.rr-val  { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+.bar-bg  { height: 6px; border-radius: 3px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; margin-bottom: 3px; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width .7s ease; }
+.bar-low   { background: var(--red); }
+.bar-mid   { background: var(--amber); }
+.bar-high  { background: var(--green); }
+.bar-top   { background: var(--purple); }
+.rr-note { font-size: 11px; color: var(--text-muted); line-height: 1.45; }
+
+/* STRENGTH / IMPROVE CHIPS */
+.chip-list { display: flex; flex-direction: column; gap: 7px; }
+.chip {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 10px; border-radius: 5px; font-size: 12.5px;
+  color: var(--text-body); line-height: 1.5;
+}
+.chip-green { background: var(--green-lo);  border: 1px solid rgba(13,122,95,.14); }
+.chip-red   { background: var(--red-lo);    border: 1px solid rgba(192,57,43,.12); }
+.chip-dot   { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.dot-g { background: var(--green); }
+.dot-r { background: var(--red); }
+
+/* SUPERVISOR FEEDBACK */
+.supervisor-box {
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  border-left: 3px solid var(--purple);
+  border-radius: 7px; padding: 13px 15px; margin-top: 10px;
+}
+.sv-label { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--purple); margin-bottom: 7px; }
+.sv-text  { font-size: 13px; color: var(--text-body); line-height: 1.7; font-family: var(--serif); font-style: italic; }
+
+/* PENDING SCORECARD PLACEHOLDER */
+.score-pending {
+  padding: 24px 16px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.score-pending-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  display: flex; align-items: center; justify-content: center;
+}
+.score-pending-icon svg { width: 22px; height: 22px; color: var(--purple); }
+.score-pending h4 { font-family: var(--serif); font-size: 14px; font-weight: 600; color: var(--text); }
+.score-pending p  { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: 5px;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  cursor: pointer; border: none; transition: all .15s; white-space: nowrap;
+}
+.btn svg { width: 14px; height: 14px; }
+.btn-ghost   { background: transparent; border: 1px solid var(--border-hi); color: var(--text-muted); }
+.btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+.btn-primary { background: var(--purple); color: white; }
+.btn-primary:hover { background: var(--purple-dark); box-shadow: 0 2px 10px rgba(123,47,190,.25); }
+.btn-primary:disabled { opacity: .4; cursor: default; }
+.btn-success { background: var(--green); color: white; }
+.btn-success:hover { background: #0a6450; }
+.btn-grade   { background: var(--purple); color: white; font-size: 13.5px; padding: 10px 22px; }
+.btn-grade:hover { background: var(--purple-dark); box-shadow: 0 2px 12px rgba(123,47,190,.28); }
+.btn-grade.loading { opacity: .6; cursor: default; pointer-events: none; }
+.btn-download { background: var(--purple-deep); color: white; }
+.btn-download:hover { background: var(--purple-dark); }
+
+/* SPINNER */
+.spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* FOOTER */
+.center-footer {
+  background: var(--white); border-top: 1px solid var(--border);
+  padding: 12px 22px; display: flex; align-items: center;
+  justify-content: space-between; flex-shrink: 0; gap: 12px;
+}
+.footer-prog { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: .05em; }
+
+/* FADE */
+.fade-in { animation: fadeIn .3s ease forwards; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 3px; }
+
+/* ─── PRINT / PDF STYLES ─── */
+@media print {
+  @page { margin: 18mm 16mm; }
+  html, body { height: auto !important; overflow: visible !important; }
+  .app { display: block !important; height: auto !important; }
+  .left-panel, .center-panel, .right-panel { display: none !important; }
+  .print-report { display: block !important; }
+  .print-report * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* PRINT REPORT (hidden on screen) */
+.print-report { display: none; }
+
+@media (max-width: 900px)  { .right-panel  { display: none; } }
+@media (max-width: 640px)  { .left-panel   { display: none; } }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ PRINT REPORT (hidden on screen, shown on print) ══════════════ -->
+<div class="print-report" id="printReport"></div>
+
+<div class="app">
+
+<!-- ══════════════ LEFT PANEL ══════════════ -->
+<div class="left-panel">
+  <div class="panel-hd">
+    <div class="phase-badge">Phase C</div>
+    <h2>Phase B<br>Reference</h2>
+    <p>Select a message to work on</p>
+  </div>
+  <div class="left-scroll" id="leftScroll"></div>
+</div>
+
+<!-- ══════════════ CENTER PANEL ══════════════ -->
+<div class="center-panel">
+  <div class="center-topbar">
+    <div class="topbar-meta">
+      <div class="topbar-label">Mission 2 · Phase C</div>
+      <div class="topbar-title" id="topbarTitle">Final Communication Workflow</div>
+    </div>
+    <div class="step-indicators">
+      <div class="step-ind" id="si1">Step 1</div>
+      <div class="step-ind" id="si2">Step 2</div>
+      <div class="step-ind" id="si3">Step 3</div>
+    </div>
+  </div>
+
+  <div class="center-scroll" id="centerScroll">
+    <div id="centerContent">
+      <!-- Placeholder -->
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:380px;gap:14px;text-align:center;padding:40px;" id="centerPlaceholder">
+        <div style="width:60px;height:60px;border-radius:14px;background:var(--purple-lo);border:1px solid var(--purple-mid);display:flex;align-items:center;justify-content:center;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <h3 style="font-family:var(--serif);font-size:18px;font-weight:600;color:var(--text);">Select a Message to Begin</h3>
+        <p style="font-size:13.5px;color:var(--text-muted);max-width:340px;line-height:1.65;">Choose one of the four clinic communications from the left panel. You will build a final professional memo and receive an AI performance review.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="center-footer">
+    <div class="footer-prog" id="footerProg">0 of 4 complete</div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-ghost" id="btnPrev" onclick="nav(-1)" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Previous
+      </button>
+      <button class="btn btn-primary" id="btnNext" onclick="nav(1)" disabled>
+        Next
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ RIGHT PANEL ══════════════ -->
+<div class="right-panel">
+  <div class="panel-hd">
+    <div class="phase-badge">Scorecard</div>
+    <h2>Performance<br>Review</h2>
+    <p>AI grading results appear here</p>
+  </div>
+  <div class="right-scroll" id="rightScroll"></div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════════════════
+// SOURCE DATA (same 4 messages from Phase B)
+// ═══════════════════════════════════════════════
+const messages = [
+  {
+    id: 0, icon:'📋',
+    type:'memo', badgeClass:'badge-memo',
+    sender:'Nurse Manager · Floor 2',
+    title:'Staff Scheduling Update – Urgent',
+    issues: [
+      'No specific dates or shift times were included',
+      'Two separate topics were blended into one confusing message',
+      'Casual language is unsafe for healthcare communication',
+    ],
+    phaseBDraft: `INTERNAL MEMO — FLOOR 2 NURSING STAFF
+From: Nurse Manager, Floor 2  |  Date: [Date]
+Re: Schedule Changes & Patient Handoff Update
+
+SCHEDULE CHANGES — EFFECTIVE NEXT WEEK
+• Affected shifts: [List specific days/times]
+• Staff required to cover: [List names]
+• Confirm availability with supervisor by [Date/Time]
+• HR contact: ext. [###] for overtime questions
+
+PATIENT HANDOFF PROCEDURE — NEW PROCESS
+• Updated protocol begins on [Monday/Tuesday, Date]
+• Training summary distributed by [Name] on [Date]
+• Questions: contact [Name] at [Contact]`,
+    promptTemplate: `You are a healthcare communications specialist working at Lakeside Community Health Clinic.
+
+Using the Phase B improved draft and the issues identified below, create a FINAL professional healthcare memo.
+
+ISSUES TO RESOLVE:
+• No specific dates or shift times were included
+• Two separate topics were blended together
+• Casual language was used ("I guess", "not totally sure")
+
+REQUIREMENTS FOR YOUR FINAL MEMO:
+• Use a clear subject line and formal greeting
+• Separate the two topics into clearly labeled sections
+• Include placeholder fields for names, dates, and times
+• Use professional healthcare tone throughout
+• End with a named contact person and a clear deadline for action
+• Keep it under 200 words
+
+FORMAT: Use headings, bullet points, and a structured layout.`,
+    sampleGrade: { clarity:5, structure:5, accuracy:4, tone:5, ai:4, total:23,
+      strengths:['Clear two-section structure separates scheduling from handoff updates','Professional tone and formal greeting replace all casual language','Bullet points and action deadlines make next steps immediately clear'],
+      improvements:['Placeholder fields like [Date] still need real values before sending','Consider adding an acknowledgment request so management knows who saw the memo','A brief one-sentence overview at the top would help staff decide if this applies to them'],
+      supervisor:'In a healthcare operations environment, this level of communication would be considered strong and distribution-ready with minor edits. The structure, tone, and clarity meet clinical memo standards. This document would reduce scheduling confusion significantly and reflects the kind of professional documentation expected of a Communications Specialist.'
+    },
+  },
+  {
+    id: 1, icon:'📢',
+    type:'update', badgeClass:'badge-update',
+    sender:'Operations Team · Clinic-Wide',
+    title:'Important Update for All Clinic Staff',
+    issues:[
+      'The entire message was one unreadable run-on sentence',
+      'Three separate topics were not separated or labeled',
+      'No dates, deadlines, or contact names were provided',
+    ],
+    phaseBDraft:`ALL STAFF UPDATE — 3 ITEMS
+From: Operations Team  |  Date: [Date]
+
+1. PATIENT INTAKE PROCEDURE — UPDATED
+   Effective: [Date] | Affects: Front desk & intake staff
+   Action: Attend 30-min training on [Date/Time/Location]
+
+2. NEW DOCUMENTATION TOOLS — ROLLING OUT
+   Effective: [Date] | Affects: All staff
+   Action: Complete online module by [Date] — Link: [URL]
+
+3. TEAM RESTRUCTURING — SELECTED DEPARTMENTS
+   Affected departments: [List]
+   Action: Manager will schedule a 1:1 briefing by [Date]
+
+Questions? Contact your department lead directly.`,
+    promptTemplate:`You are a healthcare communications specialist at Lakeside Community Health Clinic.
+
+Using the Phase B improved draft and the issues below, create a FINAL professional all-staff update.
+
+ISSUES TO RESOLVE:
+• One long run-on sentence with no structure
+• Three separate updates buried in one paragraph
+• No dates or action items
+
+REQUIREMENTS FOR YOUR FINAL MEMO:
+• Numbered sections — one per topic (Intake, Tools, Restructuring)
+• Each section must state: what changed, who is affected, and what action is required
+• Include an effective date placeholder for each item
+• Professional, direct tone — no filler phrases
+• Add a brief introductory sentence explaining why staff received this update
+• Under 175 words total`,
+    sampleGrade:{ clarity:4, structure:5, accuracy:4, tone:4, ai:5, total:22,
+      strengths:['Numbered sections make it immediately clear this contains three separate updates','AI integration is excellent — the learner applied the rewrite precisely','Actionable items are present in each section with clear owner and deadline structure'],
+      improvements:['The introductory sentence could be more specific about the operational reason for these changes','Intake and restructuring sections would benefit from a brief "why this matters" line','Consider adding a FAQ link or contact email for staff with multiple questions'],
+      supervisor:'In a healthcare operations environment, this level of communication would be considered above standard for an all-staff update. The three-part structure removes ambiguity entirely. Staff would know exactly what applies to them and what to do next. This demonstrates solid AI-assisted documentation skills.'
+    },
+  },
+  {
+    id: 2, icon:'🤖',
+    type:'ai', badgeClass:'badge-ai',
+    sender:'Auto-Generated Clinical Summary',
+    title:'Patient Discharge Summary – Room 14B',
+    issues:[
+      'All patient, provider, and date fields were blank placeholders',
+      'No diagnosis, medication, or dosage information was present',
+      'Follow-up instructions were too vague to be actionable',
+    ],
+    phaseBDraft:`PATIENT DISCHARGE SUMMARY — ROOM 14B
+Patient: [Full Legal Name]    DOB: [Date of Birth]
+MRN: [Medical Record Number]  Date of Discharge: [Date]
+Attending: [Full Name, Credentials]
+
+ADMITTING DIAGNOSIS
+[Specific diagnosis — e.g., Acute bronchitis, ICD-10: J20.9]
+
+TREATMENT PROVIDED
+• Medication: [Drug name, dosage, route, frequency]
+• Duration: [Number of days]
+• Response: [Specific outcome — e.g., O2 sat improved from 91% to 98%]
+
+DISCHARGE CONDITION
+Patient discharged in [stable/improved] condition.
+Vitals: BP [___] | HR [___] | O2 Sat [___]%
+
+FOLLOW-UP INSTRUCTIONS
+1. Follow-up with PCP within [7] days
+2. Return to ED if: breathing worsens, fever >101°F, O2 Sat <94%
+3. Prescriptions: [List medications, dosages, duration]
+
+Reviewed and signed by: _______________  Date: ___________`,
+    promptTemplate:`You are a healthcare communications specialist reviewing a clinical document.
+
+Using the Phase B improved template and the issues below, create a FINAL professional patient discharge summary structure.
+
+ISSUES TO RESOLVE:
+• All patient fields were blank — AI generated a template without any real data
+• No clinical details: no diagnosis, medication, or vitals
+• Follow-up instructions were generic and actionable
+
+REQUIREMENTS FOR YOUR FINAL DOCUMENT:
+• Retain all required fields from the Phase B draft
+• Add a clear "REVIEWER CHECKLIST" section at the bottom with 4–5 checkboxes a clinician must complete before signing
+• Add a visible "DRAFT — AWAITING CLINICAL REVIEW" watermark note at the top
+• Ensure follow-up criteria are specific (include measurable thresholds)
+• Add a statement confirming the document was reviewed by a human clinician
+• This is a structural template — all clinical values should remain as labeled placeholders`,
+    sampleGrade:{ clarity:4, structure:5, accuracy:5, tone:4, ai:4, total:22,
+      strengths:['Reviewer checklist addition demonstrates strong understanding of human-in-the-loop documentation','Draft watermark note addresses the core AI safety problem from Phase A','Measurable follow-up thresholds (e.g., O2 Sat <94%) show clinical communication awareness'],
+      improvements:['The document header could include a version number and creation timestamp for audit trail purposes','Consider adding a "Medication Reconciliation Completed" checkbox to the reviewer checklist','A brief patient acknowledgment line (signature block) would make this legally complete'],
+      supervisor:'In a healthcare operations environment, this level of documentation work would be considered proficient. The learner correctly identified that AI-generated clinical documents require human verification steps and built those safeguards directly into the template. This reflects mature healthcare documentation judgment.'
+    },
+  },
+  {
+    id: 3, icon:'📞',
+    type:'desk', badgeClass:'badge-desk',
+    sender:'Reception · Main Entrance',
+    title:'Message for Dr. Reyes – Patient Called',
+    issues:[
+      'Caller name and callback number were not recorded',
+      'Informal language ("u", "2ish", "thx") throughout',
+      "Mrs. Johnson's issue was left unresolved with no follow-up plan",
+    ],
+    phaseBDraft:`MESSAGE FOR: Dr. Reyes
+Taken by: [Front Desk Staff Name]  |  Date/Time: [Date], 2:10 PM
+
+MESSAGE 1 — URGENT PATIENT CALL
+Caller name:   Unknown (caller did not provide name)
+Callback #:    Not obtained
+Time of call:  Approximately 2:10 PM  |  Urgency: URGENT
+Notes: Caller stated the matter involves a patient. Noisy front desk — details not captured.
+Action required: Check recent patient contacts. Document in patient log if unresolved.
+
+MESSAGE 2 — APPOINTMENT INQUIRY
+Caller:  Mrs. Johnson
+Re:      Upcoming appointment
+Issue:   Did not receive appointment reminder — unclear on correct date
+Status:  UNRESOLVED — requires staff callback
+Action:  Confirm appointment date, send reminder, pull file for verification.`,
+    promptTemplate:`You are a healthcare communications specialist at Lakeside Community Health Clinic.
+
+Using the Phase B improved draft and the issues below, create a FINAL professional front desk message record.
+
+ISSUES TO RESOLVE:
+• Caller name and callback number were not collected
+• Informal shorthand was used throughout ("u", "bc", "2ish", "thx")
+• Two patient issues were blended together with no separation or action plan
+
+REQUIREMENTS FOR YOUR FINAL DOCUMENT:
+• Use a formal message record format with labeled fields
+• Separate the two messages clearly with headers
+• Include an "Action Required" line for each message
+• Add an "Escalation" field: who should be notified if Dr. Reyes is unavailable
+• Use professional language throughout — no abbreviations
+• Include a space for Dr. Reyes to initial and timestamp when actioned`,
+    sampleGrade:{ clarity:5, structure:4, accuracy:4, tone:5, ai:4, total:22,
+      strengths:['Professional language completely replaces informal shorthand throughout','Two-message separation with individual action items prevents either issue from being overlooked','Escalation contact field shows strong understanding of healthcare communication accountability'],
+      improvements:['The callback number field should include a note explaining the protocol when no number is available','Consider adding a priority triage field (e.g., Routine / Same-Day / Urgent) rather than free-text urgency','A message log number or tracking ID would help with follow-up auditing in a real clinical environment'],
+      supervisor:"In a healthcare operations environment, this message record would be considered professional and actionable. The formal structure, complete separation of issues, and escalation field demonstrate that the learner understands front desk communication is not informal — it is clinical documentation. This is a significant improvement over the original."
+    },
+  },
+];
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let currentMsg  = null;
+let doneSet     = new Set();
+let gradedSet   = new Set();
+let memoState   = messages.map(() => '');     // learner memo text per message
+let checkState  = messages.map(() => [false,false,false,false]); // pre-submit checks
+let gradingAnim = false;
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function iconBg(t){ return t==='memo'?'rgba(192,57,43,0.08)':t==='update'?'rgba(180,83,9,0.08)':t==='ai'?'rgba(123,47,190,0.08)':'rgba(37,99,235,0.08)'; }
+function barClass(v){ return v<=2?'bar-low':v===3?'bar-mid':v===4?'bar-high':'bar-top'; }
+function scoreLabel(v){ return v===1?'Very Poor':v===2?'Poor':v===3?'Fair':v===4?'Good':'Excellent'; }
+function scoreRating(t){ return t<=10?'Needs Significant Work':t<=15?'Below Standard':t<=18?'Approaching Standard':t<=21?'Meets Standard':'Exceeds Standard'; }
+
+// ═══════════════════════════════════════════════
+// RENDER LEFT
+// ═══════════════════════════════════════════════
+function renderLeft(){
+  const ls = document.getElementById('leftScroll');
+  const m  = currentMsg !== null ? messages[currentMsg] : null;
+
+  ls.innerHTML = `
+  <div class="section-label" style="margin-bottom:12px;">Messages</div>
+  ${messages.map((msg,i)=>{
+    const done   = doneSet.has(i);
+    const active = i===currentMsg;
+    return `
+    <div class="msg-select-item ${active?'active':done?'done':''}" onclick="selectMsg(${i})">
+      <div class="msi-icon" style="background:${iconBg(msg.type)}">${msg.icon}</div>
+      <div class="msi-body">
+        <div class="msi-title">${esc(msg.title.length>28?msg.title.slice(0,28)+'…':msg.title)}</div>
+        <div class="msi-sub">${esc(msg.sender.split('·')[0].trim())}</div>
+      </div>
+      <div class="msi-dot"></div>
+    </div>`;
+  }).join('')}
+
+  ${m ? `
+  <div style="margin-top:16px;">
+    <div class="section-label">Phase B Draft</div>
+    <div class="draft-preview-box">
+      <div class="dp-label">AI Improved Draft</div>
+      <div class="dp-text">${esc(m.phaseBDraft)}</div>
+    </div>
+  </div>
+  <div style="margin-top:14px;">
+    <div class="section-label">Phase A Issues</div>
+    <div class="issues-list">
+      ${m.issues.map(x=>`<div class="issue-chip">${esc(x)}</div>`).join('')}
+    </div>
+  </div>` : ''}`;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER CENTER
+// ═══════════════════════════════════════════════
+function renderCenter(){
+  const ph = document.getElementById('centerPlaceholder');
+  const cc = document.getElementById('centerContent');
+
+  if(currentMsg===null){
+    ph.style.display='flex';
+    cc.innerHTML='<div id="centerPlaceholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:380px;gap:14px;text-align:center;padding:40px;"><div style="width:60px;height:60px;border-radius:14px;background:var(--purple-lo);border:1px solid var(--purple-mid);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3 style="font-family:var(--serif);font-size:18px;font-weight:600;color:var(--text);">Select a Message to Begin</h3><p style="font-size:13.5px;color:var(--text-muted);max-width:340px;line-height:1.65;">Choose one of the four clinic communications from the left panel.</p></div>';
+    document.getElementById('topbarTitle').textContent='Final Communication Workflow';
+    document.getElementById('footerProg').textContent=`${doneSet.size} of ${messages.length} complete`;
+    document.getElementById('btnPrev').disabled=true;
+    document.getElementById('btnNext').disabled=true;
+    ['si1','si2','si3'].forEach(id=>{ const e=document.getElementById(id); e.className='step-ind'; });
+    return;
+  }
+
+  const m      = messages[currentMsg];
+  const graded = gradedSet.has(currentMsg);
+  const done   = doneSet.has(currentMsg);
+  const memo   = memoState[currentMsg];
+  const checks = checkState[currentMsg];
+
+  document.getElementById('topbarTitle').textContent = m.title;
+  document.getElementById('footerProg').textContent  = `${doneSet.size} of ${messages.length} complete`;
+  document.getElementById('btnPrev').disabled = currentMsg===0;
+  document.getElementById('btnNext').disabled = currentMsg===messages.length-1;
+
+  // Step indicators
+  const s1done = memo.length > 80;
+  const s2done = checks.every(Boolean);
+  const s3done = graded;
+  ['si1','si2','si3'].forEach((id,i)=>{
+    const e=document.getElementById(id);
+    const isDone=[s1done,s2done,s3done][i];
+    const isActive=[true,s1done,s2done][i];
+    e.className='step-ind'+(isDone?' done':isActive?' active':'');
+  });
+
+  const allChecked = checks.every(Boolean);
+  const wordCount  = memo.trim().split(/\s+/).filter(Boolean).length;
+
+  cc.className='fade-in';
+  cc.innerHTML = `
+
+  <!-- ── STEP 1: PROMPT BUILDER ── -->
+  <div class="step-card">
+    <div class="step-card-hd">
+      <div class="step-num-badge sn-1">1</div>
+      <div class="step-card-hd-text">
+        <div class="step-card-label">Step 1 — AI Prompt Builder</div>
+        <div class="step-card-title">Build Your Final Memo with AI</div>
+      </div>
+    </div>
+    <div class="step-card-body">
+      <div class="instruction-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Copy this prompt and paste it into ChatGPT or Microsoft Copilot. Then paste the AI output into the submission box in Step 2 — and edit it until it is exactly right.</span>
+      </div>
+      <div class="prompt-box">${esc(m.promptTemplate)}</div>
+      <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy Prompt to Clipboard
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: SUBMISSION ── -->
+  <div class="step-card">
+    <div class="step-card-hd">
+      <div class="step-num-badge sn-2">2</div>
+      <div class="step-card-hd-text">
+        <div class="step-card-label">Step 2 — Final Memo Submission</div>
+        <div class="step-card-title">Paste, Edit &amp; Submit Your Final Memo</div>
+      </div>
+    </div>
+    <div class="step-card-body">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.6;">Paste the AI output below. Then review it carefully — edit anything that is unclear, missing, or not professional enough. This is your final submission.</p>
+      <textarea class="memo-textarea" id="memoInput" placeholder="Paste your AI-generated memo here, then edit and refine it before submitting…"
+        oninput="saveMemo(this.value)">${esc(memo)}</textarea>
+      <div class="char-count ${wordCount>=80?'good':''}" id="wordCount">${wordCount} words ${wordCount>=80?'✓ Good length':'— aim for at least 80 words'}</div>
+
+      <div style="margin-top:18px;margin-bottom:10px;">
+        <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px;font-style:italic;">Before submitting, confirm you have done the following:</div>
+        <div class="pre-submit-check">
+          ${['I reviewed the AI output and made my own edits','The memo is clear and easy for clinic staff to read','All key information is present — no important gaps remain','The tone is professional and appropriate for healthcare'].map((label,i)=>`
+          <div class="psc-item ${checks[i]?'checked':''}" onclick="toggleCheck(${i})">
+            <div class="psc-box">
+              <div class="psc-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            </div>
+            <div class="psc-label">${esc(label)}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="submit-bar">
+      ${done
+        ? `<div class="submitted-banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Memo submitted. Review your performance scorecard on the right.</div>`
+        : `<p>Make sure all four checklist items are confirmed before submitting.</p>
+           <button class="btn btn-grade" id="btnSubmit" onclick="submitMemo()" ${(!allChecked||memo.trim().length<60)?'disabled':''}>
+             Submit &amp; Grade Memo
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+           </button>`
+      }
+    </div>
+  </div>
+
+  <!-- ── STEP 3: GRADING RESULT (shown after submit) ── -->
+  ${graded ? renderGradingResult(m) : ''}
+  `;
+}
+
+function renderGradingResult(m){
+  const g = m.sampleGrade;
+  const cats = [
+    {key:'clarity',   label:'Clarity',              desc:'Message is easy to understand'},
+    {key:'structure', label:'Structure',             desc:'Content is logically organized'},
+    {key:'accuracy',  label:'Accuracy',              desc:'Information is correct and complete'},
+    {key:'tone',      label:'Professional Tone',     desc:'Appropriate for healthcare staff'},
+    {key:'ai',        label:'AI Integration Quality',desc:'Effectively used and improved AI output'},
+  ];
+  return `
+  <div class="step-card">
+    <div class="step-card-hd">
+      <div class="step-num-badge sn-3">3</div>
+      <div class="step-card-hd-text">
+        <div class="step-card-label">Step 3 — AI Performance Review</div>
+        <div class="step-card-title">Your Communication Assessment</div>
+      </div>
+      <button class="btn btn-download" onclick="downloadPDF(${m.id})" style="margin-left:auto;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Report
+      </button>
+    </div>
+    <div class="step-card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-top:3px solid var(--purple);border-radius:8px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:12px;color:var(--text-muted);">Overall Score</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${scoreRating(g.total)}</div>
+          </div>
+          <div><span style="font-family:var(--serif);font-size:30px;font-weight:600;color:var(--purple);">${g.total}</span><span style="font-family:var(--mono);font-size:13px;color:var(--text-dim);"> / 25</span></div>
+        </div>
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;">
+          <div style="font-size:11px;color:var(--text-muted);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Category Breakdown</div>
+          ${cats.map(c=>`<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="color:var(--text-body);">${c.label}</span><span style="font-family:var(--mono);color:var(--purple);">${g[c.key]}/5</span></div>`).join('')}
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+        <div>
+          <div class="section-label">Strengths</div>
+          <div class="chip-list">
+            ${g.strengths.map(s=>`<div class="chip chip-green"><div class="chip-dot dot-g"></div><span>${esc(s)}</span></div>`).join('')}
+          </div>
+        </div>
+        <div>
+          <div class="section-label">Areas to Improve</div>
+          <div class="chip-list">
+            ${g.improvements.map(s=>`<div class="chip chip-red"><div class="chip-dot dot-r"></div><span>${esc(s)}</span></div>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">Supervisor Feedback</div>
+        <div class="supervisor-box">
+          <div class="sv-label">Healthcare Operations Review</div>
+          <div class="sv-text">${esc(g.supervisor)}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER RIGHT
+// ═══════════════════════════════════════════════
+function renderRight(){
+  const rs = document.getElementById('rightScroll');
+  if(currentMsg===null||!gradedSet.has(currentMsg)){
+    const msg = currentMsg!==null ? messages[currentMsg] : null;
+    rs.innerHTML = `
+    <div class="score-pending">
+      <div class="score-pending-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <h4>Scorecard</h4>
+      <p>${msg ? 'Submit your final memo in Step 2 to receive your AI performance scorecard.' : 'Select a message from the left panel to begin.'}</p>
+    </div>
+    <div style="margin-top:8px;">
+      <div class="section-label">Progress</div>
+      ${messages.map((m,i)=>{
+        const done=doneSet.has(i), cur=i===currentMsg;
+        return `<div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:6px;margin-bottom:4px;background:${done?'var(--green-lo)':cur?'var(--purple-lo)':'transparent'};border:1px solid ${done?'rgba(13,122,95,.15)':cur?'var(--purple-mid)':'transparent'};">
+          <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid ${done?'var(--green)':cur?'var(--purple)':'var(--text-dim)'};background:${done?'var(--green)':cur?'var(--purple-lo)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            ${done?`<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`:''}
+          </div>
+          <div style="font-size:12px;color:${done?'var(--text-muted)':cur?'var(--purple)':'var(--text-body)'};font-weight:${cur?500:400};">${m.icon} ${m.title.length>24?m.title.slice(0,24)+'…':m.title}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+    return;
+  }
+
+  const m = messages[currentMsg];
+  const g = m.sampleGrade;
+  const cats=[
+    {key:'clarity',   label:'Clarity'},
+    {key:'structure', label:'Structure'},
+    {key:'accuracy',  label:'Accuracy'},
+    {key:'tone',      label:'Tone'},
+    {key:'ai',        label:'AI Integration'},
+  ];
+
+  rs.innerHTML=`
+  <div class="section-label">Overall Score</div>
+  <div class="score-overall">
+    <div>
+      <div class="so-label">Performance Review</div>
+      <div class="so-rating">${scoreRating(g.total)}</div>
+    </div>
+    <div><span class="so-score">${g.total}</span><span class="so-denom"> / 25</span></div>
+  </div>
+  <div class="section-label" style="margin-top:14px;">Rubric Breakdown</div>
+  ${cats.map(c=>{
+    const v=g[c.key], pct=(v/5)*100;
+    return `
+    <div class="rubric-row">
+      <div class="rr-top"><span class="rr-name">${c.label}</span><span class="rr-val">${v}/5 — ${scoreLabel(v)}</span></div>
+      <div class="bar-bg"><div class="bar-fill ${barClass(v)}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('')}
+  <div class="section-label" style="margin-top:14px;">Strengths</div>
+  <div class="chip-list" style="margin-bottom:12px;">
+    ${g.strengths.map(s=>`<div class="chip chip-green"><div class="chip-dot dot-g"></div><span>${esc(s)}</span></div>`).join('')}
+  </div>
+  <div class="section-label">Improvements</div>
+  <div class="chip-list" style="margin-bottom:14px;">
+    ${g.improvements.map(s=>`<div class="chip chip-red"><div class="chip-dot dot-r"></div><span>${esc(s)}</span></div>`).join('')}
+  </div>
+  <div class="supervisor-box">
+    <div class="sv-label">Supervisor Insight</div>
+    <div class="sv-text">${esc(g.supervisor)}</div>
+  </div>
+  <div style="margin-top:12px;">
+    <button class="btn btn-download" style="width:100%;justify-content:center;" onclick="downloadPDF(${currentMsg})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download PDF Report
+    </button>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════════════
+function selectMsg(i){
+  currentMsg=i;
+  renderAll();
+  document.getElementById('centerScroll').scrollTop=0;
+}
+
+function nav(dir){
+  if(currentMsg===null) return;
+  const n=currentMsg+dir;
+  if(n>=0&&n<messages.length){ currentMsg=n; renderAll(); document.getElementById('centerScroll').scrollTop=0; }
+}
+
+function saveMemo(val){
+  memoState[currentMsg]=val;
+  // update word count live
+  const wc=val.trim().split(/\s+/).filter(Boolean).length;
+  const el=document.getElementById('wordCount');
+  if(el){ el.textContent=`${wc} words ${wc>=80?'✓ Good length':'— aim for at least 80 words'}`; el.className='char-count'+(wc>=80?' good':''); }
+  // re-enable/disable submit btn
+  const checks=checkState[currentMsg];
+  const btn=document.getElementById('btnSubmit');
+  if(btn) btn.disabled=!(checks.every(Boolean)&&val.trim().length>=60);
+}
+
+function toggleCheck(idx){
+  checkState[currentMsg][idx]=!checkState[currentMsg][idx];
+  renderCenter();
+  document.getElementById('centerScroll').scrollTop=document.getElementById('centerScroll').scrollTop; // preserve scroll
+}
+
+function copyPrompt(){
+  if(currentMsg===null) return;
+  const text=messages[currentMsg].promptTemplate;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    if(!btn) return;
+    btn.classList.add('copied');
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+    setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy Prompt to Clipboard`; },2000);
+  }).catch(()=>{ alert('Copy failed — please select the prompt text manually.'); });
+}
+
+function submitMemo(){
+  const btn=document.getElementById('btnSubmit');
+  if(!btn) return;
+  btn.classList.add('loading');
+  btn.innerHTML=`<div class="spinner"></div> Grading…`;
+  setTimeout(()=>{
+    gradedSet.add(currentMsg);
+    doneSet.add(currentMsg);
+    renderAll();
+    document.getElementById('centerScroll').scrollTop=0;
+  }, 1800);
+}
+
+// ═══════════════════════════════════════════════
+// PDF DOWNLOAD
+// ═══════════════════════════════════════════════
+function downloadPDF(msgId){
+  const m=messages[msgId];
+  const g=m.sampleGrade;
+  const memo=memoState[msgId]||'[No memo submitted]';
+  const today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const cats=[
+    {key:'clarity',   label:'Clarity',               desc:'Message is easy to understand'},
+    {key:'structure', label:'Structure',              desc:'Content is logically organized'},
+    {key:'accuracy',  label:'Accuracy',               desc:'Information is correct and complete'},
+    {key:'tone',      label:'Professional Tone',      desc:'Appropriate for healthcare staff'},
+    {key:'ai',        label:'AI Integration Quality', desc:'Effectively used and improved AI output'},
+  ];
+
+  function barColor(v){ return v<=2?'#c0392b':v===3?'#b45309':v===4?'#0d7a5f':'#7B2FBE'; }
+
+  document.getElementById('printReport').innerHTML=`
+  <div style="font-family:'IBM Plex Sans',sans-serif;max-width:700px;margin:0 auto;color:#1a0f2e;">
+
+    <!-- HEADER -->
+    <div style="border-bottom:3px solid #7B2FBE;padding-bottom:16px;margin-bottom:24px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#7B2FBE;margin-bottom:6px;">AI Essentials · Lakeside Community Health Clinic</div>
+      <div style="font-size:22px;font-weight:600;color:#1a0f2e;margin-bottom:3px;">Healthcare Communication Performance Review</div>
+      <div style="font-size:13px;color:#7a6e92;">Mission 2 — Phase C Report &nbsp;·&nbsp; Generated ${today}</div>
+    </div>
+
+    <!-- MESSAGE INFO -->
+    <div style="background:#f2f0f9;border:1px solid rgba(123,47,190,.15);border-radius:7px;padding:14px 18px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#7a6e92;margin-bottom:3px;">Communication Reviewed</div>
+        <div style="font-size:15px;font-weight:600;color:#1a0f2e;">${esc(m.title)}</div>
+        <div style="font-size:12px;color:#7a6e92;margin-top:2px;">${esc(m.sender)}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:32px;font-weight:600;color:#7B2FBE;line-height:1;">${g.total}<span style="font-size:16px;color:#b5adc8;font-family:'IBM Plex Mono',monospace;"> / 25</span></div>
+        <div style="font-size:11px;color:#7a6e92;margin-top:2px;">${scoreRating(g.total)}</div>
+      </div>
+    </div>
+
+    <!-- RUBRIC -->
+    <div style="margin-bottom:20px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#7B2FBE;opacity:.7;margin-bottom:12px;border-bottom:1px solid rgba(123,47,190,.12);padding-bottom:6px;">Rubric Breakdown</div>
+      ${cats.map(c=>{
+        const v=g[c.key],pct=(v/5)*100;
+        return `
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:13px;font-weight:500;color:#1a0f2e;">${c.label}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7a6e92;">${v}/5 — ${scoreLabel(v)}</span>
+          </div>
+          <div style="height:7px;border-radius:4px;background:#e8e4f4;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:${barColor(v)};border-radius:4px;"></div>
+          </div>
+          <div style="font-size:11px;color:#7a6e92;margin-top:3px;">${esc(c.desc)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- STRENGTHS & IMPROVEMENTS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#0d7a5f;margin-bottom:8px;">Strengths</div>
+        ${g.strengths.map(s=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:8px 10px;background:rgba(13,122,95,.07);border:1px solid rgba(13,122,95,.14);border-radius:5px;margin-bottom:6px;font-size:12.5px;color:#3a2f52;line-height:1.5;"><span style="color:#0d7a5f;font-weight:700;flex-shrink:0;margin-top:1px;">✓</span>${esc(s)}</div>`).join('')}
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#c0392b;margin-bottom:8px;">Areas to Improve</div>
+        ${g.improvements.map(s=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:8px 10px;background:rgba(192,57,43,.07);border:1px solid rgba(192,57,43,.12);border-radius:5px;margin-bottom:6px;font-size:12.5px;color:#3a2f52;line-height:1.5;"><span style="color:#c0392b;font-weight:700;flex-shrink:0;margin-top:1px;">→</span>${esc(s)}</div>`).join('')}
+      </div>
+    </div>
+
+    <!-- SUPERVISOR FEEDBACK -->
+    <div style="margin-bottom:20px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#7B2FBE;opacity:.7;margin-bottom:10px;border-bottom:1px solid rgba(123,47,190,.12);padding-bottom:6px;">Supervisor Feedback</div>
+      <div style="background:rgba(123,47,190,.06);border:1px solid rgba(123,47,190,.18);border-left:3px solid #7B2FBE;border-radius:6px;padding:14px 18px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#7B2FBE;margin-bottom:7px;">Healthcare Operations Review</div>
+        <div style="font-size:13.5px;color:#3a2f52;line-height:1.7;font-style:italic;">${esc(g.supervisor)}</div>
+      </div>
+    </div>
+
+    <!-- SUBMITTED MEMO -->
+    <div style="margin-bottom:24px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#7B2FBE;opacity:.7;margin-bottom:10px;border-bottom:1px solid rgba(123,47,190,.12);padding-bottom:6px;">Submitted Final Memo</div>
+      <div style="background:#f9f7fd;border:1px solid rgba(123,47,190,.14);border-radius:6px;padding:16px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#3a2f52;line-height:1.8;white-space:pre-wrap;">${esc(memo)}</div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="border-top:1px solid rgba(123,47,190,.15);padding-top:14px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:11px;color:#b5adc8;font-family:'IBM Plex Mono',monospace;">AI Essentials · essentials-ai.com</div>
+      <div style="font-size:11px;color:#b5adc8;font-family:'IBM Plex Mono',monospace;">Mission 2 · Phase C · ${today}</div>
+    </div>
+  </div>`;
+
+  setTimeout(()=>{ window.print(); },100);
+}
+
+function renderAll(){
+  renderLeft();
+  renderCenter();
+  renderRight();
+}
+
+renderAll();
+</script>
+</body>
+</html>
