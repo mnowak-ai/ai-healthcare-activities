@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission 3 · Phase C — Operations Decision Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --purple:      #7B2FBE;
+  --purple-dark: #5b1e9a;
+  --purple-deep: #3d1270;
+  --purple-lo:   rgba(123,47,190,0.07);
+  --purple-mid:  rgba(123,47,190,0.18);
+
+  --bg:          #f7f6fb;
+  --white:       #ffffff;
+  --surface-2:   #f2f0f9;
+
+  --border:      rgba(123,47,190,0.12);
+  --border-hi:   rgba(123,47,190,0.28);
+
+  --text:        #1a0f2e;
+  --text-body:   #3a2f52;
+  --text-muted:  #7a6e92;
+  --text-dim:    #b5adc8;
+
+  --amber:       #b45309;
+  --amber-lo:    rgba(180,83,9,0.07);
+  --green:       #0d7a5f;
+  --green-lo:    rgba(13,122,95,0.08);
+  --red:         #c0392b;
+  --red-lo:      rgba(192,57,43,0.07);
+
+  --gold:        #92400e;
+  --silver:      #374151;
+
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+  --serif: 'Fraunces', serif;
+}
+
+html, body { min-height: 100%; background: var(--bg); }
+body {
+  color: var(--text-body);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 0 24px; height: 52px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.tb-left  { display: flex; align-items: center; gap: 12px; }
+.tb-badge {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--purple); background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  border-radius: 3px; padding: 3px 9px;
+}
+.tb-title { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--text); }
+.tb-sep   { width: 1px; height: 20px; background: var(--border); }
+.tb-right {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: .06em;
+}
+.sys-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--purple); box-shadow: 0 0 6px rgba(123,47,190,.4);
+  animation: blink 2.2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+/* ── PROGRESS BAR ── */
+.progress-bar-wrap {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 14px 24px 0;
+}
+.progress-steps { display: flex; max-width: 680px; margin: 0 auto; }
+.prog-step {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  position: relative; padding-bottom: 12px; cursor: pointer;
+}
+.prog-step::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 3px; background: var(--border); border-radius: 2px; transition: background .3s;
+}
+.prog-step.active::after { background: var(--purple); }
+.prog-step.done::after   { background: var(--green); }
+.prog-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid var(--border); background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  color: var(--text-dim); margin-bottom: 6px; transition: all .25s;
+}
+.prog-step.active .prog-circle { border-color: var(--purple); background: var(--purple-lo); color: var(--purple); }
+.prog-step.done   .prog-circle { border-color: var(--green);  background: var(--green);     color: white; }
+.prog-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-dim); text-align: center; transition: color .25s;
+}
+.prog-step.active .prog-label { color: var(--purple); }
+.prog-step.done   .prog-label { color: var(--green); }
+
+/* ── CONTENT ── */
+.page-content { max-width: 680px; margin: 0 auto; padding: 40px 24px 80px; }
+
+.step-screen { display: none; }
+.step-screen.visible { display: block; animation: fadeUp .4s ease forwards; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── STEP HEADER ── */
+.step-hd { margin-bottom: 28px; }
+.step-hd-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--purple); background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  border-radius: 3px; padding: 3px 10px; margin-bottom: 12px;
+}
+.step-hd h2 {
+  font-family: var(--serif); font-size: clamp(22px,3.5vw,30px);
+  font-weight: 600; color: var(--text); line-height: 1.2; margin-bottom: 8px;
+}
+.step-hd p { font-size: 15px; color: var(--text-muted); line-height: 1.7; max-width: 560px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; margin-bottom: 16px;
+}
+.card-hd {
+  padding: 14px 20px; background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.card-icon {
+  width: 28px; height: 28px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ci-purple { background: var(--purple-lo); border: 1px solid var(--purple-mid); }
+.ci-amber  { background: var(--amber-lo);  border: 1px solid rgba(180,83,9,.2);  }
+.ci-green  { background: var(--green-lo);  border: 1px solid rgba(13,122,95,.2); }
+.ci-red    { background: var(--red-lo);    border: 1px solid rgba(192,57,43,.2); }
+.card-icon svg { width: 14px; height: 14px; }
+.ci-purple svg { color: var(--purple); }
+.ci-amber  svg { color: var(--amber); }
+.ci-green  svg { color: var(--green); }
+.ci-red    svg { color: var(--red); }
+.card-hd-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.card-hd-sub   { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.card-body { padding: 20px; }
+
+/* ── READ-ONLY TEXT ── */
+.readonly-text {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 13px 15px;
+  font-family: var(--mono); font-size: 12px; color: var(--text-body);
+  line-height: 1.8; white-space: pre-wrap; max-height: 200px; overflow-y: auto;
+}
+
+/* ── FIELD ── */
+.field-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 7px;
+}
+
+.ta {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 11px 14px;
+  font-family: var(--sans); font-size: 13.5px; color: var(--text);
+  line-height: 1.65; resize: vertical; min-height: 80px;
+  outline: none; transition: border-color .15s;
+}
+.ta:focus { border-color: var(--purple-mid); background: #fff; }
+.ta::placeholder { color: var(--text-dim); }
+
+.ta-data {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 12px 14px;
+  font-family: var(--mono); font-size: 12px; color: var(--text);
+  line-height: 1.8; resize: vertical; min-height: 180px;
+  outline: none; transition: border-color .15s;
+}
+.ta-data:focus  { border-color: var(--purple-mid); background: #fff; }
+.ta-data::placeholder { color: var(--text-dim); }
+
+/* ── NOTES ── */
+.info-note {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 11px 14px; border-radius: 7px;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  font-size: 13.5px; color: var(--text-body); line-height: 1.6; margin-bottom: 16px;
+}
+.info-note svg { width: 15px; height: 15px; color: var(--purple); flex-shrink: 0; margin-top: 2px; }
+
+.warn-note {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 11px 14px; border-radius: 7px;
+  background: var(--amber-lo); border: 1px solid rgba(180,83,9,.2);
+  font-size: 13.5px; color: var(--text-body); line-height: 1.6; margin-bottom: 16px;
+}
+.warn-note svg { width: 15px; height: 15px; color: var(--amber); flex-shrink: 0; margin-top: 2px; }
+
+/* ── PROBLEM SELECTOR ── */
+.problem-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.problem-option {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 7px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--white); transition: all .15s;
+  user-select: none;
+}
+.problem-option:hover { border-color: var(--border-hi); background: var(--surface-2); }
+.problem-option.selected { background: var(--purple-lo); border-color: var(--purple-mid); }
+.po-rank {
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid var(--border); background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--text-dim);
+  transition: all .15s;
+}
+.problem-option.selected .po-rank { border-color: var(--purple); background: var(--purple); color: white; }
+.po-text { font-size: 14px; color: var(--text-body); flex: 1; }
+.problem-option.selected .po-text { color: var(--text); font-weight: 500; }
+
+/* Custom problem input */
+.custom-problem-wrap { display: flex; gap: 8px; margin-bottom: 10px; }
+.custom-problem-input {
+  flex: 1; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 12px;
+  font-family: var(--sans); font-size: 13.5px; color: var(--text);
+  outline: none; transition: border-color .15s;
+}
+.custom-problem-input:focus { border-color: var(--purple-mid); background: #fff; }
+.custom-problem-input::placeholder { color: var(--text-dim); }
+
+/* ── PRIORITY HIERARCHY ── */
+.hierarchy-box {
+  border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px;
+}
+.hierarchy-row {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 13px 16px; border-bottom: 1px solid var(--border);
+}
+.hierarchy-row:last-child { border-bottom: none; }
+.hr-medal {
+  font-size: 18px; flex-shrink: 0; width: 28px; text-align: center; margin-top: 2px;
+}
+.hr-body { flex: 1; }
+.hr-title {
+  font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px;
+  display: flex; align-items: center; gap: 7px;
+}
+.hr-badge {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .10em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 3px;
+}
+.badge-required { background: var(--purple-lo); border: 1px solid var(--purple-mid); color: var(--purple); }
+.badge-supporting{ background: var(--amber-lo);  border: 1px solid rgba(180,83,9,.18); color: var(--amber); }
+.badge-optional  { background: var(--surface-2); border: 1px solid var(--border);     color: var(--text-muted); }
+.hr-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; }
+
+/* ── SOLUTION BUILDER TABS ── */
+.problem-tab-nav { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.ptab {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 6px 13px; border-radius: 4px; cursor: pointer;
+  border: 1px solid var(--border); color: var(--text-muted); background: transparent;
+  transition: all .15s;
+}
+.ptab:hover  { border-color: var(--border-hi); color: var(--text); }
+.ptab.active { background: var(--purple); border-color: var(--purple); color: white; }
+
+.prob-form { display: none; }
+.prob-form.visible { display: block; animation: fadeUp .3s ease forwards; }
+
+/* ── SOLUTION SECTIONS ── */
+.solution-section { margin-bottom: 20px; }
+.sol-section-hd {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  padding: 10px 14px; border-radius: 6px;
+}
+.ssh-1 { background: rgba(123,47,190,.06); border: 1px solid var(--purple-mid); }
+.ssh-2 { background: var(--amber-lo);       border: 1px solid rgba(180,83,9,.18); }
+.ssh-3 { background: var(--surface-2);      border: 1px solid var(--border); }
+.ssh-4 { background: var(--red-lo);         border: 1px solid rgba(192,57,43,.16); }
+.sol-icon { font-size: 16px; flex-shrink: 0; }
+.sol-label { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+.sol-badge {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .10em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 3px;
+}
+.sol-fields { display: flex; flex-direction: column; gap: 10px; }
+.sol-field-label {
+  font-size: 12.5px; color: var(--text-muted); margin-bottom: 5px; font-style: italic;
+}
+
+/* ── PROBLEM SUMMARY ROW ── */
+.problem-summary-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px; border-radius: 7px; margin-bottom: 8px;
+  background: var(--surface-2); border: 1px solid var(--border);
+}
+.psr-num {
+  width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+  background: var(--purple); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+}
+.psr-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.psr-sub   { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+
+/* ── ARTIFACT SECTIONS ── */
+.artifact-section { margin-bottom: 22px; }
+.artifact-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--purple); opacity: .7; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.artifact-label::after { content:''; flex:1; height:1px; background: var(--border); }
+.artifact-item {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 9px 13px; border-radius: 6px; margin-bottom: 6px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  font-size: 13.5px; color: var(--text-body); line-height: 1.55;
+}
+.artifact-item::before { content:'·'; color: var(--purple); font-weight: 700; font-size: 16px; line-height: 1.35; flex-shrink: 0; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px; border-radius: 6px; font-family: var(--sans);
+  font-size: 14px; font-weight: 500; cursor: pointer; border: none;
+  transition: all .15s; white-space: nowrap; text-decoration: none;
+}
+.btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.btn-ghost  { background: transparent; border: 1px solid var(--border-hi); color: var(--text-muted); }
+.btn-ghost:hover  { background: var(--surface-2); color: var(--text); }
+.btn-purple { background: var(--purple); color: white; }
+.btn-purple:hover { background: var(--purple-dark); box-shadow: 0 2px 12px rgba(123,47,190,.28); }
+.btn-green  { background: var(--green); color: white; }
+.btn-green:hover  { background: #0a6450; }
+.btn-deep   { background: var(--purple-deep); color: white; }
+.btn-deep:hover   { background: var(--purple-dark); }
+.btn-sm     { padding: 7px 14px; font-size: 13px; }
+.btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
+.btn-full   { width: 100%; justify-content: center; }
+
+/* ── STEP NAV ── */
+.step-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 28px; gap: 12px;
+}
+
+/* ── COMPLETE BANNER ── */
+.complete-banner {
+  background: var(--purple-deep); border-radius: 9px;
+  padding: 24px 26px; text-align: center; margin-top: 20px;
+}
+.complete-banner h3 { font-family: var(--serif); font-size: 20px; font-weight: 400; color: #fff; margin-bottom: 6px; }
+.complete-banner p  { font-size: 13.5px; color: rgba(255,255,255,.55); }
+
+.export-done {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 6px; font-size: 13.5px; font-weight: 500;
+  background: var(--green-lo); border: 1px solid rgba(13,122,95,.2); color: var(--green);
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-left">
+    <div class="tb-badge">Phase C</div>
+    <div class="tb-sep"></div>
+    <div class="tb-title">Operations Decision Engine</div>
+  </div>
+  <div class="tb-right">
+    <div class="sys-dot"></div>
+    Lakeside Health Systems
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar-wrap">
+  <div class="progress-steps">
+    <div class="prog-step active" id="ps1" onclick="jumpTo(1)">
+      <div class="prog-circle" id="pc1">1</div>
+      <div class="prog-label">Review Inputs</div>
+    </div>
+    <div class="prog-step" id="ps2" onclick="jumpTo(2)">
+      <div class="prog-circle" id="pc2">2</div>
+      <div class="prog-label">Top Problems</div>
+    </div>
+    <div class="prog-step" id="ps3" onclick="jumpTo(3)">
+      <div class="prog-circle" id="pc3">3</div>
+      <div class="prog-label">Build Plan</div>
+    </div>
+    <div class="prog-step" id="ps4" onclick="jumpTo(4)">
+      <div class="prog-circle" id="pc4">4</div>
+      <div class="prog-label">Final Report</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE CONTENT -->
+<div class="page-content">
+
+  <!-- ════════ STEP 1 — REVIEW INPUTS ════════ -->
+  <div class="step-screen visible" id="step1">
+    <div class="step-hd">
+      <div class="step-hd-badge">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+        Step 1 of 4
+      </div>
+      <h2>Review Your Phase A &amp; B Outputs</h2>
+      <p>Before making any decisions, review what you found in the previous two phases. Paste your outputs below, or load sample data to get started.</p>
+    </div>
+
+    <!-- Phase A input -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-icon ci-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">Phase A — Dashboard Plan</div>
+          <div class="card-hd-sub">KPIs, chart types, and dashboard sections you identified</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <textarea class="ta-data" id="phaseAInput" placeholder="Paste your Phase A dashboard plan here…&#10;&#10;This includes your KPIs, chart types, dashboard sections, and key data observations." oninput="checkStep1()"></textarea>
+      </div>
+    </div>
+
+    <!-- Phase B input -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-icon ci-amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">Phase B — Operations Insight Report</div>
+          <div class="card-hd-sub">Patterns, root causes, and risks identified by the AI</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <textarea class="ta-data" id="phaseBInput" placeholder="Paste your Phase B insight report here…&#10;&#10;This includes the key patterns, root causes, operational risks, and summary insight from the AI analysis." oninput="checkStep1()"></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
+      <button class="btn btn-ghost btn-sm" onclick="loadSampleInputs()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+        Load Sample Data
+      </button>
+    </div>
+
+    <div class="step-nav">
+      <div></div>
+      <button class="btn btn-purple" id="step1Next" onclick="goTo(2)" disabled>
+        Continue to Step 2
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════ STEP 2 — IDENTIFY TOP PROBLEMS ════════ -->
+  <div class="step-screen" id="step2">
+    <div class="step-hd">
+      <div class="step-hd-badge">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+        Step 2 of 4
+      </div>
+      <h2>Identify the Top 3 Operational Problems</h2>
+      <p>Based on your Phase A and Phase B findings, select the three most important operational problems this clinic needs to address. These will become the focus of your improvement plan.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-icon ci-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">Select Your Top 3 Problems</div>
+          <div class="card-hd-sub">Click to select — they will be ranked in the order you choose them</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="info-note" style="margin-bottom:18px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Select exactly <strong>3 problems</strong>. The first one you click becomes Priority 1, the second becomes Priority 2, and the third becomes Priority 3.</span>
+        </div>
+
+        <div class="problem-list" id="problemList"></div>
+
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+          <div class="field-label">Add a custom problem not listed above</div>
+          <div class="custom-problem-wrap">
+            <input class="custom-problem-input" id="customProblemInput" placeholder="e.g. Inconsistent patient handoff communication…" maxlength="120" />
+            <button class="btn btn-ghost btn-sm" onclick="addCustomProblem()">Add</button>
+          </div>
+        </div>
+
+        <!-- Selected summary -->
+        <div id="selectedSummary" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+          <div class="field-label" style="margin-bottom:10px;">Your selected problems (in priority order)</div>
+          <div id="selectedList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-ghost" onclick="goTo(1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </button>
+      <button class="btn btn-purple" id="step2Next" onclick="goTo(3)" disabled>
+        Build the Improvement Plan
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════ STEP 3 — BUILD PLAN ════════ -->
+  <div class="step-screen" id="step3">
+    <div class="step-hd">
+      <div class="step-hd-badge">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+        Step 3 of 4
+      </div>
+      <h2>Build Your Operational Improvement Plan</h2>
+      <p>For each of your top 3 problems, fill in the structured plan below. Start with process changes — technology comes last, and only if needed.</p>
+    </div>
+
+    <!-- Priority hierarchy reminder -->
+    <div class="hierarchy-box" style="margin-bottom:20px;">
+      <div class="hierarchy-row">
+        <div class="hr-medal">🥇</div>
+        <div class="hr-body">
+          <div class="hr-title">Process Improvements <span class="hr-badge badge-required">Required First</span></div>
+          <div class="hr-desc">Workflow changes, staffing adjustments, scheduling shifts, role clarity. No new tools or software needed.</div>
+        </div>
+      </div>
+      <div class="hierarchy-row">
+        <div class="hr-medal">🥈</div>
+        <div class="hr-body">
+          <div class="hr-title">Workflow Support Tools <span class="hr-badge badge-supporting">Supporting</span></div>
+          <div class="hr-desc">Simple tools already available: checklists, spreadsheets, internal templates. Nothing that requires purchasing or installing.</div>
+        </div>
+      </div>
+      <div class="hierarchy-row">
+        <div class="hr-medal">🥉</div>
+        <div class="hr-body">
+          <div class="hr-title">Technology Enhancements <span class="hr-badge badge-optional">Optional — Last Resort</span></div>
+          <div class="hr-desc">Only if process changes are not enough. Must be justified. Cannot be the primary solution.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Problem tabs -->
+    <div class="problem-tab-nav" id="probTabs"></div>
+
+    <!-- Problem forms (one per selected problem) -->
+    <div id="probForms"></div>
+
+    <!-- Justification -->
+    <div class="card" style="margin-top:6px;">
+      <div class="card-hd">
+        <div class="card-icon ci-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">Final Justification</div>
+          <div class="card-hd-sub">Step 4 of this section — complete after all three problem plans</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="warn-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>Explain why your <strong>process-first changes</strong> can improve clinic performance without requiring new technology investments.</span>
+        </div>
+        <div class="field-label">Your justification (3–5 sentences)</div>
+        <textarea class="ta" id="justification" style="min-height:110px;"
+          placeholder="e.g. These three improvements target the root causes of the clinic's bottlenecks without requiring new software. By staggering appointment slots and adjusting the morning shift, the 10–11am congestion peak can be reduced without any technology investment…"></textarea>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-ghost" onclick="goTo(2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </button>
+      <button class="btn btn-purple" onclick="goTo(4)">
+        Generate Final Report
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════ STEP 4 — FINAL REPORT ════════ -->
+  <div class="step-screen" id="step4">
+    <div class="step-hd">
+      <div class="step-hd-badge">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+        Step 4 of 4
+      </div>
+      <h2>Lakeside Operational Improvement Plan</h2>
+      <p>Here is your complete, process-first operational improvement plan. Review it, then export it as your final Phase C deliverable.</p>
+    </div>
+
+    <!-- REPORT CARD -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-hd">
+        <div class="card-icon ci-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">Operational Improvement Plan</div>
+          <div class="card-hd-sub">Process-first · Data-informed · AI-assisted analysis</div>
+        </div>
+      </div>
+      <div class="card-body">
+
+        <!-- Top 3 Problems -->
+        <div class="artifact-section">
+          <div class="artifact-label">Top 3 Operational Problems (Ranked)</div>
+          <div id="rptProblems"></div>
+        </div>
+
+        <!-- Per-problem solutions -->
+        <div id="rptSolutions"></div>
+
+        <!-- Justification -->
+        <div class="artifact-section" style="margin-bottom:0;">
+          <div class="artifact-label">Final Justification</div>
+          <div style="background:var(--purple-lo);border:1px solid var(--purple-mid);border-left:3px solid var(--purple);border-radius:7px;padding:14px 17px;font-size:13.5px;color:var(--text-body);line-height:1.75;" id="rptJustification"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-ghost" onclick="goTo(3)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </button>
+      <div id="exportArea">
+        <button class="btn btn-deep" onclick="exportPlan()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Final Plan
+        </button>
+      </div>
+    </div>
+
+    <div class="complete-banner" id="completeBanner" style="display:none;">
+      <h3>Mission 3 Complete</h3>
+      <p>You have completed all three phases of the Operations Command Center. Your process-first improvement plan is ready to present to clinic leadership.</p>
+    </div>
+  </div>
+
+</div><!-- /page-content -->
+
+<script>
+// ═══════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════
+const PRESET_PROBLEMS = [
+  'Long patient wait times during morning peak hours',
+  'Staffing imbalance — afternoon shift understaffed relative to patient volume',
+  'High no-show rate on Wednesdays disrupting scheduling',
+  'Check-in bottleneck creating delays for all downstream care',
+  'Exam Room 5 significantly underutilized (43% occupancy)',
+  'Poor visibility into real-time patient flow across departments',
+  'Inconsistent appointment slot length causing scheduling gaps',
+];
+
+const SAMPLE_A = `LAKESIDE OPERATIONS DASHBOARD PLAN
+AI Essentials — Mission 3, Phase A
+
+KPIs SELECTED
+  • Average patient wait time by hour
+  • Staffing levels vs. patient volume (by shift)
+  • Daily appointment completion rate
+  • No-show rate by day of week
+  • Room utilization percentage
+  • Peak congestion time windows
+
+DASHBOARD SECTIONS
+  • Section 1: Patient Flow (wait times, peak congestion)
+  • Section 2: Staffing Alignment (coverage vs. demand)
+  • Section 3: Scheduling Efficiency (no-show, completion)
+
+KEY FINDINGS
+  • Wait times peak at 41 min between 10–11am
+  • Wednesday: highest volume AND highest no-show rate
+  • Afternoon shift understaffed vs. patient demand
+  • Exam Room 5 at 43% utilization — significantly underused
+  • Check-in bottleneck observed on high-volume mornings`;
+
+const SAMPLE_B = `LAKESIDE OPERATIONS INSIGHT REPORT
+AI Essentials — Mission 3, Phase B
+
+KEY PATTERNS IDENTIFIED
+  • Morning congestion is consistent — not an anomaly
+  • Staffing does not scale with appointment volume
+  • Wednesday no-shows create cascading schedule gaps
+  • Room 5 underuse suggests scheduling process mismatch
+  • Check-in is the single largest bottleneck in patient flow
+
+LIKELY ROOT CAUSES
+  • Morning appointments are front-loaded with no stagger
+  • Afternoon staffing decisions were not adjusted for growth
+  • No-show reminders may not be reaching Wednesday patients
+  • Room assignment process does not account for real-time availability
+
+OPERATIONAL RISKS
+  • Continued 40+ min waits will drive patient dissatisfaction
+  • Understaffed afternoons create burnout risk for remaining staff
+  • Unused rooms represent direct revenue and capacity loss
+
+SUMMARY INSIGHT
+  The clinic is experiencing a structural mismatch between when patients arrive and when staff are available to serve them. The morning surge is predictable and addressable through scheduling changes. Wednesday cancellations appear systemic and likely relate to reminder processes. Room underutilization suggests the scheduling system is not distributing appointments efficiently across available capacity.`;
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let currentStep = 1;
+let selectedProblems = []; // array of strings, in selection order
+let allProblems = [...PRESET_PROBLEMS]; // may grow with custom
+
+// Solution state per problem index (0,1,2)
+const solutions = [
+  { process:'', workflow:'', who:'', dayToDay:'', techTool:'', techWhy:'', risks:'' },
+  { process:'', workflow:'', who:'', dayToDay:'', techTool:'', techWhy:'', risks:'' },
+  { process:'', workflow:'', who:'', dayToDay:'', techTool:'', techWhy:'', risks:'' },
+];
+
+let activeProbTab = 0;
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function goTo(n) {
+  document.getElementById('step' + currentStep).classList.remove('visible');
+  currentStep = n;
+  document.getElementById('step' + n).classList.add('visible');
+  updateProgress();
+  if(n === 3) buildStep3();
+  if(n === 4) buildReport();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function jumpTo(n) { if(n <= currentStep) goTo(n); }
+function updateProgress() {
+  for(let i = 1; i <= 4; i++) {
+    const ps = document.getElementById('ps' + i);
+    const pc = document.getElementById('pc' + i);
+    ps.className = 'prog-step' + (i === currentStep ? ' active' : i < currentStep ? ' done' : '');
+    pc.innerHTML = i < currentStep
+      ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+      : i;
+  }
+}
+
+// ═══════════════════════════════════════════
+// STEP 1
+// ═══════════════════════════════════════════
+function checkStep1() {
+  const a = document.getElementById('phaseAInput').value.trim();
+  const b = document.getElementById('phaseBInput').value.trim();
+  document.getElementById('step1Next').disabled = !(a.length > 20 && b.length > 20);
+}
+function loadSampleInputs() {
+  document.getElementById('phaseAInput').value = SAMPLE_A;
+  document.getElementById('phaseBInput').value = SAMPLE_B;
+  checkStep1();
+}
+
+// ═══════════════════════════════════════════
+// STEP 2 — PROBLEM SELECTION
+// ═══════════════════════════════════════════
+function renderProblemList() {
+  const list = document.getElementById('problemList');
+  list.innerHTML = allProblems.map((p, i) => {
+    const rank = selectedProblems.indexOf(p);
+    const sel  = rank !== -1;
+    return `
+    <div class="problem-option ${sel ? 'selected' : ''}" id="po-${i}" onclick="toggleProblem('${esc(p)}')">
+      <div class="po-rank">${sel ? rank + 1 : ''}</div>
+      <div class="po-text">${esc(p)}</div>
+    </div>`;
+  }).join('');
+  renderSelectedSummary();
+  document.getElementById('step2Next').disabled = selectedProblems.length !== 3;
+}
+
+function toggleProblem(p) {
+  const idx = selectedProblems.indexOf(p);
+  if(idx !== -1) {
+    selectedProblems.splice(idx, 1);
+  } else {
+    if(selectedProblems.length >= 3) return; // max 3
+    selectedProblems.push(p);
+  }
+  renderProblemList();
+}
+
+function addCustomProblem() {
+  const inp = document.getElementById('customProblemInput');
+  const val = inp.value.trim();
+  if(!val || allProblems.includes(val)) return;
+  allProblems.push(val);
+  inp.value = '';
+  renderProblemList();
+}
+
+function renderSelectedSummary() {
+  const wrap = document.getElementById('selectedSummary');
+  const list = document.getElementById('selectedList');
+  if(!selectedProblems.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  list.innerHTML = selectedProblems.map((p, i) => `
+    <div class="problem-summary-row">
+      <div class="psr-num">${i + 1}</div>
+      <div><div class="psr-title">${esc(p)}</div></div>
+    </div>`).join('');
+}
+
+// init problem list when page loads
+renderProblemList();
+
+// ═══════════════════════════════════════════
+// STEP 3 — BUILD PLAN
+// ═══════════════════════════════════════════
+function buildStep3() {
+  // Build tabs
+  const tabs = document.getElementById('probTabs');
+  tabs.innerHTML = selectedProblems.map((p, i) => `
+    <div class="ptab ${i === activeProbTab ? 'active' : ''}" onclick="switchProbTab(${i})">
+      Problem ${i + 1}
+    </div>`).join('');
+
+  // Build forms
+  const forms = document.getElementById('probForms');
+  forms.innerHTML = selectedProblems.map((p, i) => `
+    <div class="prob-form ${i === activeProbTab ? 'visible' : ''}" id="probForm${i}">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-icon ci-red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div>
+            <div class="card-hd-title">Priority ${i + 1}</div>
+            <div class="card-hd-sub">${esc(p)}</div>
+          </div>
+        </div>
+        <div class="card-body">
+
+          <!-- LEVEL 1: PROCESS -->
+          <div class="solution-section">
+            <div class="sol-section-hd ssh-1">
+              <div class="sol-icon">🥇</div>
+              <div class="sol-label">Process-Based Solution</div>
+              <div class="sol-badge badge-required">Required</div>
+            </div>
+            <div class="sol-fields">
+              <div>
+                <div class="sol-field-label">What workflow change solves this problem?</div>
+                <textarea class="ta" id="s${i}_process"
+                  placeholder="e.g. Stagger appointment slots into 3 time bands so not all patients arrive at once during the 8–9am window…"
+                  oninput="saveSol(${i},'process',this.value)">${solutions[i].process}</textarea>
+              </div>
+              <div>
+                <div class="sol-field-label">Who is responsible for this change?</div>
+                <textarea class="ta" style="min-height:54px;" id="s${i}_who"
+                  placeholder="e.g. Scheduling coordinator, nurse manager, and front desk lead…"
+                  oninput="saveSol(${i},'who',this.value)">${solutions[i].who}</textarea>
+              </div>
+              <div>
+                <div class="sol-field-label">What happens differently day-to-day?</div>
+                <textarea class="ta" id="s${i}_dayToDay"
+                  placeholder="e.g. Staff will open appointments in 15-minute staggered windows instead of all at 8am. The scheduling coordinator reviews the pattern each Monday…"
+                  oninput="saveSol(${i},'dayToDay',this.value)">${solutions[i].dayToDay}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- LEVEL 2: WORKFLOW -->
+          <div class="solution-section">
+            <div class="sol-section-hd ssh-2">
+              <div class="sol-icon">🥈</div>
+              <div class="sol-label">Workflow Support Improvements</div>
+              <div class="sol-badge badge-supporting">Supporting</div>
+            </div>
+            <div class="sol-fields">
+              <div>
+                <div class="sol-field-label">What scheduling, communication, or staffing changes support this?</div>
+                <textarea class="ta" id="s${i}_workflow"
+                  placeholder="e.g. Create a weekly scheduling checklist. Add a room utilization column to the daily spreadsheet. Update the staff rotation so two nurses overlap during peak hours…"
+                  oninput="saveSol(${i},'workflow',this.value)">${solutions[i].workflow}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- LEVEL 3: TECH (optional) -->
+          <div class="solution-section">
+            <div class="sol-section-hd ssh-3">
+              <div class="sol-icon">🥉</div>
+              <div class="sol-label">Optional Technology Enhancement</div>
+              <div class="sol-badge badge-optional">Only If Needed</div>
+            </div>
+            <div class="sol-fields">
+              <div>
+                <div class="sol-field-label">What tool could help — and why is it NOT required to solve this?</div>
+                <textarea class="ta" id="s${i}_techTool"
+                  placeholder="e.g. An automated reminder system could reduce no-shows further, but the process change of calling patients 48 hours ahead can achieve the same result without new software…"
+                  oninput="saveSol(${i},'techTool',this.value)">${solutions[i].techTool}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- LEVEL 4: RISKS -->
+          <div class="solution-section" style="margin-bottom:0;">
+            <div class="sol-section-hd ssh-4">
+              <div class="sol-icon">⚠️</div>
+              <div class="sol-label">Risks &amp; Tradeoffs</div>
+              <div class="sol-badge" style="background:var(--red-lo);border:1px solid rgba(192,57,43,.18);color:var(--red);">Consider</div>
+            </div>
+            <div class="sol-fields">
+              <div>
+                <div class="sol-field-label">What might get worse or cause unintended problems?</div>
+                <textarea class="ta" id="s${i}_risks"
+                  placeholder="e.g. Staggering appointments may reduce total morning capacity by 10–15%. Some staff may resist the schedule change without clear communication of the reason…"
+                  oninput="saveSol(${i},'risks',this.value)">${solutions[i].risks}</textarea>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function switchProbTab(i) {
+  activeProbTab = i;
+  // save current textarea values before switching
+  document.querySelectorAll('.prob-form').forEach((f, fi) => {
+    f.classList.toggle('visible', fi === i);
+  });
+  document.querySelectorAll('.ptab').forEach((t, ti) => {
+    t.classList.toggle('active', ti === i);
+  });
+}
+
+function saveSol(probIdx, field, val) {
+  solutions[probIdx][field] = val;
+}
+
+// ═══════════════════════════════════════════
+// STEP 4 — REPORT
+// ═══════════════════════════════════════════
+function buildReport() {
+  // Problems
+  document.getElementById('rptProblems').innerHTML = selectedProblems.map((p, i) => `
+    <div class="problem-summary-row" style="margin-bottom:8px;">
+      <div class="psr-num">${i + 1}</div>
+      <div><div class="psr-title">${esc(p)}</div></div>
+    </div>`).join('');
+
+  // Solutions per problem
+  const rptSol = document.getElementById('rptSolutions');
+  rptSol.innerHTML = selectedProblems.map((p, i) => {
+    const s = solutions[i];
+    const rows = [
+      { label:'Process Solution',            val: s.process  },
+      { label:'Responsible Parties',         val: s.who      },
+      { label:'Day-to-Day Change',           val: s.dayToDay },
+      { label:'Workflow Support',            val: s.workflow },
+      { label:'Optional Tech Enhancement',   val: s.techTool },
+      { label:'Risks / Tradeoffs',           val: s.risks    },
+    ].filter(r => r.val.trim());
+
+    return `
+    <div class="artifact-section">
+      <div class="artifact-label">Priority ${i + 1}: ${esc(p.length > 55 ? p.slice(0,55)+'…' : p)}</div>
+      ${rows.length ? rows.map(r => `
+        <div style="margin-bottom:10px;">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:.10em;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px;">${r.label}</div>
+          <div class="artifact-item">${esc(r.val)}</div>
+        </div>`).join('')
+      : '<div style="color:var(--text-dim);font-size:13px;font-style:italic;padding:4px 0;">No plan entered for this problem — go back to Step 3 to complete it.</div>'}
+    </div>`;
+  }).join('');
+
+  // Justification
+  const j = document.getElementById('justification').value.trim();
+  document.getElementById('rptJustification').textContent = j || 'No justification entered — go back to Step 3 to complete it.';
+}
+
+// ═══════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════
+function exportPlan() {
+  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const j = document.getElementById('justification').value.trim() || '[Not completed]';
+
+  const lines = [
+    '═══════════════════════════════════════════════',
+    '  LAKESIDE OPERATIONAL IMPROVEMENT PLAN',
+    '  AI Essentials · Mission 3, Phase C',
+    `  ${today}`,
+    '═══════════════════════════════════════════════',
+    '  APPROACH: Process-First · Data-Informed · AI-Assisted',
+    '',
+    'TOP 3 OPERATIONAL PROBLEMS (RANKED)',
+    '────────────────────────────────────',
+    ...selectedProblems.map((p, i) => `  ${i+1}. ${p}`),
+  ];
+
+  selectedProblems.forEach((p, i) => {
+    const s = solutions[i];
+    lines.push('');
+    lines.push(`PROBLEM ${i+1}: ${p}`);
+    lines.push('─'.repeat(50));
+    lines.push('');
+    if(s.process)  { lines.push('🥇 PROCESS SOLUTION (Primary)'); lines.push(`   ${s.process}`); lines.push(''); }
+    if(s.who)      { lines.push('   Responsible: ' + s.who); lines.push(''); }
+    if(s.dayToDay) { lines.push('   Day-to-Day Change: ' + s.dayToDay); lines.push(''); }
+    if(s.workflow) { lines.push('🥈 WORKFLOW SUPPORT'); lines.push(`   ${s.workflow}`); lines.push(''); }
+    if(s.techTool) { lines.push('🥉 OPTIONAL TECH ENHANCEMENT (Not Required)'); lines.push(`   ${s.techTool}`); lines.push(''); }
+    if(s.risks)    { lines.push('⚠️  RISKS / TRADEOFFS'); lines.push(`   ${s.risks}`); lines.push(''); }
+  });
+
+  lines.push('FINAL JUSTIFICATION');
+  lines.push('───────────────────');
+  lines.push(`  ${j}`);
+  lines.push('');
+  lines.push('═══════════════════════════════════════════════');
+  lines.push('  AI Essentials · essentials-ai.com');
+  lines.push('  NOTE: This plan prioritizes process improvements');
+  lines.push('  over technology — in line with healthcare operations');
+  lines.push('  best practice for sustainable workflow improvement.');
+  lines.push('═══════════════════════════════════════════════');
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'lakeside-improvement-plan.txt'; a.click();
+  URL.revokeObjectURL(url);
+
+  document.getElementById('exportArea').innerHTML = `<div class="export-done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Plan exported</div>`;
+  document.getElementById('completeBanner').style.display = 'block';
+  setTimeout(() => document.getElementById('completeBanner').scrollIntoView({ behavior:'smooth', block:'center' }), 200);
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
