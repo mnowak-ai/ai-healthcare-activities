@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission 3 · Phase A — Dashboard Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --purple:      #7B2FBE;
+  --purple-dark: #5b1e9a;
+  --purple-deep: #3d1270;
+  --purple-lo:   rgba(123,47,190,0.07);
+  --purple-mid:  rgba(123,47,190,0.18);
+
+  --bg:          #f7f6fb;
+  --white:       #ffffff;
+  --surface-2:   #f2f0f9;
+
+  --border:      rgba(123,47,190,0.12);
+  --border-hi:   rgba(123,47,190,0.28);
+
+  --text:        #1a0f2e;
+  --text-body:   #3a2f52;
+  --text-muted:  #7a6e92;
+  --text-dim:    #b5adc8;
+
+  --amber:       #b45309;
+  --amber-lo:    rgba(180,83,9,0.07);
+  --green:       #0d7a5f;
+  --green-lo:    rgba(13,122,95,0.08);
+
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+  --serif: 'Fraunces', serif;
+}
+
+html, body { min-height: 100%; background: var(--bg); }
+
+body {
+  color: var(--text-body);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+/* ── PAGE CHROME ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+}
+.topbar-left  { display: flex; align-items: center; gap: 12px; }
+.tb-badge {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--purple); background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  border-radius: 3px; padding: 3px 9px;
+}
+.tb-title { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--text); }
+.tb-sep   { width: 1px; height: 20px; background: var(--border); }
+.topbar-right {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: .06em;
+}
+.sys-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--purple); box-shadow: 0 0 6px rgba(123,47,190,.4);
+  animation: blink 2.2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+/* ── STEP PROGRESS BAR ── */
+.progress-bar-wrap {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 14px 24px 0;
+}
+.progress-steps {
+  display: flex; gap: 0; max-width: 680px; margin: 0 auto;
+}
+.prog-step {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  position: relative; padding-bottom: 12px; cursor: pointer;
+}
+.prog-step::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 3px; background: var(--border); border-radius: 2px;
+  transition: background .3s;
+}
+.prog-step.active::after  { background: var(--purple); }
+.prog-step.done::after    { background: var(--green); }
+
+.prog-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid var(--border); background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  color: var(--text-dim); margin-bottom: 6px;
+  transition: all .25s;
+}
+.prog-step.active .prog-circle {
+  border-color: var(--purple); background: var(--purple-lo); color: var(--purple);
+}
+.prog-step.done .prog-circle {
+  border-color: var(--green); background: var(--green); color: white;
+}
+.prog-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-dim); text-align: center;
+  transition: color .25s;
+}
+.prog-step.active .prog-label { color: var(--purple); }
+.prog-step.done   .prog-label { color: var(--green); }
+
+/* ── MAIN CONTENT AREA ── */
+.page-content {
+  max-width: 680px; margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+/* ── STEP SCREENS ── */
+.step-screen { display: none; }
+.step-screen.visible {
+  display: block;
+  animation: fadeUp .4s ease forwards;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── STEP HEADER ── */
+.step-hd { margin-bottom: 28px; }
+.step-hd-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--purple); background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  border-radius: 3px; padding: 3px 10px; margin-bottom: 12px;
+}
+.step-hd h2 {
+  font-family: var(--serif); font-size: clamp(22px,3.5vw,30px);
+  font-weight: 600; color: var(--text); line-height: 1.2; margin-bottom: 8px;
+}
+.step-hd p { font-size: 15px; color: var(--text-muted); line-height: 1.7; max-width: 560px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; margin-bottom: 16px;
+}
+.card-hd {
+  padding: 14px 20px; background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.card-icon {
+  width: 28px; height: 28px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ci-purple { background: var(--purple-lo); border: 1px solid var(--purple-mid); }
+.ci-amber  { background: var(--amber-lo);  border: 1px solid rgba(180,83,9,.2); }
+.ci-green  { background: var(--green-lo);  border: 1px solid rgba(13,122,95,.2); }
+.card-icon svg { width: 14px; height: 14px; }
+.ci-purple svg { color: var(--purple); }
+.ci-amber  svg { color: var(--amber); }
+.ci-green  svg { color: var(--green); }
+.card-hd-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.card-hd-sub   { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.card-body { padding: 20px; }
+
+/* ── FIELDS ── */
+.field-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 8px;
+}
+
+.data-textarea {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 13px 15px;
+  font-family: var(--mono); font-size: 12px; color: var(--text);
+  line-height: 1.8; resize: vertical; min-height: 260px;
+  outline: none; transition: border-color .15s;
+}
+.data-textarea:focus { border-color: var(--purple-mid); background: #fff; }
+.data-textarea::placeholder { color: var(--text-dim); }
+
+.output-textarea {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 13px 15px;
+  font-family: var(--mono); font-size: 12px; color: var(--text);
+  line-height: 1.8; resize: vertical; min-height: 240px;
+  outline: none; transition: border-color .15s;
+}
+.output-textarea:focus { border-color: rgba(13,122,95,.35); background: #fff; }
+.output-textarea::placeholder { color: var(--text-dim); }
+
+/* ── PROMPT BOX ── */
+.prompt-box {
+  background: #faf9fd; border: 1px solid var(--border);
+  border-left: 3px solid var(--purple); border-radius: 7px;
+  padding: 16px 18px; margin-bottom: 12px;
+  font-family: var(--mono); font-size: 12px; color: var(--text-body);
+  line-height: 1.85; white-space: pre-wrap;
+  max-height: 300px; overflow-y: auto;
+}
+
+/* ── INSTRUCTION NOTE ── */
+.info-note {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 11px 14px; border-radius: 7px;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid);
+  font-size: 13.5px; color: var(--text-body); line-height: 1.6; margin-bottom: 16px;
+}
+.info-note svg { width: 15px; height: 15px; color: var(--purple); flex-shrink: 0; margin-top: 2px; }
+
+.warn-note {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 11px 14px; border-radius: 7px;
+  background: var(--amber-lo); border: 1px solid rgba(180,83,9,.18);
+  font-size: 13.5px; color: var(--text-body); line-height: 1.6; margin-bottom: 16px;
+}
+.warn-note svg { width: 15px; height: 15px; color: var(--amber); flex-shrink: 0; margin-top: 2px; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px; border-radius: 6px; font-family: var(--sans);
+  font-size: 14px; font-weight: 500; cursor: pointer; border: none;
+  transition: all .15s; white-space: nowrap; text-decoration: none;
+}
+.btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.btn-ghost  { background: transparent; border: 1px solid var(--border-hi); color: var(--text-muted); }
+.btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+.btn-purple { background: var(--purple); color: white; }
+.btn-purple:hover { background: var(--purple-dark); box-shadow: 0 2px 12px rgba(123,47,190,.28); }
+.btn-green  { background: var(--green); color: white; }
+.btn-green:hover { background: #0a6450; }
+.btn-deep   { background: var(--purple-deep); color: white; }
+.btn-deep:hover { background: var(--purple-dark); }
+.btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
+.btn-full   { width: 100%; justify-content: center; }
+
+.copy-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 13px; border-radius: 4px; font-family: var(--mono);
+  font-size: 11px; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+  background: var(--purple-lo); border: 1px solid var(--purple-mid); color: var(--purple);
+  transition: all .15s;
+}
+.copy-btn:hover  { background: var(--purple-mid); }
+.copy-btn.copied { background: var(--green-lo); border-color: rgba(13,122,95,.22); color: var(--green); }
+.copy-btn svg { width: 12px; height: 12px; }
+
+/* ── STEP NAV ROW ── */
+.step-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 28px; gap: 12px;
+}
+.step-nav-right { display: flex; gap: 10px; align-items: center; }
+
+/* ── DATA CHECKLIST (step 1) ── */
+.data-checklist { display: flex; flex-direction: column; gap: 7px; margin-top: 14px; }
+.dc-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13.5px; color: var(--text-body);
+  padding: 8px 12px; border-radius: 6px; background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.dc-icon { width: 20px; height: 20px; border-radius: 4px; background: var(--purple-lo); border: 1px solid var(--purple-mid); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dc-icon svg { width: 11px; height: 11px; color: var(--purple); }
+.dc-ready { background: var(--green-lo); border-color: rgba(13,122,95,.18); }
+.dc-ready .dc-icon { background: var(--green-lo); border-color: rgba(13,122,95,.22); }
+.dc-ready .dc-icon svg { color: var(--green); }
+
+/* ── PARSED SECTIONS (step 3) ── */
+.parsed-group { margin-bottom: 20px; }
+.parsed-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+}
+.parsed-label::after { content:''; flex:1; height:1px; background: var(--border); }
+.parsed-items { display: flex; flex-direction: column; gap: 6px; }
+.parsed-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 13px; border-radius: 6px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  font-size: 13.5px; color: var(--text-body); line-height: 1.55;
+}
+.pi-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+
+/* ── ARTIFACT (step 4) ── */
+.artifact-section { margin-bottom: 20px; }
+.artifact-section-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--purple); opacity: .7;
+  margin-bottom: 9px; display: flex; align-items: center; gap: 8px;
+}
+.artifact-section-label::after { content:''; flex:1; height:1px; background: var(--border); }
+.artifact-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.artifact-chip {
+  font-size: 13px; padding: 6px 12px; border-radius: 5px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text-body); display: flex; align-items: center; gap: 7px;
+}
+.artifact-chip::before { content:'·'; color: var(--purple); font-weight: 700; font-size: 16px; line-height: 1; }
+
+/* ── REFLECTION ── */
+.reflect-block { margin-bottom: 16px; }
+.reflect-q { font-size: 13.5px; color: var(--text-muted); font-style: italic; margin-bottom: 7px; }
+.reflect-ta {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 11px 14px;
+  font-family: var(--sans); font-size: 13.5px; color: var(--text);
+  line-height: 1.65; resize: vertical; min-height: 68px;
+  outline: none; transition: border-color .15s;
+}
+.reflect-ta:focus { border-color: var(--purple-mid); }
+.reflect-ta::placeholder { color: var(--text-dim); }
+
+/* ── COMPLETE BANNER ── */
+.complete-banner {
+  background: var(--purple-deep); border-radius: 9px;
+  padding: 24px 26px; text-align: center; margin-top: 20px;
+}
+.complete-banner h3 { font-family: var(--serif); font-size: 20px; font-weight: 400; color: #fff; margin-bottom: 6px; }
+.complete-banner p  { font-size: 13.5px; color: rgba(255,255,255,.55); }
+
+/* ── EXPORT DONE ── */
+.export-done {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 6px; font-size: 13.5px; font-weight: 500;
+  background: var(--green-lo); border: 1px solid rgba(13,122,95,.2); color: var(--green);
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="tb-badge">Phase A</div>
+    <div class="tb-sep"></div>
+    <div class="tb-title">Dashboard Builder</div>
+  </div>
+  <div class="topbar-right">
+    <div class="sys-dot"></div>
+    Lakeside Health Systems
+  </div>
+</div>
+
+<!-- STEP PROGRESS -->
+<div class="progress-bar-wrap">
+  <div class="progress-steps">
+    <div class="prog-step active" id="ps1" onclick="jumpTo(1)">
+      <div class="prog-circle" id="pc1">1</div>
+      <div class="prog-label">Load Data</div>
+    </div>
+    <div class="prog-step" id="ps2" onclick="jumpTo(2)">
+      <div class="prog-circle" id="pc2">2</div>
+      <div class="prog-label">Build Prompt</div>
+    </div>
+    <div class="prog-step" id="ps3" onclick="jumpTo(3)">
+      <div class="prog-circle" id="pc3">3</div>
+      <div class="prog-label">Paste Output</div>
+    </div>
+    <div class="prog-step" id="ps4" onclick="jumpTo(4)">
+      <div class="prog-circle" id="pc4">4</div>
+      <div class="prog-label">Review Plan</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE CONTENT -->
+<div class="page-content">
+
+  <!-- ══════════ STEP 1 — LOAD DATA ══════════ -->
+  <div class="step-screen visible" id="step1">
+    <div class="step-hd">
+      <div class="step-hd-badge">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+        Step 1 of 4
+      </div>
+      <h2>Load Your Clinic Data</h2>
+      <p>Start by loading the Lakeside Clinic operational dataset. This is the raw data you will analyze using AI in the next step.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-icon ci-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">Lakeside Clinic Raw Data</div>
+          <div class="card-hd-sub">Operational performance data — this week</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="info-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Click <strong>Load Sample Dataset</strong> to fill this with real clinic data. You can also paste your own data here.</span>
+        </div>
+
+        <div class="field-label">Clinic Operational Data</div>
+        <textarea class="data-textarea" id="rawData" placeholder="Click 'Load Sample Dataset' below to get started, or paste your own clinic data here…" oninput="onDataChange()"></textarea>
+
+        <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+          <button class="btn btn-purple" onclick="loadSample()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+            Load Sample Dataset
+          </button>
+          <button class="btn btn-ghost" onclick="clearData()">Clear</button>
+        </div>
+
+        <div class="data-checklist" id="dataChecklist" style="display:none;">
+          <div class="dc-item dc-ready">
+            <div class="dc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Patient wait times by hour
+          </div>
+          <div class="dc-item dc-ready">
+            <div class="dc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Staffing levels per shift
+          </div>
+          <div class="dc-item dc-ready">
+            <div class="dc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Appointment volume &amp; no-show rates
+          </div>
+          <div class="dc-item dc-ready">
+            <div class="dc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Room utilization &amp; peak congestion data
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <div></div>
+      <button class="btn btn-purple" id="step1Next" onclick="goTo(2)" disabled>
+        Continue to Step 2
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 2 — BUILD PROMPT ══════════ -->
+  <div class="step-screen" id="step2">
+    <div class="step-hd">
+      <div class="step-hd-badge">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+        Step 2 of 4
+      </div>
+      <h2>Copy This Prompt into ChatGPT</h2>
+      <p>Your clinic data has been added to the prompt below. Copy it, open ChatGPT or Claude, and paste it in. Then wait for the full AI response before moving to Step 3.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-icon ci-amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">Lakeside Dashboard Builder Prompt</div>
+          <div class="card-hd-sub">Ready to copy — your data is already included at the bottom</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="prompt-box" id="promptDisplay"></div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+          <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy Full Prompt + Data
+          </button>
+          <div style="display:flex;gap:8px;">
+            <a href="https://chat.openai.com" target="_blank" rel="noopener" class="btn btn-ghost" style="font-size:13px;padding:8px 14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open ChatGPT
+            </a>
+            <a href="https://claude.ai" target="_blank" rel="noopener" class="btn btn-ghost" style="font-size:13px;padding:8px 14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open Claude
+            </a>
+          </div>
+        </div>
+
+        <div class="warn-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>Read the full AI response before copying it. Do not move to Step 3 until you have a complete answer that includes KPIs, chart types, and a dashboard layout.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-ghost" onclick="goTo(1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </button>
+      <button class="btn btn-purple" onclick="goTo(3)">
+        I have the AI response — Continue
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 3 — PASTE OUTPUT ══════════ -->
+  <div class="step-screen" id="step3">
+    <div class="step-hd">
+      <div class="step-hd-badge">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+        Step 3 of 4
+      </div>
+      <h2>Paste the AI Response Here</h2>
+      <p>Copy the full response from ChatGPT and paste it below. The system will extract the KPIs, chart types, and dashboard layout for you.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-icon ci-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">AI Dashboard Output</div>
+          <div class="card-hd-sub">Paste the complete AI response below</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="field-label">AI Response</div>
+        <textarea class="output-textarea" id="aiOutput" placeholder="Paste the full AI response here…&#10;&#10;It should include:&#10;• KPIs identified from your data&#10;• Chart type suggestions&#10;• Dashboard layout sections&#10;• Key operational insights" oninput="onOutputChange()"></textarea>
+
+        <div style="margin-top:12px;">
+          <button class="btn btn-green btn-full" id="parseBtn" onclick="parseOutput()" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Extract Dashboard Plan
+          </button>
+        </div>
+
+        <!-- PARSED RESULTS — shown after extraction -->
+        <div id="parsedResults" style="display:none;margin-top:20px;border-top:1px solid var(--border);padding-top:20px;">
+          <div style="font-size:13.5px;color:var(--text-muted);margin-bottom:16px;">Here is what the AI identified. Review each section before continuing.</div>
+
+          <div class="parsed-group">
+            <div class="parsed-label">KPIs Identified</div>
+            <div class="parsed-items" id="parsedKPIs"></div>
+          </div>
+          <div class="parsed-group">
+            <div class="parsed-label">Suggested Chart Types</div>
+            <div class="parsed-items" id="parsedViz"></div>
+          </div>
+          <div class="parsed-group">
+            <div class="parsed-label">Dashboard Sections</div>
+            <div class="parsed-items" id="parsedStructure"></div>
+          </div>
+          <div class="parsed-group" style="margin-bottom:0;">
+            <div class="parsed-label">Key Insights from AI</div>
+            <div class="parsed-items" id="parsedInsights"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-ghost" onclick="goTo(2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </button>
+      <button class="btn btn-purple" id="step3Next" onclick="goTo(4)" disabled>
+        Continue to Review
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 4 — REVIEW PLAN ══════════ -->
+  <div class="step-screen" id="step4">
+    <div class="step-hd">
+      <div class="step-hd-badge">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><rect width="9" height="9" rx="2"/></svg>
+        Step 4 of 4
+      </div>
+      <h2>Your Dashboard Plan</h2>
+      <p>Here is your completed Lakeside Operations Dashboard Plan. Review the AI output, complete your reflection, then export your summary.</p>
+    </div>
+
+    <!-- ARTIFACT SUMMARY -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-hd">
+        <div class="card-icon ci-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">Lakeside Operations Dashboard Plan</div>
+          <div class="card-hd-sub">Auto-generated from your AI analysis</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="artifact-section">
+          <div class="artifact-section-label">KPIs Selected</div>
+          <div class="artifact-chips" id="artifactKPIs"></div>
+        </div>
+        <div class="artifact-section">
+          <div class="artifact-section-label">Chart Types</div>
+          <div class="artifact-chips" id="artifactViz"></div>
+        </div>
+        <div class="artifact-section" style="margin-bottom:0;">
+          <div class="artifact-section-label">Dashboard Sections</div>
+          <div class="artifact-chips" id="artifactStructure"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REFLECTION -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-icon ci-amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div>
+          <div class="card-hd-title">Your Reflection</div>
+          <div class="card-hd-sub">Answer all three questions before exporting</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="reflect-block">
+          <div class="reflect-q">What did the AI do well in building this dashboard plan?</div>
+          <textarea class="reflect-ta" id="ref1" placeholder="e.g. The AI correctly identified wait time as the top KPI and suggested a clear heatmap visualization…"></textarea>
+        </div>
+        <div class="reflect-block">
+          <div class="reflect-q">What would you change or improve about the AI output?</div>
+          <textarea class="reflect-ta" id="ref2" placeholder="e.g. The AI missed the no-show rate pattern and suggested too many chart types for one section…"></textarea>
+        </div>
+        <div class="reflect-block" style="margin-bottom:0;">
+          <div class="reflect-q">What is one operational finding a clinic manager should act on right away?</div>
+          <textarea class="reflect-ta" id="ref3" placeholder="e.g. The 10–11am peak congestion is the most urgent bottleneck and needs schedule staggering…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <button class="btn btn-ghost" onclick="goTo(3)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </button>
+      <div class="step-nav-right" id="exportArea">
+        <button class="btn btn-deep" id="exportBtn" onclick="exportSummary()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Summary
+        </button>
+      </div>
+    </div>
+
+    <div class="complete-banner" id="completeBanner" style="display:none;">
+      <h3>Phase A Complete</h3>
+      <p>Your dashboard plan has been exported. In Phase B you will use this analysis to support operational decision-making with AI.</p>
+    </div>
+  </div>
+
+</div><!-- /page-content -->
+
+<script>
+// ═══════════════════════════
+// SAMPLE DATA
+// ═══════════════════════════
+const SAMPLE = `LAKESIDE COMMUNITY HEALTH CLINIC
+Operational Data Report — Current Week
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PATIENT WAIT TIMES (avg by hour)
+8:00 AM  → 12 min
+9:00 AM  → 18 min
+10:00 AM → 34 min  ← PEAK
+11:00 AM → 41 min  ← PEAK
+12:00 PM → 29 min
+1:00 PM  → 15 min
+2:00 PM  → 19 min
+3:00 PM  → 27 min
+4:00 PM  → 22 min
+5:00 PM  →  9 min
+
+STAFFING LEVELS BY SHIFT
+Morning (8am–12pm):  4 nurses, 3 physicians, 2 check-in staff
+Afternoon (12–5pm):  3 nurses, 2 physicians, 1 check-in staff
+Evening (5–8pm):     2 nurses, 1 physician,  1 check-in staff
+
+APPOINTMENT VOLUME (last 5 days)
+Monday:    58 scheduled / 52 completed
+Tuesday:   61 scheduled / 54 completed
+Wednesday: 67 scheduled / 55 completed  ← highest volume
+Thursday:  49 scheduled / 46 completed
+Friday:    43 scheduled / 40 completed
+
+NO-SHOW RATES
+Monday: 10.3% | Tuesday: 11.5% | Wednesday: 17.9% ← highest
+Thursday: 6.1% | Friday: 7.0% | Weekly avg: 10.6%
+
+ROOM UTILIZATION
+Exam Room 1: 88% | Exam Room 2: 91% ← over-utilized
+Exam Room 3: 74% | Exam Room 4: 62%
+Exam Room 5: 43% ← underused
+
+PEAK CONGESTION
+Primary peak:   10:00–11:30 AM
+Secondary peak:  3:00–3:45 PM
+Lowest period:   1:00–1:30 PM
+
+NOTES
+• Check-in bottleneck on high-volume days
+• Wednesday no-shows may relate to reminder gap
+• Exam Room 5 consistently underbooked
+• Afternoon staffing does not match patient volume`;
+
+// ═══════════════════════════
+// STATE
+// ═══════════════════════════
+let currentStep = 1;
+let parsed = { kpis:[], viz:[], structure:[], insights:[] };
+const TOTAL = 4;
+
+// ═══════════════════════════
+// NAVIGATION
+// ═══════════════════════════
+function goTo(n) {
+  document.getElementById('step'+currentStep).classList.remove('visible');
+  currentStep = n;
+  const el = document.getElementById('step'+n);
+  el.classList.add('visible');
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  updateProgress();
+
+  if(n === 2) buildPromptDisplay();
+  if(n === 4) buildArtifact();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function jumpTo(n) {
+  // Only allow navigating to completed or current steps
+  if(n <= currentStep) goTo(n);
+}
+
+function updateProgress() {
+  for(let i=1; i<=TOTAL; i++){
+    const ps = document.getElementById('ps'+i);
+    const pc = document.getElementById('pc'+i);
+    ps.className = 'prog-step' + (i===currentStep?' active':i<currentStep?' done':'');
+    if(i < currentStep){
+      pc.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+    } else {
+      pc.textContent = i;
+    }
+  }
+}
+
+// ═══════════════════════════
+// STEP 1 — DATA
+// ═══════════════════════════
+function loadSample() {
+  document.getElementById('rawData').value = SAMPLE;
+  onDataChange();
+}
+function clearData() {
+  document.getElementById('rawData').value = '';
+  onDataChange();
+}
+function onDataChange() {
+  const val = document.getElementById('rawData').value.trim();
+  const hasData = val.length > 30;
+  document.getElementById('step1Next').disabled = !hasData;
+  document.getElementById('dataChecklist').style.display = hasData ? 'flex' : 'none';
+}
+
+// ═══════════════════════════
+// STEP 2 — PROMPT
+// ═══════════════════════════
+const PROMPT_BASE = `You are a healthcare operations analyst at Lakeside Community Health Clinic.
+
+Your job is to turn raw clinic data into a structured dashboard plan.
+
+Please do the following:
+
+1. Identify 4–6 key operational KPIs from the data (e.g. average wait time, peak hours, staffing gaps, no-show rate, room utilization).
+
+2. For each KPI, suggest an appropriate visualization type (bar chart, line graph, heatmap, gauge, etc.) and explain why that chart type works best.
+
+3. Write a simple 1–2 sentence explanation of what each chart shows, written for non-technical healthcare staff.
+
+4. Organize a dashboard layout with 2–3 logical sections (e.g. "Patient Flow", "Staffing", "Scheduling") and assign KPIs to each section.
+
+5. List 2–3 key operational insights a clinic manager should notice from this data.
+
+Focus only on operations — do not make clinical or medical recommendations.
+
+─────────────────────────────────────
+CLINIC DATA:
+─────────────────────────────────────`;
+
+function buildPromptDisplay() {
+  const data = document.getElementById('rawData').value.trim();
+  const preview = PROMPT_BASE + '\n' + (data || '[No data loaded]');
+  document.getElementById('promptDisplay').textContent = preview;
+}
+
+function copyPrompt() {
+  const data  = document.getElementById('rawData').value.trim();
+  const full  = PROMPT_BASE + '\n' + (data || '[No data loaded]');
+  navigator.clipboard.writeText(full).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.classList.add('copied');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy Full Prompt + Data`;
+    }, 2200);
+  }).catch(() => alert('Could not copy automatically. Please select the prompt text and copy manually.'));
+}
+
+// ═══════════════════════════
+// STEP 3 — PARSE OUTPUT
+// ═══════════════════════════
+function onOutputChange() {
+  const val = document.getElementById('aiOutput').value.trim();
+  document.getElementById('parseBtn').disabled = val.length < 50;
+}
+
+function parseOutput() {
+  const raw = document.getElementById('aiOutput').value.trim();
+  if(!raw) return;
+
+  parsed.kpis      = extractByKeyword(raw, ['kpi','key performance','indicator','metric','measure','operational kpi']);
+  parsed.viz       = extractByKeyword(raw, ['visualization','chart','graph','heatmap','bar','line','gauge','display','visual']);
+  parsed.structure = extractByKeyword(raw, ['section','layout','group','dashboard','panel','organize','category']);
+  parsed.insights  = extractByKeyword(raw, ['insight','finding','notable','recommend','suggest','notice','action','attention','concern']);
+
+  if(!parsed.kpis.length)      parsed.kpis      = bulletLines(raw).slice(0,6);
+  if(!parsed.viz.length)       parsed.viz       = findChartTypes(raw);
+  if(!parsed.structure.length) parsed.structure = numberedLines(raw).slice(0,5);
+  if(!parsed.insights.length)  parsed.insights  = bulletLines(raw).slice(0,4);
+
+  renderSection('parsedKPIs',       parsed.kpis,      '#7B2FBE');
+  renderSection('parsedViz',        parsed.viz,        '#b45309');
+  renderSection('parsedStructure',  parsed.structure,  '#0d7a5f');
+  renderSection('parsedInsights',   parsed.insights,   '#7B2FBE');
+
+  document.getElementById('parsedResults').style.display = 'block';
+  document.getElementById('step3Next').disabled = false;
+}
+
+function extractByKeyword(text, keywords) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 3);
+  const out = []; let in_ = false;
+  for(let i = 0; i < lines.length; i++) {
+    const lo = lines[i].toLowerCase();
+    if(keywords.some(k => lo.includes(k)) && lines[i].length < 90){ in_ = true; continue; }
+    if(in_) {
+      const c = lines[i].replace(/^[-•*\d.)\s]+/, '').replace(/\*\*/g,'').trim();
+      if(c.length > 5 && c.length < 200) { out.push(c); if(out.length >= 6) break; }
+      if(lines[i].match(/^#{1,3}\s/) && out.length > 0) in_ = false;
+    }
+  }
+  return out;
+}
+
+function bulletLines(text) {
+  return text.split('\n')
+    .filter(l => l.match(/^\s*[-•*]/))
+    .map(l => l.replace(/^\s*[-•*]\s*/,'').replace(/\*\*/g,'').trim())
+    .filter(l => l.length > 5 && l.length < 200);
+}
+
+function numberedLines(text) {
+  return text.split('\n')
+    .filter(l => l.match(/^\s*\d+[\.\)]/))
+    .map(l => l.replace(/^\s*\d+[\.\)]\s*/,'').replace(/\*\*/g,'').trim())
+    .filter(l => l.length > 5);
+}
+
+function findChartTypes(text) {
+  const types = ['bar chart','line chart','line graph','heatmap','gauge','pie chart','scatter','area chart','stacked bar','donut','sparkline','funnel'];
+  return types.filter(t => text.toLowerCase().includes(t))
+    .map(t => t.charAt(0).toUpperCase() + t.slice(1));
+}
+
+function renderSection(id, items, color) {
+  const el = document.getElementById(id);
+  if(!items || !items.length){
+    el.innerHTML = `<div class="parsed-item" style="color:var(--text-dim);font-style:italic;">Not found — check the raw AI response above</div>`;
+    return;
+  }
+  el.innerHTML = items.map(item => `
+    <div class="parsed-item">
+      <div class="pi-dot" style="background:${color}"></div>
+      <span>${esc(item)}</span>
+    </div>`).join('');
+}
+
+// ═══════════════════════════
+// STEP 4 — ARTIFACT
+// ═══════════════════════════
+function buildArtifact() {
+  buildChips('artifactKPIs',       parsed.kpis);
+  buildChips('artifactViz',        parsed.viz);
+  buildChips('artifactStructure',  parsed.structure);
+}
+
+function buildChips(id, items) {
+  const el = document.getElementById(id);
+  if(!items || !items.length){
+    el.innerHTML = `<span style="font-size:13px;color:var(--text-dim);font-style:italic;">No items extracted</span>`;
+    return;
+  }
+  el.innerHTML = items.slice(0,6).map(i => `<div class="artifact-chip">${esc(i)}</div>`).join('');
+}
+
+// ═══════════════════════════
+// EXPORT
+// ═══════════════════════════
+function exportSummary() {
+  const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const r1 = document.getElementById('ref1').value || '[Not answered]';
+  const r2 = document.getElementById('ref2').value || '[Not answered]';
+  const r3 = document.getElementById('ref3').value || '[Not answered]';
+
+  const lines = [
+    '═══════════════════════════════════════════════',
+    '  LAKESIDE OPERATIONS DASHBOARD PLAN',
+    '  AI Essentials · Mission 3, Phase A',
+    `  ${today}`,
+    '═══════════════════════════════════════════════',
+    '',
+    'KPIs SELECTED',
+    '─────────────',
+    ...(parsed.kpis.length ? parsed.kpis.map(k=>`  • ${k}`) : ['  [None identified]']),
+    '',
+    'CHART TYPES',
+    '───────────',
+    ...(parsed.viz.length ? parsed.viz.map(v=>`  • ${v}`) : ['  [None identified]']),
+    '',
+    'DASHBOARD SECTIONS',
+    '──────────────────',
+    ...(parsed.structure.length ? parsed.structure.map(s=>`  • ${s}`) : ['  [None identified]']),
+    '',
+    'KEY INSIGHTS',
+    '────────────',
+    ...(parsed.insights.length ? parsed.insights.map(i=>`  • ${i}`) : ['  [None identified]']),
+    '',
+    'LEARNER REFLECTION',
+    '──────────────────',
+    '',
+    'Q1: What did the AI do well?',
+    `    ${r1}`,
+    '',
+    'Q2: What would you change?',
+    `    ${r2}`,
+    '',
+    'Q3: One immediate operational finding:',
+    `    ${r3}`,
+    '',
+    '═══════════════════════════════════════════════',
+    '  AI Essentials · essentials-ai.com',
+    '═══════════════════════════════════════════════',
+  ];
+
+  const blob = new Blob([lines.join('\n')], {type:'text/plain'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'lakeside-dashboard-plan.txt'; a.click();
+  URL.revokeObjectURL(url);
+
+  document.getElementById('exportArea').innerHTML = `<div class="export-done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Summary exported</div>`;
+  document.getElementById('completeBanner').style.display = 'block';
+  document.getElementById('completeBanner').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+// ═══════════════════════════
+// UTILS
+// ═══════════════════════════
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
