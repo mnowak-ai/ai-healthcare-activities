@@ -13,10 +13,10 @@
   --purple-pale:  #f3ecfc;
   --purple-ghost: #faf7fe;
   --purple-line:  #e4d4f7;
-  --accent:       #c084fc;
   --red:          #dc2626;
   --amber:        #d97706;
   --green:        #059669;
+  --green-pale:   #d1fae5;
   --text:         #1e1b2e;
   --text-mid:     #4b4569;
   --text-light:   #7c6fa0;
@@ -34,219 +34,271 @@ body {
   color: var(--text);
   font-family: 'DM Sans', sans-serif;
   font-size: 15px;
-  line-height: 1.65;
+  line-height: 1.6;
   min-height: 100vh;
 }
 
-/* ── TOP BAR ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════ TOP BAR ══════════ */
 .topbar {
-  position: sticky; top: 0; z-index: 200;
+  position: sticky; top: 0; z-index: 100;
   background: var(--white);
   border-bottom: 2px solid var(--purple-line);
-  padding: 0 1.5rem;
-  height: 54px;
-  display: flex; align-items: center; gap: 1rem;
+  padding: 12px 1.25rem;
+  display: flex; align-items: center; gap: 14px;
   box-shadow: 0 2px 12px rgba(123,47,190,0.07);
 }
 .topbar-brand {
   font-family: 'Fraunces', serif;
   font-size: 15px; font-weight: 600;
   color: var(--purple);
-  white-space: nowrap;
 }
-.topbar-sep { width: 1px; height: 22px; background: var(--purple-line); }
-.topbar-phase {
+.topbar-mission {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px; color: var(--text-light);
+  font-size: 10px; color: var(--text-light);
   letter-spacing: 0.08em;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .topbar-spacer { flex: 1; }
-.step-progress {
-  display: flex; align-items: center; gap: 6px;
-}
-.step-pip {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--purple-line);
-  transition: background 0.3s, transform 0.3s;
-}
-.step-pip.done { background: var(--purple); }
-.step-pip.active { background: var(--purple); transform: scale(1.35); }
-.step-label {
+.score-badge {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; color: var(--text-light); margin-left: 4px;
-  letter-spacing: 0.05em;
-}
-
-/* ── WRAPPER ── */
-.page-wrap {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 2.5rem 1.5rem 5rem;
-}
-
-/* ── STEP PANEL ── */
-.step-panel {
-  display: none;
-  animation: step-in 0.4s ease-out forwards;
-}
-.step-panel.active { display: block; }
-@keyframes step-in {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── STEP HEADER ── */
-.step-eyebrow {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--purple-light);
-  margin-bottom: 8px;
-}
-.step-title {
-  font-family: 'Fraunces', serif;
-  font-size: 2rem; font-weight: 300; line-height: 1.2;
-  color: var(--text); margin-bottom: 12px;
-}
-.step-title em { color: var(--purple); font-style: italic; }
-.step-desc {
-  font-size: 14px; color: var(--text-mid); line-height: 1.7;
-  margin-bottom: 2rem; max-width: 600px;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--purple-line);
-}
-
-/* ── CARDS ── */
-.card {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.25rem 1.5rem;
-  box-shadow: var(--shadow);
-  margin-bottom: 1rem;
-  transition: box-shadow 0.2s, border-color 0.2s;
-}
-.card:hover { box-shadow: var(--shadow-lg); border-color: var(--purple-light); }
-
-/* ── INTRO CARD ── */
-.intro-role-card {
+  font-size: 10px; letter-spacing: 0.08em;
+  color: var(--purple);
   background: var(--purple-pale);
   border: 1px solid var(--purple-line);
-  border-left: 4px solid var(--purple);
-  border-radius: 10px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+  border-radius: 20px; padding: 4px 12px;
+  white-space: nowrap;
 }
-.intro-role-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
-  color: var(--purple); margin-bottom: 8px;
-}
-.intro-role-text { font-size: 14px; color: var(--text); line-height: 1.75; }
 
-/* ── METRIC STRIP ── */
-.metric-strip {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+/* ══════════ HUB ══════════ */
+.hub {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  animation: fade-in 0.5s ease-out;
+}
+.hub-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--purple-light); margin-bottom: 8px;
+}
+.hub-title {
+  font-family: 'Fraunces', serif;
+  font-size: 2rem; font-weight: 300; line-height: 1.2;
+  margin-bottom: 10px;
+}
+.hub-title em { color: var(--purple); font-style: italic; }
+.hub-sub {
+  font-size: 14px; color: var(--text-mid); line-height: 1.7;
+  margin-bottom: 1.75rem; max-width: 560px;
+}
+
+/* mini status */
+.status-line {
+  display: flex; gap: 10px; flex-wrap: wrap;
   margin-bottom: 2rem;
 }
-@media (max-width: 520px) { .metric-strip { grid-template-columns: repeat(2,1fr); } }
-.metric-chip {
+.status-stat {
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 14px 16px;
+  padding: 8px 14px;
   box-shadow: var(--shadow);
+  display: flex; align-items: baseline; gap: 7px;
 }
-.metric-chip-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--text-light); margin-bottom: 6px;
-}
-.metric-chip-val {
+.status-stat-val {
   font-family: 'Fraunces', serif;
-  font-size: 1.6rem; font-weight: 600; line-height: 1;
+  font-size: 1.3rem; font-weight: 600;
 }
-.metric-chip-val.red   { color: var(--red); }
-.metric-chip-val.amber { color: var(--amber); }
-.metric-chip-sub {
-  font-size: 10px; color: var(--text-light); margin-top: 4px;
+.status-stat-val.red { color: var(--red); }
+.status-stat-val.amber { color: var(--amber); }
+.status-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-light);
 }
-.metric-chip-sub.warn { color: var(--red); font-weight: 600; }
 
-/* ── INCIDENT CARDS ── */
+/* explore cards */
+.explore-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 2rem; }
+.explore-card {
+  width: 100%;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 1.15rem 1.4rem;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; gap: 16px;
+  transition: all 0.2s;
+}
+.explore-card:hover { border-color: var(--purple-light); box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+.explore-card.done { border-left: 4px solid var(--green); }
+.explore-card.locked { opacity: 0.45; cursor: not-allowed; }
+.explore-card.locked:hover { transform: none; border-color: var(--border); box-shadow: var(--shadow); }
+.explore-num {
+  font-family: 'Fraunces', serif;
+  font-size: 1.6rem; font-weight: 300; font-style: italic;
+  color: var(--purple-light);
+  width: 32px; flex-shrink: 0; text-align: center;
+}
+.explore-card.done .explore-num { color: var(--green); }
+.explore-info { flex: 1; }
+.explore-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.explore-desc { font-size: 12px; color: var(--text-light); margin-top: 1px; }
+.explore-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-light);
+  white-space: nowrap;
+}
+.explore-status.done { color: var(--green); font-weight: 600; }
+.explore-arrow { color: var(--purple-light); font-size: 16px; }
+
+/* complete button */
+.finish-wrap { text-align: center; }
+.finish-btn {
+  background: var(--purple-line); color: var(--text-light);
+  border: none; border-radius: 10px;
+  padding: 14px 36px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: not-allowed;
+  transition: all 0.25s;
+}
+.finish-btn.ready {
+  background: var(--purple); color: #fff; cursor: pointer;
+  box-shadow: 0 4px 18px rgba(123,47,190,0.32);
+}
+.finish-btn.ready:hover { background: var(--purple-dark); transform: translateY(-1px); }
+.finish-hint { font-size: 12px; color: var(--text-light); margin-top: 10px; }
+
+/* ══════════ FOCUS OVERLAY (one section at a time) ══════════ */
+.focus-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--bg);
+  display: none;
+  overflow-y: auto;
+}
+.focus-overlay.show { display: block; animation: fade-in 0.35s ease-out; }
+.focus-inner {
+  max-width: 700px; margin: 0 auto;
+  padding: 1.5rem 1.5rem 6rem;
+}
+.focus-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.back-btn {
+  background: none; border: 1.5px solid var(--border);
+  border-radius: 20px; padding: 7px 16px;
+  font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500;
+  color: var(--text-mid); cursor: pointer; transition: all 0.2s;
+}
+.back-btn:hover { border-color: var(--purple-light); color: var(--purple); }
+.focus-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--purple-light);
+}
+.focus-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.7rem; font-weight: 300; margin-bottom: 8px;
+}
+.focus-title em { color: var(--purple); font-style: italic; }
+.focus-desc { font-size: 13.5px; color: var(--text-mid); margin-bottom: 1.5rem; max-width: 560px; }
+
+.check-cta {
+  position: sticky; bottom: 0;
+  background: linear-gradient(transparent, var(--bg) 30%);
+  padding: 1.5rem 0 1.25rem;
+  text-align: center;
+}
+.check-btn {
+  background: var(--purple); color: #fff;
+  border: none; border-radius: 10px;
+  padding: 13px 32px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(123,47,190,0.32);
+  transition: all 0.2s;
+}
+.check-btn:hover { background: var(--purple-dark); transform: translateY(-1px); }
+
+/* ── incidents ── */
 .incident-card {
   background: var(--white);
   border: 1px solid var(--border);
   border-left: 4px solid var(--purple-line);
   border-radius: 8px;
-  padding: 1.1rem 1.25rem;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   box-shadow: var(--shadow);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  overflow: hidden;
 }
-.incident-card:hover { box-shadow: var(--shadow-lg); }
 .incident-card.crit { border-left-color: var(--red); }
 .incident-card.high { border-left-color: var(--amber); }
 .incident-card.med  { border-left-color: var(--purple); }
-
-.incident-meta {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  margin-bottom: 6px;
+.incident-head {
+  width: 100%;
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px;
+  background: none; border: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; text-align: left;
 }
 .sev-pill {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; font-weight: 600; letter-spacing: 0.12em;
-  padding: 2px 9px; border-radius: 20px;
+  font-size: 8.5px; font-weight: 600; letter-spacing: 0.1em;
+  padding: 2px 8px; border-radius: 20px; white-space: nowrap;
 }
 .sev-pill.crit { background: #fee2e2; color: var(--red); }
 .sev-pill.high { background: #fef3c7; color: var(--amber); }
 .sev-pill.med  { background: var(--purple-pale); color: var(--purple); }
-.dept-chip {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; color: var(--text-light);
-  background: var(--bg); border: 1px solid var(--border);
-  padding: 2px 9px; border-radius: 20px;
-  letter-spacing: 0.05em;
-}
-.incident-title {
-  font-size: 14px; font-weight: 600; color: var(--text);
-  margin-bottom: 5px;
-}
-.incident-impact { font-size: 13px; color: var(--text-mid); margin-bottom: 8px; }
+.incident-head-title { font-size: 13.5px; font-weight: 600; flex: 1; }
+.incident-caret { color: var(--text-light); font-size: 11px; transition: transform 0.25s; }
+.incident-card.open .incident-caret { transform: rotate(180deg); }
+.incident-detail { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; padding: 0 14px; }
+.incident-card.open .incident-detail { max-height: 280px; padding: 0 14px 12px; }
+.incident-impact { font-size: 12.5px; color: var(--text-mid); margin-bottom: 8px; }
 .incident-staff-box {
   background: var(--purple-ghost);
   border-left: 3px solid var(--purple-line);
-  padding: 8px 12px; border-radius: 4px;
+  padding: 7px 11px; border-radius: 4px;
   font-size: 12px; color: var(--text-mid); font-style: italic;
 }
-.incident-staff-box strong { color: var(--purple); font-style: normal; font-size: 10px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 3px; }
+.incident-staff-box strong {
+  color: var(--purple); font-style: normal; font-size: 8.5px;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em;
+  text-transform: uppercase; display: block; margin-bottom: 2px;
+}
 
-/* ── STAFF CARDS ── */
-.staff-card {
+/* ── staff voices ── */
+.voice-stage {
   background: var(--white);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 10px;
-  box-shadow: var(--shadow);
-  transition: box-shadow 0.2s;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  padding: 1.5rem 1.75rem;
+  min-height: 200px;
 }
-.staff-card:hover { box-shadow: var(--shadow-lg); }
+.voice-quote {
+  font-family: 'Fraunces', serif;
+  font-size: 1.08rem; font-style: italic; font-weight: 300;
+  line-height: 1.7; margin: 10px 0 12px;
+  animation: fade-in 0.35s ease-out;
+}
 .staff-role-tag {
   display: inline-block;
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
   color: var(--purple); background: var(--purple-pale);
   padding: 3px 10px; border-radius: 20px;
-  margin-bottom: 10px;
-}
-.staff-quote {
-  font-family: 'Fraunces', serif;
-  font-size: 1rem; font-style: italic; font-weight: 300;
-  color: var(--text); line-height: 1.7;
-  margin-bottom: 10px;
 }
 .staff-tags { display: flex; flex-wrap: wrap; gap: 5px; }
 .staff-tag-chip {
@@ -254,485 +306,378 @@ body {
   background: var(--bg); border: 1px solid var(--border);
   padding: 2px 8px; border-radius: 20px;
 }
-
-/* ── WORKFLOW EXPLORER ── */
-.wf-area-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 8px;
-  margin-bottom: 1.25rem;
+.voice-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-top: 14px; }
+.voice-avatar {
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  border-radius: 20px; padding: 7px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500; color: var(--text-mid);
+  cursor: pointer; transition: all 0.2s;
 }
+.voice-avatar:hover { border-color: var(--purple-light); color: var(--purple); }
+.voice-avatar.active {
+  background: var(--purple); border-color: var(--purple); color: #fff;
+  box-shadow: 0 3px 12px rgba(123,47,190,0.3);
+}
+.voice-avatar.heard:not(.active) { border-color: var(--green); }
+.voice-counter {
+  text-align: center; margin-top: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.12em; color: var(--text-light);
+}
+
+/* ── workflows ── */
+.wf-area-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
 .wf-area-btn {
-  padding: 12px 10px; border-radius: 8px; cursor: pointer;
+  padding: 9px 18px; border-radius: 20px; cursor: pointer;
   border: 1.5px solid var(--border);
   background: var(--white); color: var(--text-mid);
   font-family: 'DM Sans', sans-serif;
   font-size: 13px; font-weight: 500;
-  text-align: center;
   transition: all 0.2s;
 }
-.wf-area-btn:hover { border-color: var(--purple-light); color: var(--purple); background: var(--purple-ghost); }
+.wf-area-btn:hover { border-color: var(--purple-light); color: var(--purple); }
 .wf-area-btn.active {
   border-color: var(--purple); background: var(--purple);
   color: #fff; box-shadow: 0 4px 16px rgba(123,47,190,0.25);
 }
-.wf-panel { display: none; animation: step-in 0.3s ease-out; }
-.wf-panel.active { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-@media (max-width: 540px) { .wf-panel.active { grid-template-columns: 1fr; } }
+.wf-area-btn.visited:not(.active) { border-color: var(--green); }
+.wf-panel { display: none; animation: fade-in 0.3s ease-out; }
+.wf-panel.active { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+@media (max-width: 620px) { .wf-panel.active { grid-template-columns: 1fr; } }
 .wf-info {
   background: var(--white);
   border: 1px solid var(--border);
-  border-radius: 8px; padding: 1rem 1.1rem;
+  border-radius: 8px; padding: 0.95rem 1.05rem;
   box-shadow: var(--shadow);
 }
 .wf-info-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--purple); margin-bottom: 8px;
+  font-size: 8.5px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--purple); margin-bottom: 6px;
 }
-.wf-info-body { font-size: 13px; color: var(--text-mid); line-height: 1.65; }
-.wf-affected { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.wf-info-body { font-size: 12.5px; color: var(--text-mid); line-height: 1.6; }
+.wf-affected { display: flex; flex-wrap: wrap; gap: 5px; }
 .wf-aff-chip {
-  font-size: 11px; color: var(--red);
+  color: var(--red);
   background: #fee2e2; border: 1px solid #fecaca;
   padding: 2px 8px; border-radius: 20px;
-  font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.05em;
+  font-family: 'JetBrains Mono', monospace; font-size: 8.5px; letter-spacing: 0.05em;
 }
-.wf-down-list { margin-top: 6px; padding-left: 1.1rem; }
-.wf-down-list li { font-size: 12px; color: var(--text-mid); line-height: 1.75; }
+.wf-down-list { padding-left: 1.05rem; }
+.wf-down-list li { font-size: 12px; color: var(--text-mid); line-height: 1.65; }
 .wf-down-list li::marker { color: var(--amber); }
 
-/* ── REFLECTION ── */
-.reflection-card {
+/* ══════════ QUIZ MODAL ══════════ */
+.quiz-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(30,27,46,0.5);
+  backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center;
+  padding: 1.25rem;
+}
+.quiz-overlay.show { display: flex; animation: fade-in 0.3s ease-out; }
+.quiz-modal {
   background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1rem;
-  box-shadow: var(--shadow);
-  transition: border-color 0.2s;
+  border-radius: 16px;
+  box-shadow: 0 24px 80px rgba(30,27,46,0.35);
+  max-width: 540px; width: 100%;
+  max-height: 88vh; overflow-y: auto;
+  padding: 1.75rem 1.75rem 1.5rem;
 }
-.reflection-card:focus-within { border-color: var(--purple-light); box-shadow: var(--shadow-lg); }
-.reflection-prompt { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-.reflection-hint { font-size: 12px; color: var(--text-light); margin-bottom: 10px; }
-textarea.ref-input {
-  width: 100%; background: var(--bg);
-  border: 1.5px solid var(--border); border-radius: 6px;
-  padding: 10px 12px; font-family: 'DM Sans', sans-serif;
-  font-size: 13px; color: var(--text); line-height: 1.65;
-  resize: vertical; min-height: 80px; outline: none;
-  transition: border-color 0.2s;
-}
-textarea.ref-input:focus { border-color: var(--purple-light); }
-textarea.ref-input::placeholder { color: var(--text-light); font-style: italic; }
-.saved-note {
+.quiz-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; color: var(--green);
-  letter-spacing: 0.1em; height: 14px;
-  transition: opacity 0.3s; opacity: 0;
-  margin-top: 4px;
+  font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--purple); margin-bottom: 6px;
 }
-
-/* ── CHECKPOINT ── */
-.checkpoint-card {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  box-shadow: var(--shadow);
-  transition: border-color 0.2s;
+.quiz-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.35rem; font-weight: 600; margin-bottom: 4px;
 }
-.checkpoint-card:focus-within { border-color: var(--purple); }
-.cp-num {
+.quiz-sub { font-size: 12.5px; color: var(--text-mid); margin-bottom: 1.25rem; }
+.quiz-q { font-size: 14.5px; font-weight: 600; line-height: 1.5; margin-bottom: 12px; }
+.quiz-opts { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.quiz-opt {
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  border-radius: 9px;
+  padding: 11px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; color: var(--text);
+  text-align: left; cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1.5;
+}
+.quiz-opt:hover:not(:disabled) { border-color: var(--purple-light); background: var(--purple-ghost); }
+.quiz-opt:disabled { cursor: default; }
+.quiz-opt.correct { border-color: var(--green); background: var(--green-pale); font-weight: 600; }
+.quiz-opt.wrong { border-color: var(--red); background: #fee2e2; opacity: 0.8; }
+.quiz-feedback {
+  border-radius: 9px; padding: 11px 14px;
+  font-size: 12.5px; line-height: 1.6;
+  margin-bottom: 14px;
+  display: none;
+}
+.quiz-feedback.show { display: block; animation: fade-in 0.25s ease-out; }
+.quiz-feedback.good { background: var(--green-pale); border: 1px solid #a7f3d0; color: #065f46; }
+.quiz-feedback.bad  { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
+.quiz-footer { display: flex; align-items: center; justify-content: space-between; }
+.quiz-progress {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; color: var(--purple-light); letter-spacing: 0.1em;
-  margin-bottom: 6px;
+  font-size: 9px; letter-spacing: 0.12em; color: var(--text-light);
 }
-.cp-q { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 10px; line-height: 1.5; }
-
-/* ── NEXT BUTTON ── */
-.next-wrap { margin-top: 2rem; display: flex; justify-content: flex-end; align-items: center; gap: 14px; }
-.next-btn {
+.quiz-next {
   background: var(--purple); color: #fff;
   border: none; border-radius: 8px;
-  padding: 12px 28px;
-  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
-  cursor: pointer; display: flex; align-items: center; gap: 8px;
-  box-shadow: 0 4px 18px rgba(123,47,190,0.28);
-  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  padding: 10px 22px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  visibility: hidden;
 }
-.next-btn:hover { background: var(--purple-dark); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(123,47,190,0.38); }
-.next-btn:active { transform: translateY(0); }
-.next-hint { font-size: 12px; color: var(--text-light); }
+.quiz-next:hover { background: var(--purple-dark); }
+.quiz-next.show { visibility: visible; }
 
-/* ── PHASE COMPLETE ── */
-.phase-complete {
-  text-align: center; padding: 3rem 1.5rem;
+/* ══════════ FINAL SCREEN ══════════ */
+.final-screen {
+  display: none;
+  max-width: 560px; margin: 0 auto;
+  padding: 3.5rem 1.5rem 4rem;
+  text-align: center;
 }
-.phase-complete-icon {
+.final-screen.show { display: block; animation: fade-in 0.5s ease-out; }
+.final-icon {
   width: 64px; height: 64px; border-radius: 50%;
   background: var(--purple-pale); border: 2px solid var(--purple-line);
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 1.5rem; font-size: 28px;
+  margin: 0 auto 1.4rem; font-size: 28px;
 }
-.phase-complete-title {
+.final-title {
   font-family: 'Fraunces', serif;
-  font-size: 2rem; font-weight: 300; color: var(--text); margin-bottom: 10px;
+  font-size: 2rem; font-weight: 300; margin-bottom: 10px;
 }
-.phase-complete-title em { color: var(--purple); font-style: italic; }
-.phase-complete-desc { font-size: 14px; color: var(--text-mid); max-width: 480px; margin: 0 auto 2rem; line-height: 1.75; }
+.final-title em { color: var(--purple); font-style: italic; }
+.final-score {
+  font-family: 'Fraunces', serif;
+  font-size: 2.6rem; font-weight: 600; color: var(--purple);
+  margin: 0.5rem 0;
+}
+.final-score-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-light); margin-bottom: 1.5rem;
+}
+.final-desc { font-size: 13.5px; color: var(--text-mid); margin-bottom: 1.75rem; line-height: 1.7; }
 .phase-next-box {
   background: var(--purple-pale);
   border: 1.5px solid var(--purple-line);
-  border-radius: 12px; padding: 1.5rem;
-  max-width: 480px; margin: 0 auto;
+  border-radius: 12px; padding: 1.3rem; text-align: left;
 }
 .phase-next-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--purple); margin-bottom: 8px;
+  font-size: 8.5px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--purple); margin-bottom: 6px;
 }
 .phase-next-title {
   font-family: 'Fraunces', serif;
-  font-size: 1.25rem; font-weight: 600; color: var(--purple-dark); margin-bottom: 6px;
+  font-size: 1.15rem; font-weight: 600; color: var(--purple-dark); margin-bottom: 4px;
 }
-.phase-next-desc { font-size: 13px; color: var(--text-mid); line-height: 1.65; }
-
-/* ── DIVIDER ── */
-.divider {
-  height: 1px; background: var(--purple-line);
-  margin: 1.75rem 0;
-}
-
-/* ── RESPONSIVE ── */
-@media (max-width: 600px) {
-  .topbar-phase { display: none; }
-  .step-title { font-size: 1.5rem; }
-  .page-wrap { padding: 1.5rem 1rem 4rem; }
-}
+.phase-next-desc { font-size: 12.5px; color: var(--text-mid); line-height: 1.6; }
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
 <header class="topbar">
   <div class="topbar-brand">AI Essentials — Healthcare</div>
-  <div class="topbar-sep"></div>
-  <div class="topbar-phase">Mission 1 · Phase A · Lakeside Clinic</div>
+  <div class="topbar-mission">MISSION 1 · PHASE A</div>
   <div class="topbar-spacer"></div>
-  <div class="step-progress" id="step-pips"></div>
-  <span class="step-label" id="step-label">1 of 5</span>
+  <div class="score-badge" id="score-badge">CHECKS PASSED: 0 / 3</div>
 </header>
 
-<!-- PAGE -->
-<div class="page-wrap">
+<!-- ══════════ HUB (home screen) ══════════ -->
+<div class="hub" id="hub">
+  <div class="hub-eyebrow">Your Role: Operational Observer</div>
+  <h1 class="hub-title">You just walked into a <em>struggling clinic.</em></h1>
+  <p class="hub-sub">Lakeside Community Health Clinic is having a rough morning. Your job is not to fix anything — it is to observe and understand. Explore each area below. After each one, a short observation check will test what you noticed.</p>
 
-  <!-- ════════════════════════════════
-       STEP 1 — WELCOME / ORIENTATION
-  ════════════════════════════════ -->
-  <div class="step-panel active" id="step-1">
-    <div class="step-eyebrow">Mission 1 · Phase A · Step 1 of 5</div>
-    <h1 class="step-title">You just walked into a <em>struggling clinic.</em></h1>
-    <p class="step-desc">Before anyone can improve Lakeside Community Health Clinic, someone needs to understand what is actually happening here. That is your job right now. You are not fixing anything yet. You are observing, listening, and making sense of the situation.</p>
-
-    <div class="intro-role-card">
-      <div class="intro-role-label">Your Role</div>
-      <div class="intro-role-text">
-        You are an <strong>operational observer</strong> — an outside person who has come to Lakeside to understand how the clinic runs day to day. You will read about real problems staff are dealing with, explore what is breaking, and start forming your own questions. <br><br>
-        There is no right or wrong answer in this phase. The goal is <strong>awareness, not solutions</strong>.
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--purple);margin-bottom:10px">What Lakeside Looks Like Right Now</div>
-      <div class="metric-strip">
-        <div class="metric-chip">
-          <div class="metric-chip-label">Avg Wait Time</div>
-          <div class="metric-chip-val red" id="m-wait">58 min</div>
-          <div class="metric-chip-sub warn">Target is 36 min</div>
-        </div>
-        <div class="metric-chip">
-          <div class="metric-chip-label">Patients Waiting to Schedule</div>
-          <div class="metric-chip-val amber" id="m-backlog">31</div>
-          <div class="metric-chip-sub">appointment backlog</div>
-        </div>
-        <div class="metric-chip">
-          <div class="metric-chip-label">Patient Satisfaction</div>
-          <div class="metric-chip-val red" id="m-sat">61%</div>
-          <div class="metric-chip-sub warn">Below 75% goal</div>
-        </div>
-        <div class="metric-chip">
-          <div class="metric-chip-label">Staff Missing Today</div>
-          <div class="metric-chip-val amber">2</div>
-          <div class="metric-chip-sub">front desk + MA</div>
-        </div>
-        <div class="metric-chip">
-          <div class="metric-chip-label">Overdue Chart Notes</div>
-          <div class="metric-chip-val red" id="m-docs">47</div>
-          <div class="metric-chip-sub warn">documentation backlog</div>
-        </div>
-        <div class="metric-chip">
-          <div class="metric-chip-label">Unanswered Callbacks</div>
-          <div class="metric-chip-val amber" id="m-calls">19</div>
-          <div class="metric-chip-sub">patient calls not returned</div>
-        </div>
-      </div>
-      <p style="font-size:13px;color:var(--text-mid)">These are real numbers from today's clinic operations. In the next steps, you will learn what is causing them.</p>
-    </div>
-
-    <div class="next-wrap">
-      <span class="next-hint">Read each step carefully before continuing</span>
-      <button class="next-btn" onclick="goTo(2)">See What's Happening →</button>
-    </div>
+  <div class="status-line">
+    <div class="status-stat"><span class="status-stat-val red">58 min</span><span class="status-stat-label">Avg Wait (Target 36)</span></div>
+    <div class="status-stat"><span class="status-stat-val red">61%</span><span class="status-stat-label">Patient Satisfaction</span></div>
+    <div class="status-stat"><span class="status-stat-val amber">2</span><span class="status-stat-label">Staff Out Today</span></div>
   </div>
 
-  <!-- ════════════════════════════════
-       STEP 2 — INCIDENT FEED
-  ════════════════════════════════ -->
-  <div class="step-panel" id="step-2">
-    <div class="step-eyebrow">Mission 1 · Phase A · Step 2 of 5</div>
-    <h1 class="step-title">Operational <em>Incidents</em> — Today</h1>
-    <p class="step-desc">These are real problems that have been logged by clinic staff this morning. Read each one. Notice which departments are involved, how serious each issue is, and what staff are actually experiencing.</p>
+  <div class="explore-list">
+    <button class="explore-card" id="card-incidents" onclick="openFocus('incidents')">
+      <div class="explore-num">1</div>
+      <div class="explore-info">
+        <div class="explore-name">🚨 Today's Incidents</div>
+        <div class="explore-desc">8 problems logged by staff this morning</div>
+      </div>
+      <span class="explore-status" id="st-incidents">Not started</span>
+      <span class="explore-arrow">→</span>
+    </button>
 
+    <button class="explore-card" id="card-voices" onclick="openFocus('voices')">
+      <div class="explore-num">2</div>
+      <div class="explore-info">
+        <div class="explore-name">💬 Staff Voices</div>
+        <div class="explore-desc">Hear from 6 staff members in their own words</div>
+      </div>
+      <span class="explore-status" id="st-voices">Not started</span>
+      <span class="explore-arrow">→</span>
+    </button>
+
+    <button class="explore-card" id="card-workflows" onclick="openFocus('workflows')">
+      <div class="explore-num">3</div>
+      <div class="explore-info">
+        <div class="explore-name">🔍 Workflow Breakdowns</div>
+        <div class="explore-desc">See what is breaking in 5 areas of the clinic</div>
+      </div>
+      <span class="explore-status" id="st-workflows">Not started</span>
+      <span class="explore-arrow">→</span>
+    </button>
+  </div>
+
+  <div class="finish-wrap">
+    <button class="finish-btn" id="finish-btn" disabled>Complete Phase A ✓</button>
+    <div class="finish-hint" id="finish-hint">Pass all 3 observation checks to complete Phase A</div>
+  </div>
+</div>
+
+<!-- ══════════ FINAL SCREEN ══════════ -->
+<div class="final-screen" id="final-screen">
+  <div class="final-icon">✓</div>
+  <div class="final-title">Phase A <em>Complete</em></div>
+  <div class="final-score" id="final-score">—</div>
+  <div class="final-score-label">Observation Check Accuracy</div>
+  <p class="final-desc">You walked the floor of Lakeside Community Health Clinic, observed real problems, and heard directly from staff. You are now ready to go deeper.</p>
+  <div class="phase-next-box">
+    <div class="phase-next-label">Coming Next</div>
+    <div class="phase-next-title">Phase B — Discovery Interviews</div>
+    <div class="phase-next-desc">You will speak directly with Lakeside staff — the receptionist, the nurse, the clinic manager — and dig into the problems you identified here.</div>
+  </div>
+</div>
+
+<!-- ══════════ FOCUS OVERLAYS ══════════ -->
+<div class="focus-overlay" id="focus-incidents">
+  <div class="focus-inner">
+    <div class="focus-top">
+      <button class="back-btn" onclick="closeFocus('incidents')">← Back to clinic</button>
+      <span class="focus-eyebrow">Area 1 of 3</span>
+    </div>
+    <h2 class="focus-title">Today's <em>Incidents</em></h2>
+    <p class="focus-desc">Tap any incident to expand it. Pay attention to which departments are involved and how serious each issue is — you will be asked what you noticed.</p>
     <div id="incident-list"></div>
-
-    <div class="next-wrap">
-      <button class="next-btn" onclick="goTo(3)">Meet the Staff →</button>
+    <div class="check-cta">
+      <button class="check-btn" onclick="startQuiz('incidents')">I'm done observing → Take the check</button>
     </div>
   </div>
+</div>
 
-  <!-- ════════════════════════════════
-       STEP 3 — STAFF PERSPECTIVE WALL
-  ════════════════════════════════ -->
-  <div class="step-panel" id="step-3">
-    <div class="step-eyebrow">Mission 1 · Phase A · Step 3 of 5</div>
-    <h1 class="step-title">In Their <em>Own Words</em></h1>
-    <p class="step-desc">These are real quotes from Lakeside staff members. Read each one slowly. Try to understand what their day actually feels like — the frustration, the repetition, the pressure.</p>
-
-    <div id="staff-list"></div>
-
-    <div class="next-wrap">
-      <button class="next-btn" onclick="goTo(4)">Explore What's Breaking →</button>
+<div class="focus-overlay" id="focus-voices">
+  <div class="focus-inner">
+    <div class="focus-top">
+      <button class="back-btn" onclick="closeFocus('voices')">← Back to clinic</button>
+      <span class="focus-eyebrow">Area 2 of 3</span>
+    </div>
+    <h2 class="focus-title">Staff <em>Voices</em></h2>
+    <p class="focus-desc">Click each role to hear their perspective. Listen for what their day actually feels like — the check will ask what you heard.</p>
+    <div class="voice-stage" id="voice-stage"></div>
+    <div class="voice-nav" id="voice-nav"></div>
+    <div class="voice-counter" id="voice-counter"></div>
+    <div class="check-cta">
+      <button class="check-btn" onclick="startQuiz('voices')">I'm done listening → Take the check</button>
     </div>
   </div>
+</div>
 
-  <!-- ════════════════════════════════
-       STEP 4 — WORKFLOW EXPLORER
-  ════════════════════════════════ -->
-  <div class="step-panel" id="step-4">
-    <div class="step-eyebrow">Mission 1 · Phase A · Step 4 of 5</div>
-    <h1 class="step-title">Workflow <em>Breakdown</em> Explorer</h1>
-    <p class="step-desc">Select an area of the clinic to see what is breaking, why it matters, who it affects, and what problems it creates downstream. Explore each one before moving on.</p>
-
+<div class="focus-overlay" id="focus-workflows">
+  <div class="focus-inner">
+    <div class="focus-top">
+      <button class="back-btn" onclick="closeFocus('workflows')">← Back to clinic</button>
+      <span class="focus-eyebrow">Area 3 of 3</span>
+    </div>
+    <h2 class="focus-title">Workflow <em>Breakdowns</em></h2>
+    <p class="focus-desc">Select each area to see what is breaking, why it matters, and what problems it creates downstream.</p>
     <div class="wf-area-grid" id="wf-tabs"></div>
     <div id="wf-panels"></div>
-
-    <div class="divider"></div>
-
-    <div class="card" style="background:var(--purple-ghost);border-color:var(--purple-line)">
-      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">Quick Reflection</div>
-      <div style="font-size:13px;color:var(--text-mid);margin-bottom:12px">Before moving on — write one thing you noticed that surprised you or that you want to understand better.</div>
-      <textarea class="ref-input" id="wf-reflect" placeholder="What surprised you about any of these breakdowns?" rows="3"></textarea>
-      <div class="saved-note" id="wf-reflect-saved">✓ SAVED</div>
-    </div>
-
-    <div class="next-wrap">
-      <button class="next-btn" onclick="goTo(5)">Go to Mission Checkpoint →</button>
+    <div class="check-cta">
+      <button class="check-btn" onclick="startQuiz('workflows')">I'm done exploring → Take the check</button>
     </div>
   </div>
+</div>
 
-  <!-- ════════════════════════════════
-       STEP 5 — REFLECTION + CHECKPOINT
-  ════════════════════════════════ -->
-  <div class="step-panel" id="step-5">
-    <div class="step-eyebrow">Mission 1 · Phase A · Step 5 of 5</div>
-    <h1 class="step-title">Mission <em>Readiness</em> Check</h1>
-    <p class="step-desc">This is not a quiz. It is a preparation tool. Answer each question in your own words based on what you just observed. Your answers are saved automatically and will prepare you for Phase B — Discovery Interviews.</p>
-
-    <!-- Reflections -->
-    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--purple);margin-bottom:1rem">Part 1 — Your Observations</div>
-    <div id="reflection-list"></div>
-
-    <div class="divider"></div>
-
-    <!-- Checkpoint -->
-    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--purple);margin-bottom:1rem">Part 2 — Your Summary</div>
-    <div id="checkpoint-list"></div>
-
-    <div class="next-wrap" style="justify-content:center">
-      <button class="next-btn" onclick="showComplete()" style="padding:14px 36px;font-size:15px">Complete Phase A ✓</button>
+<!-- ══════════ QUIZ MODAL ══════════ -->
+<div class="quiz-overlay" id="quiz-overlay">
+  <div class="quiz-modal">
+    <div class="quiz-label">Observation Check</div>
+    <div class="quiz-title" id="quiz-title"></div>
+    <div class="quiz-sub">Choose the best answer based on what you just observed.</div>
+    <div class="quiz-q" id="quiz-q"></div>
+    <div class="quiz-opts" id="quiz-opts"></div>
+    <div class="quiz-feedback" id="quiz-feedback"></div>
+    <div class="quiz-footer">
+      <span class="quiz-progress" id="quiz-progress"></span>
+      <button class="quiz-next" id="quiz-next"></button>
     </div>
   </div>
-
-  <!-- ════════════════════════════════
-       COMPLETE
-  ════════════════════════════════ -->
-  <div class="step-panel" id="step-complete">
-    <div class="phase-complete">
-      <div class="phase-complete-icon">✓</div>
-      <div class="phase-complete-title">Phase A <em>Complete</em></div>
-      <p class="phase-complete-desc">You have finished your operational walkthrough of Lakeside Community Health Clinic. You have observed real problems, heard from staff, and began forming your own questions. That is exactly the right place to be.</p>
-      <div class="phase-next-box">
-        <div class="phase-next-label">Coming Next</div>
-        <div class="phase-next-title">Phase B — Discovery Interviews</div>
-        <div class="phase-next-desc">In Phase B, you will speak directly with Lakeside staff — the receptionist, the nurse, the clinic manager — and go deeper into the problems you identified here. Your observations from Phase A will guide those conversations.</div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /page-wrap -->
+</div>
 
 <script>
-// ─────────────────────────────
-// STEP NAVIGATION
-// ─────────────────────────────
-const TOTAL = 5;
-let current = 1;
+// ═════════ STATE ═════════
+const progress = { incidents: false, voices: false, workflows: false };
+let totalQ = 0, totalCorrect = 0;
 
-function buildPips() {
-  const el = document.getElementById('step-pips');
-  el.innerHTML = '';
-  for (let i = 1; i <= TOTAL; i++) {
-    const pip = document.createElement('div');
-    pip.className = 'step-pip' + (i < current ? ' done' : i === current ? ' active' : '');
-    el.appendChild(pip);
-  }
-  document.getElementById('step-label').textContent = `${current} of ${TOTAL}`;
-}
-buildPips();
-
-function goTo(n) {
-  document.getElementById('step-' + current).classList.remove('active');
-  current = n;
-  const target = document.getElementById('step-' + current);
-  if (target) { target.classList.add('active'); buildPips(); window.scrollTo({top:0,behavior:'smooth'}); }
-}
-
-function showComplete() {
-  document.getElementById('step-' + current).classList.remove('active');
-  document.getElementById('step-complete').classList.add('active');
-  document.getElementById('step-pips').innerHTML = '';
-  document.getElementById('step-label').textContent = 'Complete ✓';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-// ─────────────────────────────
-// METRICS FLUCTUATE
-// ─────────────────────────────
-let mWait = 58, mBacklog = 31, mSat = 61, mDocs = 47, mCalls = 19;
-function fluctuate() {
-  mWait    = Math.max(42, Math.min(72, mWait + (Math.random()>.5?1:-1)*Math.ceil(Math.random()*3)));
-  mBacklog = Math.max(18, Math.min(40, mBacklog + (Math.random()>.5?1:-1)*Math.ceil(Math.random()*2)));
-  mSat     = Math.max(54, Math.min(66, mSat + (Math.random()>.5?1:-1)));
-  mDocs    = Math.max(38, Math.min(54, mDocs + (Math.random()>.5?1:-1)*Math.ceil(Math.random()*2)));
-  mCalls   = Math.max(12, Math.min(26, mCalls + (Math.random()>.5?1:-1)*Math.ceil(Math.random()*2)));
-  const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
-  set('m-wait',    mWait + ' min');
-  set('m-backlog', mBacklog);
-  set('m-sat',     mSat + '%');
-  set('m-docs',    mDocs);
-  set('m-calls',   mCalls);
-}
-setInterval(fluctuate, 5000);
-
-// ─────────────────────────────
-// INCIDENT DATA
-// ─────────────────────────────
+// ═════════ CONTENT DATA ═════════
 const incidents = [
-  { sev:'crit', dept:'Front Desk',
-    title:'Check-In System Overwhelmed — Walk-In Surge',
+  { sev:'crit', title:'Check-In System Overwhelmed — Walk-In Surge',
     impact:'Only one staff member is managing check-in for 11 waiting patients. There is no backup process.',
     staff:'I can\'t greet patients, answer phones, and verify insurance at the same time. People are getting frustrated at me.' },
-  { sev:'crit', dept:'Documentation',
-    title:'Nurse Documentation Backlog — 47 Overdue Chart Notes',
+  { sev:'crit', title:'Nurse Documentation Backlog — 47 Overdue Chart Notes',
     impact:'Nurses are completing chart notes from memory, hours after seeing patients. This creates a compliance risk.',
     staff:'I\'m still finishing charts from yesterday while I\'m supposed to be doing room prep for today.' },
-  { sev:'high', dept:'Scheduling',
-    title:'Double-Booking Conflict — Two Patients, Same Slot',
-    impact:'Two patients are confirmed for the same appointment time. One will have to be rescheduled without warning.',
-    staff:'This keeps happening. We use two separate calendars that don\'t sync with each other.' },
-  { sev:'high', dept:'Callbacks',
-    title:'19 Patient Calls Not Yet Returned',
-    impact:'The oldest unanswered call is 3 hours old. Some patients are asking about lab results or medications.',
-    staff:'We don\'t have time to return calls during clinic hours. It just piles up all day.' },
-  { sev:'high', dept:'Insurance',
-    title:'Insurance Verification Delays — Patients in Holding',
-    impact:'6 patients are in holding status. Staff are calling insurance companies manually. Patients don\'t know why they are waiting.',
-    staff:'I\'m on hold with insurance right now. The patient has been waiting 40 minutes and still doesn\'t know why.' },
-  { sev:'med', dept:'Patient Intake',
-    title:'Intake Form Confusion for New Patients',
-    impact:'New patients are not sure which forms apply to them. Staff must walk each person through the process individually.',
-    staff:'We have five different intake forms. Patients grab the wrong ones and we have to start the whole process over.' },
-  { sev:'med', dept:'Communication',
-    title:'Lab Results Not Communicated — 72-Hour Window Missed',
-    impact:'4 patient lab results are sitting in the system without any outbound notification. This is a compliance concern.',
-    staff:'Nobody was assigned to check the lab queue today. I only found out when a patient called asking.' },
-  { sev:'crit', dept:'Staffing',
-    title:'Two Staff Members Absent — No Coverage Arranged',
+  { sev:'crit', title:'Two Staff Members Absent — No Coverage Arranged',
     impact:'The medical assistant and a front desk staff member both called out. No replacement was found.',
     staff:'I\'m doing my own job and covering two other roles. I haven\'t had a break since I arrived this morning.' },
+  { sev:'high', title:'Double-Booking Conflict — Two Patients, Same Slot',
+    impact:'Two patients are confirmed for the same appointment time. One will have to be rescheduled without warning.',
+    staff:'This keeps happening. We use two separate calendars that don\'t sync with each other.' },
+  { sev:'high', title:'19 Patient Calls Not Yet Returned',
+    impact:'The oldest unanswered call is 3 hours old. Some patients are asking about lab results or medications.',
+    staff:'We don\'t have time to return calls during clinic hours. It just piles up all day.' },
+  { sev:'high', title:'Insurance Verification Delays — Patients in Holding',
+    impact:'6 patients are in holding status. Staff are calling insurance companies manually. Patients don\'t know why they are waiting.',
+    staff:'I\'m on hold with insurance right now. The patient has been waiting 40 minutes and still doesn\'t know why.' },
+  { sev:'med', title:'Intake Form Confusion for New Patients',
+    impact:'New patients are not sure which forms apply to them. Staff must walk each person through the process individually.',
+    staff:'We have five different intake forms. Patients grab the wrong ones and we have to start the whole process over.' },
+  { sev:'med', title:'Lab Results Not Communicated — 72-Hour Window Missed',
+    impact:'4 patient lab results are sitting in the system without any outbound notification. This is a compliance concern.',
+    staff:'Nobody was assigned to check the lab queue today. I only found out when a patient called asking.' },
 ];
+const sevLabel = { crit:'CRITICAL', high:'HIGH', med:'MEDIUM' };
 
-const sevLabel = { crit:'CRITICAL', high:'HIGH CONCERN', med:'MEDIUM' };
-const iList = document.getElementById('incident-list');
-incidents.forEach(inc => {
-  const card = document.createElement('div');
-  card.className = `incident-card ${inc.sev}`;
-  card.innerHTML = `
-    <div class="incident-meta">
-      <span class="sev-pill ${inc.sev}">${sevLabel[inc.sev]}</span>
-      <span class="dept-chip">${inc.dept}</span>
-    </div>
-    <div class="incident-title">${inc.title}</div>
-    <div class="incident-impact">${inc.impact}</div>
-    <div class="incident-staff-box">
-      <strong>Staff experiencing this</strong>
-      "${inc.staff}"
-    </div>
-  `;
-  iList.appendChild(card);
-});
-
-// ─────────────────────────────
-// STAFF DATA
-// ─────────────────────────────
 const staff = [
-  { role:'Front Desk Receptionist',
+  { role:'Front Desk Receptionist', short:'Front Desk',
     quote:'I\'m the first person patients see and the last one they complain to. I\'m handling check-ins, phones, insurance questions, and people walking up to my desk all at the same time. By 9 AM I\'m already behind, and I never catch up.',
     tags:['Multitasking overload','No backup system','Patient-facing pressure'] },
-  { role:'Registered Nurse',
+  { role:'Registered Nurse', short:'Nurse',
     quote:'Charting is supposed to happen right after I see a patient. But I\'m constantly pulled into the next room before I finish. So I end up writing notes on three patients at once, from memory, hours later. That\'s not a safe way to work.',
     tags:['Documentation backlog','Memory-based charting','Safety concern'] },
-  { role:'Clinic Manager',
+  { role:'Clinic Manager', short:'Manager',
     quote:'I spend my whole day putting out fires — a no-show here, a scheduling conflict there, a patient complaint, a compliance issue. I never get to actually manage anything. I\'m just reacting to problems all day.',
     tags:['Reactive workflow','No strategic time','Constant interruptions'] },
-  { role:'Scheduling Coordinator',
+  { role:'Scheduling Coordinator', short:'Scheduler',
     quote:'We use two different calendar systems that don\'t talk to each other. I update one, someone else updates the other, and then we end up with double-bookings. It happens at least twice a week. I\'ve told management about this for six months.',
     tags:['System disconnect','Repeated errors','Unsolved for 6+ months'] },
-  { role:'Medical Assistant',
+  { role:'Medical Assistant', short:'Med Assistant',
     quote:'I prep exam rooms, take vitals, run lab samples, help with procedures, and assist the physician. When we\'re short-staffed, I\'m doing all of that for twice as many patients with no extra time.',
     tags:['Role overload','Short-staffing','No prioritization system'] },
-  { role:'Physician',
+  { role:'Physician', short:'Physician',
     quote:'I have about twelve minutes with each patient. But I spend four of those minutes just trying to figure out why their last visit notes are missing from the chart. I\'m making clinical decisions with incomplete information. It worries me.',
     tags:['Incomplete records','Time pressure','Clinical risk'] },
 ];
 
-const sList = document.getElementById('staff-list');
-staff.forEach(s => {
-  const card = document.createElement('div');
-  card.className = 'staff-card';
-  card.innerHTML = `
-    <span class="staff-role-tag">${s.role}</span>
-    <div class="staff-quote">"${s.quote}"</div>
-    <div class="staff-tags">${s.tags.map(t=>`<span class="staff-tag-chip">${t}</span>`).join('')}</div>
-  `;
-  sList.appendChild(card);
-});
-
-// ─────────────────────────────
-// WORKFLOW DATA
-// ─────────────────────────────
 const workflows = [
   { id:'sched', label:'Scheduling',
     breaking:'Two separate calendar tools are in use and they do not sync. Staff make changes independently, which causes double-bookings. Appointment reminders are pulled from an outdated contact list.',
@@ -761,19 +706,119 @@ const workflows = [
     downstream:['Each new patient intake takes 10–15 minutes of staff time','The waiting room backs up while staff assist with forms','Incomplete forms lead to billing errors or missing medical history','Patients feel confused and unsupported from the very start'] },
 ];
 
+// ═════════ QUIZ BANKS (auto-graded) ═════════
+const quizzes = {
+  incidents: {
+    title:'Today\'s Incidents',
+    questions:[
+      { q:'What is causing patients to be double-booked into the same appointment slot?',
+        opts:['Patients booking online without approval','Two separate calendars that don\'t sync with each other','The receptionist forgetting to write appointments down','A software bug in the check-in kiosk'],
+        answer:1,
+        why:'The scheduling staff use two calendar systems that don\'t talk to each other, so changes in one never appear in the other.' },
+      { q:'Why is the nurse documentation backlog considered a CRITICAL problem, not just an inconvenience?',
+        opts:['It makes the nurses look unprofessional','Notes written from memory hours later create a patient safety and compliance risk','The clinic gets charged a fee for late notes','It slows down the front desk check-in line'],
+        answer:1,
+        why:'Charting from memory hours after a visit means details can be wrong or missing — that\'s a safety risk for patients and a compliance risk for the clinic.' },
+      { q:'What made today especially hard for the staff who did show up?',
+        opts:['A power outage in the exam rooms','A new computer system launched today','Two staff members were absent with no coverage arranged','The clinic was closed for a holiday yesterday'],
+        answer:2,
+        why:'The medical assistant and a front desk staff member both called out, so remaining staff are covering multiple roles at once.' },
+    ]
+  },
+  voices: {
+    title:'Staff Voices',
+    questions:[
+      { q:'What does the physician say is eating up time during patient visits?',
+        opts:['Patients arriving late to appointments','Searching for missing notes from the patient\'s last visit','Filling out insurance paperwork','Waiting for exam rooms to be cleaned'],
+        answer:1,
+        why:'The physician spends about 4 of every 12 minutes hunting for missing visit notes — and is making clinical decisions with incomplete information.' },
+      { q:'The scheduling coordinator says the double-booking problem has been reported to management for how long?',
+        opts:['One week','One month','Six months','It was never reported'],
+        answer:2,
+        why:'The coordinator has raised the two-calendar problem for six months with no fix — a sign that known problems aren\'t getting addressed.' },
+      { q:'What theme comes up across almost every staff member\'s story?',
+        opts:['They dislike working with each other','They are juggling too many tasks at once with no system to help','They want higher salaries','They think the clinic should close'],
+        answer:1,
+        why:'Nearly every role — receptionist, nurse, manager, MA — describes doing multiple jobs at once with no backup, no prioritization, and no time to catch up.' },
+    ]
+  },
+  workflows: {
+    title:'Workflow Breakdowns',
+    questions:[
+      { q:'Why does a scheduling breakdown affect the whole clinic, not just the scheduling desk?',
+        opts:['Scheduling staff are the most senior employees','Scheduling is the starting point of every visit — when it breaks, room prep, physician time, and billing all break after it','The scheduling software is the most expensive system','Patients only interact with the scheduling team'],
+        answer:1,
+        why:'Scheduling kicks off the entire patient visit. A broken start ripples downstream into everything that follows.' },
+      { q:'What is the main problem with how the clinic handles patient communication (callbacks, lab results, referrals)?',
+        opts:['Staff refuse to make phone calls','There is no tracking system, no assigned owner, and no confirmation step','Patients don\'t provide phone numbers','The phone lines are frequently down'],
+        answer:1,
+        why:'Communication is handled informally — nothing is tracked, nobody owns it, and nothing confirms it happened. That\'s why lab results miss the 72-hour window.' },
+      { q:'Which downstream problem does the confusing paper intake process create?',
+        opts:['Nurses have to work weekend shifts','Each new patient takes 10–15 minutes of staff time and the waiting room backs up','The clinic runs out of printer paper','Physicians must approve every form'],
+        answer:1,
+        why:'Every new patient needs one-on-one help with forms, which ties up staff and backs up the waiting room — and incomplete forms cause billing errors later.' },
+    ]
+  }
+};
+
+// ═════════ RENDER: INCIDENTS ═════════
+const iList = document.getElementById('incident-list');
+incidents.forEach((inc, idx) => {
+  const card = document.createElement('div');
+  card.className = `incident-card ${inc.sev}` + (idx === 0 ? ' open' : '');
+  card.innerHTML = `
+    <button class="incident-head">
+      <span class="sev-pill ${inc.sev}">${sevLabel[inc.sev]}</span>
+      <span class="incident-head-title">${inc.title}</span>
+      <span class="incident-caret">▼</span>
+    </button>
+    <div class="incident-detail">
+      <div class="incident-impact">${inc.impact}</div>
+      <div class="incident-staff-box"><strong>Staff experiencing this</strong>"${inc.staff}"</div>
+    </div>`;
+  card.querySelector('.incident-head').addEventListener('click', () => card.classList.toggle('open'));
+  iList.appendChild(card);
+});
+
+// ═════════ RENDER: VOICES ═════════
+const vStage = document.getElementById('voice-stage');
+const vNav = document.getElementById('voice-nav');
+const vCounter = document.getElementById('voice-counter');
+const voicesHeard = new Set([0]);
+let activeVoice = 0;
+
+function renderVoice() {
+  const s = staff[activeVoice];
+  vStage.innerHTML = `
+    <span class="staff-role-tag">${s.role}</span>
+    <div class="voice-quote">"${s.quote}"</div>
+    <div class="staff-tags">${s.tags.map(t=>`<span class="staff-tag-chip">${t}</span>`).join('')}</div>`;
+  vNav.querySelectorAll('.voice-avatar').forEach((b, i) => {
+    b.classList.toggle('active', i === activeVoice);
+    b.classList.toggle('heard', voicesHeard.has(i));
+  });
+  vCounter.textContent = `HEARD ${voicesHeard.size} OF ${staff.length} STAFF MEMBERS`;
+}
+staff.forEach((s, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'voice-avatar';
+  btn.textContent = s.short;
+  btn.addEventListener('click', () => { activeVoice = i; voicesHeard.add(i); renderVoice(); });
+  vNav.appendChild(btn);
+});
+renderVoice();
+
+// ═════════ RENDER: WORKFLOWS ═════════
 const wfTabs = document.getElementById('wf-tabs');
 const wfPanels = document.getElementById('wf-panels');
-let activeWf = null;
-
-workflows.forEach((wf, i) => {
+workflows.forEach(wf => {
   const btn = document.createElement('button');
   btn.className = 'wf-area-btn';
   btn.textContent = wf.label;
-  btn.dataset.id = wf.id;
   btn.addEventListener('click', () => {
     document.querySelectorAll('.wf-area-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.wf-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
+    btn.classList.add('active', 'visited');
     document.getElementById('wfp-' + wf.id).classList.add('active');
   });
   wfTabs.appendChild(btn);
@@ -782,114 +827,129 @@ workflows.forEach((wf, i) => {
   panel.className = 'wf-panel';
   panel.id = 'wfp-' + wf.id;
   panel.innerHTML = `
-    <div class="wf-info">
-      <div class="wf-info-label">What Is Breaking</div>
-      <div class="wf-info-body">${wf.breaking}</div>
-    </div>
-    <div class="wf-info">
-      <div class="wf-info-label">Why It Matters</div>
-      <div class="wf-info-body">${wf.why}</div>
-    </div>
-    <div class="wf-info">
-      <div class="wf-info-label">Who Is Affected</div>
-      <div class="wf-affected">${wf.affected.map(a=>`<span class="wf-aff-chip">${a}</span>`).join('')}</div>
-    </div>
-    <div class="wf-info">
-      <div class="wf-info-label">Problems It Creates Downstream</div>
-      <ul class="wf-down-list">${wf.downstream.map(d=>`<li>${d}</li>`).join('')}</ul>
-    </div>
-  `;
+    <div class="wf-info"><div class="wf-info-label">What Is Breaking</div><div class="wf-info-body">${wf.breaking}</div></div>
+    <div class="wf-info"><div class="wf-info-label">Why It Matters</div><div class="wf-info-body">${wf.why}</div></div>
+    <div class="wf-info"><div class="wf-info-label">Who Is Affected</div><div class="wf-affected">${wf.affected.map(a=>`<span class="wf-aff-chip">${a}</span>`).join('')}</div></div>
+    <div class="wf-info"><div class="wf-info-label">Problems It Creates Downstream</div><ul class="wf-down-list">${wf.downstream.map(d=>`<li>${d}</li>`).join('')}</ul></div>`;
   wfPanels.appendChild(panel);
 });
+wfTabs.querySelector('.wf-area-btn').click();
 
-// Auto-open first
-wfTabs.querySelector('.wf-area-btn').classList.add('active');
-wfPanels.querySelector('.wf-panel').classList.add('active');
+// ═════════ FOCUS NAVIGATION ═════════
+function openFocus(id) {
+  if (progress[id]) return openFocusView(id); // allow review
+  openFocusView(id);
+}
+function openFocusView(id) {
+  document.getElementById('focus-' + id).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeFocus(id) {
+  document.getElementById('focus-' + id).classList.remove('show');
+  document.body.style.overflow = '';
+}
 
-// Workflow reflection save
-const wfRef = document.getElementById('wf-reflect');
-const wfSaved = document.getElementById('wf-reflect-saved');
-wfRef.value = localStorage.getItem('phaseA_wf_reflect') || '';
-let wfTimer;
-wfRef.addEventListener('input', () => {
-  clearTimeout(wfTimer);
-  wfTimer = setTimeout(() => {
-    localStorage.setItem('phaseA_wf_reflect', wfRef.value);
-    wfSaved.style.opacity = '1';
-    setTimeout(() => { wfSaved.style.opacity = '0'; }, 1800);
-  }, 600);
+// ═════════ QUIZ ENGINE ═════════
+const qOverlay = document.getElementById('quiz-overlay');
+const qTitle = document.getElementById('quiz-title');
+const qQ = document.getElementById('quiz-q');
+const qOpts = document.getElementById('quiz-opts');
+const qFeedback = document.getElementById('quiz-feedback');
+const qProgress = document.getElementById('quiz-progress');
+const qNext = document.getElementById('quiz-next');
+
+let quizSection = null, quizIdx = 0, quizCorrectCount = 0, answered = false;
+
+function startQuiz(section) {
+  quizSection = section;
+  quizIdx = 0;
+  quizCorrectCount = 0;
+  qTitle.textContent = quizzes[section].title;
+  qOverlay.classList.add('show');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answered = false;
+  const bank = quizzes[quizSection];
+  const item = bank.questions[quizIdx];
+  qQ.textContent = item.q;
+  qFeedback.className = 'quiz-feedback';
+  qFeedback.textContent = '';
+  qNext.classList.remove('show');
+  qProgress.textContent = `QUESTION ${quizIdx + 1} OF ${bank.questions.length}`;
+  qOpts.innerHTML = '';
+  item.opts.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'quiz-opt';
+    b.textContent = opt;
+    b.addEventListener('click', () => selectAnswer(i, b));
+    qOpts.appendChild(b);
+  });
+}
+
+function selectAnswer(i, btn) {
+  if (answered) return;
+  answered = true;
+  const bank = quizzes[quizSection];
+  const item = bank.questions[quizIdx];
+  const correct = i === item.answer;
+  totalQ++;
+  if (correct) { quizCorrectCount++; totalCorrect++; }
+
+  qOpts.querySelectorAll('.quiz-opt').forEach((b, j) => {
+    b.disabled = true;
+    if (j === item.answer) b.classList.add('correct');
+    else if (j === i && !correct) b.classList.add('wrong');
+  });
+
+  qFeedback.textContent = (correct ? '✓ Correct. ' : '✗ Not quite. ') + item.why;
+  qFeedback.classList.add('show', correct ? 'good' : 'bad');
+
+  const isLast = quizIdx === bank.questions.length - 1;
+  qNext.textContent = isLast ? 'Finish check ✓' : 'Next question →';
+  qNext.classList.add('show');
+}
+
+qNext.addEventListener('click', () => {
+  const bank = quizzes[quizSection];
+  if (quizIdx < bank.questions.length - 1) {
+    quizIdx++;
+    renderQuestion();
+  } else {
+    qOverlay.classList.remove('show');
+    completeSection(quizSection, quizCorrectCount, bank.questions.length);
+  }
 });
 
-// ─────────────────────────────
-// REFLECTIONS
-// ─────────────────────────────
-const reflections = [
-  { id:'r1', prompt:'Which problem seems most urgent right now?', hint:'Think about patient safety, how many people are affected, and time sensitivity.' },
-  { id:'r2', prompt:'Which issue seems to affect the most people — patients, staff, or both?', hint:'Look at the incident feed and staff quotes. Who keeps coming up?' },
-  { id:'r3', prompt:'Which problems seem connected to each other?', hint:'Does one broken thing cause another? Look for chains of cause and effect.' },
-  { id:'r4', prompt:'Which tasks seem highly repetitive?', hint:'Repetitive tasks are often good candidates for improvement — but not always with technology.' },
-];
+// ═════════ PROGRESS ═════════
+function completeSection(id, correct, total) {
+  progress[id] = true;
+  closeFocus(id);
+  const card = document.getElementById('card-' + id);
+  card.classList.add('done');
+  const st = document.getElementById('st-' + id);
+  st.textContent = `✓ ${correct}/${total} correct`;
+  st.classList.add('done');
 
-const refList = document.getElementById('reflection-list');
-reflections.forEach(r => {
-  const saved = localStorage.getItem('phaseA_' + r.id) || '';
-  const card = document.createElement('div');
-  card.className = 'reflection-card';
-  card.innerHTML = `
-    <div class="reflection-prompt">${r.prompt}</div>
-    <div class="reflection-hint">${r.hint}</div>
-    <textarea class="ref-input" id="${r.id}" placeholder="Your thoughts here...">${saved}</textarea>
-    <div class="saved-note" id="sn-${r.id}">✓ SAVED</div>
-  `;
-  refList.appendChild(card);
+  const passed = Object.values(progress).filter(Boolean).length;
+  document.getElementById('score-badge').textContent = `CHECKS PASSED: ${passed} / 3`;
 
-  const ta = card.querySelector('textarea');
-  let t;
-  ta.addEventListener('input', () => {
-    clearTimeout(t);
-    t = setTimeout(() => {
-      localStorage.setItem('phaseA_' + r.id, ta.value);
-      const sn = document.getElementById('sn-' + r.id);
-      sn.style.opacity = '1';
-      setTimeout(() => { sn.style.opacity = '0'; }, 1800);
-    }, 600);
-  });
-});
+  const finishBtn = document.getElementById('finish-btn');
+  if (passed === 3) {
+    finishBtn.classList.add('ready');
+    finishBtn.disabled = false;
+    document.getElementById('finish-hint').textContent = 'All checks passed — you\'re ready!';
+  }
+}
 
-// ─────────────────────────────
-// CHECKPOINTS
-// ─────────────────────────────
-const checkpoints = [
-  { id:'c1', num:'Summary 01', q:'What are the top 3 operational problems you observed at Lakeside?' },
-  { id:'c2', num:'Summary 02', q:'Who is most affected — patients, staff, or both? Describe how.' },
-  { id:'c3', num:'Summary 03', q:'What information is still missing? What would you need to find out in Phase B?' },
-  { id:'c4', num:'Summary 04', q:'What do you most want to understand better before anyone recommends any changes?' },
-];
-
-const cpList = document.getElementById('checkpoint-list');
-checkpoints.forEach(c => {
-  const saved = localStorage.getItem('phaseA_' + c.id) || '';
-  const card = document.createElement('div');
-  card.className = 'checkpoint-card';
-  card.innerHTML = `
-    <div class="cp-num">${c.num}</div>
-    <div class="cp-q">${c.q}</div>
-    <textarea class="ref-input" id="${c.id}" placeholder="Write your summary here..." rows="4">${saved}</textarea>
-    <div class="saved-note" id="sn-${c.id}">✓ SAVED</div>
-  `;
-  cpList.appendChild(card);
-
-  const ta = card.querySelector('textarea');
-  let t;
-  ta.addEventListener('input', () => {
-    clearTimeout(t);
-    t = setTimeout(() => {
-      localStorage.setItem('phaseA_' + c.id, ta.value);
-      const sn = document.getElementById('sn-' + c.id);
-      sn.style.opacity = '1';
-      setTimeout(() => { sn.style.opacity = '0'; }, 1800);
-    }, 600);
-  });
+document.getElementById('finish-btn').addEventListener('click', function() {
+  if (this.disabled) return;
+  document.getElementById('hub').style.display = 'none';
+  const pct = Math.round((totalCorrect / totalQ) * 100);
+  document.getElementById('final-score').textContent = totalCorrect + ' / ' + totalQ + ' · ' + pct + '%';
+  document.getElementById('final-screen').classList.add('show');
+  window.scrollTo({ top: 0 });
 });
 </script>
 </body>
